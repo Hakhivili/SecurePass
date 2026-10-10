@@ -295,3 +295,60 @@ VS Code 对这些是一等公民（内置 TS 语言服务、Node 调试器、任
 
 - 仓库已附 `.vscode/` 配置：推荐扩展、保存即格式化 + ESLint 自动修复、常用任务（dev/typecheck/lint/test/build/package），
   以及“构建后调试 Electron 主进程 / 调试当前 Vitest 文件”两个调试配置。
+
+---
+
+## 10. 本机常见问题（部署环境相关）
+
+### 10.1 `'vite' 不是内部或外部命令，也不是可运行的程序或批处理文件`
+
+**原因**：`node_modules/.bin` 里的命令软链没有生成（安装被中断时会发生）。
+所有依赖包都已装好，只是缺少 `vite.cmd` 等入口，所以 `npm run dev` 找不到 `vite`。
+
+**先确认**：
+
+```powershell
+(Get-ChildItem node_modules\.bin | Measure-Object).Count   # 正常应有 100+ 个；0 表示软链缺失
+```
+
+**修复**（本地缓存足够，通常不需要联网）：
+
+```powershell
+cd D:\ToolsDataSite\SecurePass
+$env:ELECTRON_SKIP_BINARY_DOWNLOAD="1"
+npm install --ignore-scripts --prefer-offline --no-audit --no-fund
+```
+
+> `--ignore-scripts` 跳过生命周期脚本，避免在受限环境下因 spawn 被拒绝而中断；
+> 它只做文件布局与软链，`vite` / `tsc` / `vitest` / `eslint` / `prettier` 都会恢复。
+
+### 10.2 重装依赖后启动报 “Electron failed to install correctly” / 找不到 `electron.exe`
+
+**原因**：`npm install --ignore-scripts` 或中断的安装会替换 `node_modules/electron` 目录，
+但没有执行提取脚本，导致 `node_modules/electron/dist` 为空、`path.txt` 缺失。
+
+**修复**（仓库外的 `.electron-cache` 里已有安装包，不用重新下载）：
+
+```powershell
+cd D:\ToolsDataSite\SecurePass
+$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"
+$env:ELECTRON_CACHE="D:\ToolsDataSite\.electron-cache"
+$env:electron_config_cache="D:\ToolsDataSite\.electron-cache"
+node node_modules/electron/install.js
+```
+
+**校验**：
+
+```powershell
+node -e "console.log(require('electron'))"
+# 期望输出：...\node_modules\electron\dist\electron.exe
+```
+
+### 10.3 其它环境提示
+
+| 现象                                                                        | 说明 / 处理                                                                                              |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `npm warn Unknown env config "side-effects-cache"`                          | 来自本机环境变量 `npm_config_side_effects_cache=false`，无害；删除该变量即可消除                         |
+| GitHub 不可直连，`electron` 下载失败                                        | 用 10.2 的镜像变量；或 `$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"` 后重装 |
+| `npm run dev` 报端口被占用                                                  | `vite.config.ts` 设了 `strictPort: true` 且端口固定 5173，先释放该端口                                   |
+| `npm run build` 报 `remove C:\Users\...\Temp\esbuild-...: Access is denied` | 构建临时目录不可写；把 `TEMP`/`TMP` 指到可写目录后重试：`$env:TEMP="D:\ToolsDataSite\.tmp"`              |
