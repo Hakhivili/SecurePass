@@ -12,13 +12,13 @@
 
 ## 1. 部署结果
 
-| 项目 | 内容 |
-| --- | --- |
-| 源码解压 | 82 个条目 → 81 个源文件，与 zip 内容一致，未做任何修改 |
-| 基线快照 | `D:\ToolsDataSite\.baseline\SecurePass-0.1.0-source`（用于后续 diff/回滚） |
-| 依赖安装 | `npm ci` + `npm install`（Electron 二进制单独下载） |
-| node_modules | 31,082 个文件，约 545 MB |
-| 副产物目录 | `.npm-cache`（69 MB）、`.electron-cache`（110 MB）、`.tmp`（构建临时目录），均在项目目录之外 |
+| 项目         | 内容                                                                                         |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| 源码解压     | 82 个条目 → 81 个源文件，与 zip 内容一致，未做任何修改                                       |
+| 基线快照     | `D:\ToolsDataSite\.baseline\SecurePass-0.1.0-source`（用于后续 diff/回滚）                   |
+| 依赖安装     | `npm ci` + `npm install`（Electron 二进制单独下载）                                          |
+| node_modules | 31,082 个文件，约 545 MB                                                                     |
+| 副产物目录   | `.npm-cache`（69 MB）、`.electron-cache`（110 MB）、`.tmp`（构建临时目录），均在项目目录之外 |
 
 ### 工具链版本
 
@@ -52,25 +52,25 @@
 
 ## 2. 质量门禁验证
 
-| 检查 | 命令 | 结果 |
-| --- | --- | --- |
-| 类型检查 | `npm run typecheck` | ✅ 通过，0 错误（`strict` + `noUnusedLocals` 全开） |
-| 代码规范 | `npm run lint` | ✅ 通过，exit 0，0 warning |
-| 单元测试 | `npm test` | ✅ 5 个文件 / 22 个用例全部通过 |
-| 生产构建 | `npm run build` | ✅ 生成 `dist/` 与 `dist-electron/` |
-| Electron 运行时 | `node_modules/electron/dist/electron.exe` | ✅ 已下载（281 MB / 73 个文件） |
+| 检查            | 命令                                      | 结果                                                |
+| --------------- | ----------------------------------------- | --------------------------------------------------- |
+| 类型检查        | `npm run typecheck`                       | ✅ 通过，0 错误（`strict` + `noUnusedLocals` 全开） |
+| 代码规范        | `npm run lint`                            | ✅ 通过，exit 0，0 warning                          |
+| 单元测试        | `npm test`                                | ✅ 5 个文件 / 22 个用例全部通过                     |
+| 生产构建        | `npm run build`                           | ✅ 生成 `dist/` 与 `dist-electron/`                 |
+| Electron 运行时 | `node_modules/electron/dist/electron.exe` | ✅ 已下载（281 MB / 73 个文件）                     |
 
 测试明细：`password.service` 7、`vault.service` 7、`crypto.service` 4、`storage.service` 2、`renderer/vault-filter` 2。
 
 构建产物：
 
-| 产物 | 大小 | gzip |
-| --- | --- | --- |
-| `dist/assets/index-*.js` | 1,107.00 kB | 349.04 kB |
-| `dist/assets/index-*.css` | 2.43 kB | 0.87 kB |
-| `dist/index.html` | 0.61 kB | 0.36 kB |
-| `dist-electron/main/index.js` | 23.07 kB | 8.85 kB |
-| `dist-electron/preload/index.cjs` | 1.69 kB | 0.66 kB |
+| 产物                              | 大小        | gzip      |
+| --------------------------------- | ----------- | --------- |
+| `dist/assets/index-*.js`          | 1,107.00 kB | 349.04 kB |
+| `dist/assets/index-*.css`         | 2.43 kB     | 0.87 kB   |
+| `dist/index.html`                 | 0.61 kB     | 0.36 kB   |
+| `dist-electron/main/index.js`     | 23.07 kB    | 8.85 kB   |
+| `dist-electron/preload/index.cjs` | 1.69 kB     | 0.66 kB   |
 
 > 沙箱限制说明：esbuild 以管道 stdio 启动子服务、以及写入 `%TEMP%`，在当前沙箱模式下会被拒绝
 > （`spawn EPERM`）。本次通过“临时目录重定向到工作区 + 单次提权”完成验证。日常开发不受影响。
@@ -222,7 +222,7 @@ KEK/DEK 只驻留主进程内存，`finally` 中 `Buffer.fill(0)`；明文密码
     当前只有本地打包页面，风险有限；若将来引入多窗口或远程内容，应先加 sender 白名单。
 13. **CSP 可再收紧**：`index.html` 缺少 `object-src 'none'`、`base-uri 'none'`、`frame-ancestors 'none'`。
 14. **锁定时不清空剪贴板**：`ClipboardService` 只在定时器到期或退出时清理，
-   锁定/休眠路径没有立即清理已复制的密码。
+    锁定/休眠路径没有立即清理已复制的密码。
 15. **`lock()` 不释放锁文件**：`StorageService` 的写锁从解锁一直持有到进程退出，
     多进程/多实例场景下其他实例无法接管（单实例锁 `requestSingleInstanceLock` 已缓解）。
 16. **内存零化不彻底**：已明确记录的限制——JS 字符串无法可靠清零。
@@ -243,26 +243,17 @@ KEK/DEK 只驻留主进程内存，`finally` 中 `Buffer.fill(0)`；明文密码
 ## 7. 后续完善建议路线
 
 **阶段一 · 工程基线**
+
 1. 初始化 Git 仓库并提交当前基线（第 1 节命令）。
 2. 补 `@vitest/coverage-v8`，让 `npm run test:coverage` 可用，设定覆盖率门槛。
 3. 补 IPC / backup / clipboard / 组件层测试。
 4. 修复 6.1 的两个缺陷并补回归测试。
 
-**阶段二 · 功能补全**
-5. 落地主题与语言设置（antd `darkAlgorithm` + `prefers-color-scheme`；提取 i18n 文案表）。
-6. 应用图标与安装包资源（`build/icon.*`）。
-7. 数据导入导出（CSV / 通用密码管理器格式），注意默认不提供明文导出。
-8. 密码历史、重复密码检测、TOTP、收藏与分类视图增强、列表分页（配合 `MAX_SEARCH_RESULTS`）。
+**阶段二 · 功能补全** 5. 落地主题与语言设置（antd `darkAlgorithm` + `prefers-color-scheme`；提取 i18n 文案表）。6. 应用图标与安装包资源（`build/icon.*`）。7. 数据导入导出（CSV / 通用密码管理器格式），注意默认不提供明文导出。8. 密码历史、重复密码检测、TOTP、收藏与分类视图增强、列表分页（配合 `MAX_SEARCH_RESULTS`）。
 
-**阶段三 · 安全加固**
-9. IPC sender 白名单校验；CSP 补充 `object-src` / `base-uri` / `frame-ancestors`。
-10. 锁定与休眠时立即清理剪贴板；可选的“空闲检测”由渲染层上报。
-11. 生物识别/系统钥匙串解锁适配层；密钥内存生命周期复核。
+**阶段三 · 安全加固** 9. IPC sender 白名单校验；CSP 补充 `object-src` / `base-uri` / `frame-ancestors`。10. 锁定与休眠时立即清理剪贴板；可选的“空闲检测”由渲染层上报。11. 生物识别/系统钥匙串解锁适配层；密钥内存生命周期复核。
 
-**阶段四 · 交付**
-12. 打包体积优化与代码分割；启动性能测量。
-13. 跨平台签名/公证与自动更新（需要独立的密钥与分发设计）。
-14. 依赖清单、许可证与漏洞扫描纳入 CI。
+**阶段四 · 交付** 12. 打包体积优化与代码分割；启动性能测量。13. 跨平台签名/公证与自动更新（需要独立的密钥与分发设计）。14. 依赖清单、许可证与漏洞扫描纳入 CI。
 
 ---
 
@@ -270,11 +261,37 @@ KEK/DEK 只驻留主进程内存，`finally` 中 `Buffer.fill(0)`；明文密码
 
 部署过程只做了以下动作，未修改任何业务代码：
 
-| 动作 | 位置 |
-| --- | --- |
-| 解压源码 | `D:\ToolsDataSite\SecurePass\**`（81 个文件，与 zip 一致） |
-| 基线快照 | `D:\ToolsDataSite\.baseline\SecurePass-0.1.0-source\**` |
-| 安装依赖 | `SecurePass\node_modules\` |
-| 构建产物 | `SecurePass\dist\`、`SecurePass\dist-electron\`（已被 `.gitignore` 忽略） |
-| 安装 Electron 二进制 | `SecurePass\node_modules\electron\dist\` |
-| 本文件 | `SecurePass\docs\DEPLOYMENT-NOTES.zh-CN.md` |
+| 动作                 | 位置                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| 解压源码             | `D:\ToolsDataSite\SecurePass\**`（81 个文件，与 zip 一致）                         |
+| 基线快照             | `D:\ToolsDataSite\.baseline\SecurePass-0.1.0-source\**`                            |
+| 安装依赖             | `SecurePass\node_modules\`                                                         |
+| 构建产物             | `SecurePass\dist\`、`SecurePass\dist-electron\`（已被 `.gitignore` 忽略）          |
+| 安装 Electron 二进制 | `SecurePass\node_modules\electron\dist\`                                           |
+| 本文件               | `SecurePass\docs\DEPLOYMENT-NOTES.zh-CN.md`                                        |
+| 需求基线             | `SecurePass\docs\REQUIREMENTS-BASELINE.zh-CN.md`（由两份启动指导文档整理）         |
+| IDE 配置             | `SecurePass\.vscode\settings.json`、`tasks.json`、`launch.json`、`extensions.json` |
+
+---
+
+## 9. 用哪个 IDE 打开本项目
+
+**结论：用 VS Code。** 本项目是 TypeScript + Node.js + Electron + Vite + Vitest + ESLint/Prettier，
+VS Code 对这些是一等公民（内置 TS 语言服务、Node 调试器、任务与终端），且不需要任何 JDK。
+
+| 本机工具               | 是否适合      | 路径                                                                                                                                          |
+| ---------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **VS Code**            | ✅ 首选       | `C:\Users\ROG\AppData\Local\Programs\Microsoft VS Code\new_Code.exe`                                                                          |
+| IntelliJ IDEA 2024.3.5 | ⚠️ 可用但更重 | `C:\D\IntelliJ IDEA\IntelliJ IDEA 2024.3.5\bin\idea64.exe`（Ultimate 带 Node 插件，可直接打开 package.json 工程）                             |
+| PyCharm 2026.2.1       | ❌ 不适用     | `C:\D\Pyharm\PyCharm 2026.2.1\bin\pycharm64.exe`（Python 专用，适合打开 `D:\ToolsDataSite\Pyharm\password_manager` 那套 Python/Tkinter 版本） |
+| CLion                  | ❌ 不适用     | C/C++ 项目                                                                                                                                    |
+
+- **JDK 与本项目无关**：仓库中没有 Java/Kotlin 代码，不需要配置 JDK。本项目需要的是 Node.js ≥ 18.18（本机 v24.9.0）。
+- 命令行打开：
+
+  ```powershell
+  & "C:\Users\ROG\AppData\Local\Programs\Microsoft VS Code\new_Code.exe" "D:\ToolsDataSite\SecurePass"
+  ```
+
+- 仓库已附 `.vscode/` 配置：推荐扩展、保存即格式化 + ESLint 自动修复、常用任务（dev/typecheck/lint/test/build/package），
+  以及“构建后调试 Electron 主进程 / 调试当前 Vitest 文件”两个调试配置。
