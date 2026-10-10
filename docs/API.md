@@ -23,9 +23,9 @@
 
 ## generator
 
-| 方法               | 说明                                                                |
-| ------------------ | ------------------------------------------------------------------- |
-| `generate(config)` | 生成密码，返回 `password`、`entropyBits`、`charsetSize`、`warnings` |
+| 方法               | 说明                                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| `generate(config)` | 生成密码，返回 `password`、`entropyBits`、`charsetSize`、`warningCodes` |
 
 ```ts
 interface PasswordConfig {
@@ -36,13 +36,30 @@ interface PasswordConfig {
   includeSymbols: boolean;
   excludeAmbiguous: boolean;
 }
+
+// 语言无关的提示码，由渲染层翻译（见 src/renderer/i18n）
+type GeneratorWarningCode = 'short-length' | 'low-entropy' | 'letters-only';
 ```
 
 ## password
 
-| 方法                 | 说明                                              |
-| -------------------- | ------------------------------------------------- |
-| `strength(password)` | 返回 `{ score, label, entropyBits, suggestions }` |
+| 方法                 | 说明                                                           |
+| -------------------- | -------------------------------------------------------------- |
+| `strength(password)` | 返回 `{ score, entropyBits, suggestionCodes }`（不含展示文案） |
+
+```ts
+type StrengthSuggestionCode =
+  'empty' | 'too-short' | 'mix-character-classes' | 'avoid-repeats';
+
+interface PasswordStrengthResult {
+  score: 0 | 1 | 2 | 3 | 4; // 强度等级，展示文案由渲染层按语言生成
+  entropyBits: number;
+  suggestionCodes: StrengthSuggestionCode[];
+}
+```
+
+> 主进程只返回稳定错误码与提示码，界面文案统一放在 `src/renderer/i18n/messages.ts`，
+> 因此接口不绑定任何一种语言。
 
 ## settings
 

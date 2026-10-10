@@ -1,0 +1,163 @@
+# SecurePass 测试报告（v0.1.0 阶段一）
+
+> 交付物对应任务书 §9「功能、异常和安全测试报告」。本报告覆盖任务书 §8 的 12 项验收标准，
+> 并给出可复现命令与实测数值。
+>
+> - 测试日期：2026-10-05
+> - 被测版本：securepass@0.1.0（分支 `master`）
+> - 环境：Windows 10/11 x64、Node.js v24.9.0、npm 11.12.1、Vitest 2.1.9、jsdom 25.0.1
+> - 复现命令：`npm test`（单测）、`npm run test:coverage`（需先安装 `@vitest/coverage-v8`）
+
+---
+
+## 1. 结果汇总
+
+| 检查项              | 命令                   | 结果                                                  |
+| ------------------- | ---------------------- | ----------------------------------------------------- |
+| 单元 / 集成测试     | `npm test`             | ✅ **12 个文件、55 个用例全部通过**（约 2.6 s）       |
+| 类型检查            | `npm run typecheck`    | ✅ 0 错误（`strict` + `noUnusedLocals`）              |
+| 代码规范            | `npm run lint`         | ✅ 0 错误、0 警告                                     |
+| 格式检查            | `npm run format:check` | ✅ 全仓库符合 Prettier 配置                           |
+| 生产构建            | `npm run build`        | ✅ `dist/` + `dist-electron/` 产出成功                |
+| 密文落盘扫描        | 见 §3.7                | ✅ 正式文件、`.bak`、锁文件中均无业务明文             |
+| 性能基准（1000 条） | 见 §4                  | ✅ 搜索 0.43–1.93 ms、摘要列表 0.29 ms（预算 300 ms） |
+
+测试文件与用例数：
+
+| 测试文件                                         | 用例数 | 覆盖内容                                             |
+| ------------------------------------------------ | ------ | ---------------------------------------------------- |
+| `tests/unit/crypto.service.test.ts`              | 4      | KDF、加解密往返、错误密码、篡改检测、主密码校验      |
+| `tests/unit/vault.service.test.ts`               | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置 |
+| `tests/unit/storage.service.test.ts`             | 2      | 原子写入、单写者锁                                   |
+| `tests/unit/password.service.test.ts`            | 10     | 生成规则、无偏抽样、排除规则、强度与提示码           |
+| `tests/unit/plaintext-on-disk.test.ts`           | 2      | 落盘明文扫描（验收 7）                               |
+| `tests/unit/restore-fresh-environment.test.ts`   | 3      | 全新环境恢复、错误备份不覆盖（验收 9）               |
+| `tests/unit/storage-interruption.test.ts`        | 3      | 写入中断、备份失败、`.bak` 语义（验收 10）           |
+| `tests/unit/clipboard.service.test.ts`           | 6      | 剪贴板定时清理与误清保护（验收 11）                  |
+| `tests/unit/vault-performance.test.ts`           | 4      | 1000 条记录的性能基准（验收 12）                     |
+| `tests/unit/renderer/search-performance.test.ts` | 3      | 渲染层搜索性能基准（验收 12）                        |
+| `tests/unit/renderer/duplicates.test.ts`         | 8      | 重复录入判定与排序                                   |
+| `tests/unit/renderer/vault-filter.test.ts`       | 2      | 搜索过滤语义                                         |
+
+---
+
+## 2. 验收标准逐项对照（任务书 §8）
+
+| #   | 验收项         | 验证方式                                                                                               | 结论 |
+| --- | -------------- | ------------------------------------------------------------------------------------------------------ | ---- |
+| 1   | 长度与字符规则 | 8–20 全长度生成；每类字符至少一个；排除易混淆字符；非法配置抛 `INVALID_INPUT`                          | ✅   |
+| 2   | 随机实现       | 代码使用 `crypto.randomInt`（CSPRNG），Fisher–Yates 洗牌；无 `Math.random`/时间戳                      | ✅   |
+| 3   | 外部密码保存   | 含空格、中文、emoji、1024 个 Unicode 码点的密码保存后逐字符一致，无 trim/截断                          | ✅   |
+| 4   | 记录操作       | 新增/编辑/取消/搜索/删除；编辑失败保留输入；解锁后可重新读取                                           | ✅   |
+| 5   | 主密码         | 正确密码可解锁；错误密码返回统一错误码且不返回任何记录                                                 | ✅   |
+| 6   | 锁定           | 手动 `lock()`、超时定时器、`powerMonitor` 锁屏/休眠三条路径；锁定后访问抛 `VAULT_LOCKED`               | ✅   |
+| 7   | 加密落盘       | 哨兵数据扫描全目录：`vault.securepass`、`.bak`、`vault.lock` 均不含明文；正式文件仅含 magic/密文结构   | ✅   |
+| 8   | 篡改检测       | 修改密文后解密失败（GCM 认证标签），不输出未认证内容                                                   | ✅   |
+| 9   | 备份恢复       | 全新目录恢复全部记录且重新生成 `vaultId`/盐；错误密码、篡改密文、版本不兼容均被拒绝且不修改现有文件    | ✅   |
+| 10  | 中断处理       | 注入 `rename` 失败：正式文件逐字节不变、无 `.tmp` 残留、旧版本仍可解锁；注入 `copyFile` 失败：拒绝写入 | ✅   |
+| 11  | 剪贴板         | 到点清理本次内容；用户后来复制的内容不被误清；新复制重置计时；`dispose` 立即清理且不误清               | ✅   |
+| 12  | 性能           | 1000 条记录检索远低于 300 ms 预算（见 §4）                                                             | ✅   |
+
+---
+
+## 3. 安全与异常用例说明
+
+### 3.1 密钥与加密（`crypto.service.test.ts`）
+
+- Argon2id → KEK → 解密 DEK → 解密 payload 的完整往返；
+- 错误主密码、密文篡改均返回 `INVALID_MASTER_PASSWORD`（不区分「密码错误」与「文件损坏」）；
+- `verifyMasterPassword` 只验证封装密钥，不暴露 DEK。
+
+### 3.2 主密码修改（`vault.service.test.ts`）
+
+- 改主密码后：旧主密码无法解锁、新主密码可解锁；
+- **旧备份仍可用旧主密码打开**（任务书 §3.3 语义），确认“改主密码 ≠ 撤销旧备份访问”。
+
+### 3.3 恢复与回滚（`restore-fresh-environment.test.ts`、`vault.service.test.ts`）
+
+- 全新环境恢复：`previousBackupPath` 为空（无旧库可备份）；
+- 已有库恢复：替换前生成 `pre-restore-<时间>.bak` 加密副本；
+- 错误密码 / 密文篡改 / 版本不兼容：恢复被拒绝，正式文件逐字节未变。
+
+### 3.4 中断处理（`storage-interruption.test.ts`）
+
+原子写入链路为「写 `.tmp` → `fsync` → 保留 `.bak` → 原子 `rename`」，测试分别在第 3、第 4 步注入失败：
+
+- `rename` 失败 → 正式文件保持旧版本、临时文件被清理、锁文件不受影响、旧版本仍可解锁；
+- `copyFile` 失败 → 直接返回 `STORAGE_FAILURE`，不触碰正式文件；
+- `.bak` 语义：第二次写入后 `.bak` 是「上一完整版本」，且可用同一主密码打开。
+
+### 3.5 剪贴板（`clipboard.service.test.ts`）
+
+- 仅在剪贴板内容仍为本次复制内容时清空；
+- 用户中途复制其他内容则跳过清理；
+- 复制时长下限 1 秒；`dispose()` 立即清理。
+
+### 3.6 重复录入提醒（`duplicates.test.ts`）
+
+- 判定维度：网址（去协议/`www.`/查询串/末尾斜杠）+ 账号 + 名称；
+- 置信度分级：网址+账号(3) > 网址(2) = 名称+账号(2) > 名称(1)；
+- 编辑自身时排除自身；无可比较信息时不提示。
+
+### 3.7 落盘明文扫描（`plaintext-on-disk.test.ts`）
+
+用可识别哨兵数据（标题、账号、密码、网址、备注、分类、标签、主密码）写入后，
+递归读取密码库目录下**所有文件**的文本，断言：
+
+- 任一文件都不包含哨兵明文（同时检查 base64 编码形态）；
+- 正式文件仍为自我描述的加密容器（`"magic": "SECUREPASS"` + `aes-256-gcm`）；
+- 改主密码后（新旧文件并存）与多次写入后（`.bak` 存在）同样成立。
+
+---
+
+## 4. 性能实测（验收标准第 12 项）
+
+预算：1000 条记录常规搜索 < 300 ms。
+
+| 场景                                      | 实测        | 预算     |
+| ----------------------------------------- | ----------- | -------- |
+| `VaultService.list()`（1000 条摘要+排序） | **0.29 ms** | 300 ms   |
+| `VaultService.get(id)`（1000 条中定位）   | **0.12 ms** | 300 ms   |
+| `filterItems`（1000 条 × 5 种关键字）     | **1.93 ms** | 300 ms   |
+| `filterItems`（1000 条单次查询）          | **0.43 ms** | 300 ms   |
+| 解锁（测试用低成本 KDF 1 轮 / 1 MiB）     | 11–20 ms    | 单独评估 |
+
+> 说明：解锁耗时不作为验收项（任务书要求“单独评估”）。生产参数为 Argon2id 3 轮 / 64 MiB / 并行 4，
+> 单测使用注入的低成本参数（`CryptoService` 构造参数）以避免每个用例都承担完整派生成本，
+> 加解密逻辑与生产完全一致。
+
+---
+
+## 5. 未覆盖范围（已知盲区）
+
+| 盲区                                         | 原因 / 后续计划                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------- |
+| Electron 端到端（真实窗口 + IPC + 对话框）   | 需要 GUI 环境与 Electron 运行时；建议引入 Playwright/WebdriverIO E2E |
+| `src/main/ipc/index.ts` 参数校验与错误序列化 | 需要 mock `ipcMain`；后续补 IPC 层单测                               |
+| `BackupService` 的文件对话框                 | 依赖 Electron `dialog`，需要注入抽象后测试                           |
+| React 组件渲染与交互                         | 目前仅有纯函数测试；`@testing-library/react` 已就绪，待补组件测试    |
+| 覆盖率门槛                                   | 需安装 `@vitest/coverage-v8` 并设定阈值（草案建议 >80%）             |
+| macOS / Linux 真机验证                       | 当前仅在 Windows 上执行；CI 已配置三平台构建                         |
+
+---
+
+## 6. 本阶段修复的缺陷与新增能力
+
+| 类型 | 内容                                                                  | 位置                                                     |
+| ---- | --------------------------------------------------------------------- | -------------------------------------------------------- |
+| 缺陷 | 编辑记录会清空 `lastUsed`（最近使用时间）                             | `src/main/services/vault.service.ts` + 单测              |
+| 缺陷 | 保存失败或取消后编辑表单被清空                                        | `VaultEditor.tsx` / `PasswordVault/index.tsx`            |
+| 缺陷 | `theme` / `language` 设置已持久化但界面未生效                         | 新增 `i18n/`、`utils/theme.ts`、CSS 变量与 antd 算法切换 |
+| 功能 | 重复录入提醒（任务书 §3.2）                                           | `utils/duplicates.ts`、`utils/use-duplicate-guard.tsx`   |
+| 改进 | 主进程只返回错误码/提示码，界面文案集中到 `i18n/messages.ts`（中/英） | `src/shared/types/password.types.ts`、`docs/API.md`      |
+| 改进 | 强度建议与生成器提示改为展示在界面上（原先计算但未显示）              | `PasswordStrength.tsx`、`GeneratorDisplay.tsx`           |
+| 清理 | 移除死代码 `truncate()`、`MAX_SEARCH_RESULTS` 之外的无用导出          | `src/renderer/utils/format.ts` 等                        |
+
+---
+
+## 7. 结论
+
+- 任务书 §8 的 12 项验收标准**全部有可执行证据支撑**；
+- 首版唯一的功能缺项（重复录入提醒）已补齐；
+- 安全相关的核心不变量（无明文落盘、篡改检测、中断不损坏数据、备份失败不覆盖）已由自动化测试锁定；
+- 剩余工作见 `docs/REQUIREMENTS-BASELINE.zh-CN.md` §7 与 `docs/OPEN-SOURCE-CHECKLIST.zh-CN.md`。
