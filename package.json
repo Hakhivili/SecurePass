@@ -12,6 +12,8 @@
   },
   "scripts": {
     "dev": "vite",
+    "start": "npm run build && electron .",
+    "start:built": "electron .",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

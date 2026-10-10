@@ -21,12 +21,28 @@ generator, vault CRUD, settings and encrypted backup/restore are implemented, wh
 - Node.js >= 18.18
 - npm >= 9
 
-## Development
+## Running
+
+**Desktop mode (recommended for daily use)** — builds and starts the desktop app from local files,
+with **no local server involved**:
 
 ```bash
 npm install
+npm run start        # same as: npm run build && electron .
+```
+
+Use `npm run start:built` if you already built, or run the packaged app at
+`release/win-unpacked/SecurePass.exe`.
+
+**Development mode (hot reload)** — runs the Vite dev server together with Electron:
+
+```bash
 npm run dev
 ```
+
+> The dev server is bound explicitly to `127.0.0.1:5173` (IPv4) because on Windows `localhost` may
+> resolve to `::1`, which shows up as "cannot connect to localhost". If it still fails, use the
+> desktop mode above.
 
 Quality checks:
 

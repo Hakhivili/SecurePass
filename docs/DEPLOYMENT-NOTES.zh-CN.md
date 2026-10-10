@@ -352,3 +352,64 @@ node -e "console.log(require('electron'))"
 | GitHub 不可直连，`electron` 下载失败                                        | 用 10.2 的镜像变量；或 `$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"` 后重装 |
 | `npm run dev` 报端口被占用                                                  | `vite.config.ts` 设了 `strictPort: true` 且端口固定 5173，先释放该端口                                   |
 | `npm run build` 报 `remove C:\Users\...\Temp\esbuild-...: Access is denied` | 构建临时目录不可写；把 `TEMP`/`TMP` 指到可写目录后重试：`$env:TEMP="D:\ToolsDataSite\.tmp"`              |
+
+### 10.4 `npm run dev` 后界面显示「无法连接到 localhost」
+
+**原因**：Windows + Node 17+ 下 `localhost` 会**优先解析为 IPv6 `::1`**。实测本机：
+
+```
+dns.lookup('localhost') => [{::1, family 6}, {127.0.0.1, family 4}]
+Vite httpServer.address() => {address: "::1", port: 5173}   # 只监听了 IPv6
+```
+
+而 Electron/Chromium 访问 `127.0.0.1:5173` → 连接被拒 → 显示“无法连接到 localhost”。
+
+**已修复（代码内置）**：
+
+- `vite.config.ts` 显式 `server.host: '127.0.0.1'`（只监听 IPv4，地址确定）；
+- `src/main/renderer-target.ts` 把 dev server 地址统一规范成 `127.0.0.1`，避免插件回传 `localhost`；
+- 主进程在加载失败时最多重试 20 次（每次 500 ms），避免 Electron 比 Vite 先就绪；
+- 有回归测试：`tests/unit/renderer-target.test.ts`。
+
+若仍连不上，直接用 10.5 的桌面模式。
+
+### 10.5 桌面模式（不依赖任何本地服务器）——推荐日常使用
+
+本项目是**桌面端应用**，只有开发时才需要 dev server。生产/日常使用请用下面任一方式：
+
+```powershell
+cd D:\ToolsDataSite\SecurePass
+npm run start        # 先构建再启动（npm run build && electron .）
+npm run start:built  # 已构建过，仅启动
+```
+
+或直接运行打包后的绿色版（不需要 Node、不需要服务器、不需要网络）：
+
+```
+D:\ToolsDataSite\SecurePass\release\win-unpacked\SecurePass.exe
+```
+
+两者都通过 `loadFile` 读取本地 `dist/index.html`，`VITE_DEV_SERVER_URL` 未设置时不会访问任何端口。
+`npm run dev` 仅用于开发热更新。
+
+### 10.6 打包安装包失败：`Cannot create symbolic link ... darwin\10.12\lib\libcrypto.dylib`
+
+**原因**：electron-builder 会解压 `winCodeSign-2.6.0.7z`（内含 macOS 的符号链接），
+而 Windows 默认账户没有「创建符号链接」特权，7-Zip 报 `客户端没有所需的特权`，electron-builder 重试 4 次后中止。
+
+**处理（任选其一）**：
+
+1. **开启开发者模式**（推荐，一次性）：设置 → 系统 → 开发者选项 → 打开「开发人员模式」，然后重新 `npm run package`；
+2. 用**管理员身份**打开终端，再执行 `npm run package`；
+3. 只需绿色版时：应用本体在失败前已打包完成，`release\win-unpacked\SecurePass.exe` 可直接运行
+   （代价：exe 未写入自定义图标与版本元数据，使用 Electron 默认图标）。
+
+打包（GitHub 不可直连时需要镜像）：
+
+```powershell
+$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"
+$env:ELECTRON_BUILDER_BINARIES_MIRROR="https://registry.npmmirror.com/-/binary/electron-builder-binaries/"
+$env:ELECTRON_BUILDER_CACHE="D:\ToolsDataSite\.electron-builder-cache"   # 默认缓存在工作区外，受限环境需重定向
+$env:TEMP="D:\ToolsDataSite\.tmp"
+npm run package
+```

@@ -21,12 +21,25 @@ TypeScript + Vite。
 - Node.js >= 18.18
 - npm >= 9
 
-## 开发
+## 运行
+
+**桌面模式（推荐，日常使用）**——构建后直接启动桌面程序，加载本地文件，**不依赖任何本地服务器**：
 
 ```bash
 npm install
+npm run start        # 等价于 npm run build && electron .
+```
+
+已构建过时可以直接 `npm run start:built`；打包后的绿色版在 `release/win-unpacked/SecurePass.exe`。
+
+**开发模式（热更新）**：需要 Vite dev server 与 Electron 同时运行。
+
+```bash
 npm run dev
 ```
+
+> dev server 固定监听 `127.0.0.1:5173`（显式 IPv4，避免 Windows 上 `localhost` 解析到 `::1` 导致
+> “无法连接到 localhost”）。若仍连不上，请改用上面的桌面模式。
 
 质量检查：
 
