@@ -4,7 +4,9 @@ interface PasswordStrengthProps {
   strength: PasswordStrengthResult | null;
 }
 
-export default function PasswordStrength({ strength }: PasswordStrengthProps): JSX.Element | null {
+export default function PasswordStrength({
+  strength,
+}: PasswordStrengthProps): JSX.Element | null {
   if (!strength) return null;
 
   return (

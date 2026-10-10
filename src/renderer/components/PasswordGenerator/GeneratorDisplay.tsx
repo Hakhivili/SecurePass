@@ -24,7 +24,9 @@ export default function GeneratorDisplay({
 }: GeneratorDisplayProps): JSX.Element {
   return (
     <div>
-      {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
+      {error && (
+        <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />
+      )}
       <div className="generator-result">
         <Input.Password
           readOnly

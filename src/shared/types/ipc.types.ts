@@ -28,9 +28,7 @@ export const IPC = {
   eventLocked: 'event:locked',
 } as const;
 
-export type IpcResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: IpcErrorPayload };
+export type IpcResult<T> = { ok: true; data: T } | { ok: false; error: IpcErrorPayload };
 
 export interface IpcErrorPayload {
   code: string;

@@ -30,7 +30,9 @@ describe('StorageService', () => {
     const first = new StorageService(paths);
     const second = new StorageService(paths);
     await first.acquireLock();
-    await expect(second.acquireLock()).rejects.toMatchObject({ code: ErrorCode.VaultBusy });
+    await expect(second.acquireLock()).rejects.toMatchObject({
+      code: ErrorCode.VaultBusy,
+    });
     await first.releaseLock();
     await expect(second.acquireLock()).resolves.toBeUndefined();
     await second.releaseLock();

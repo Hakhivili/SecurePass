@@ -119,7 +119,11 @@ export default function PasswordGenerator(): JSX.Element {
         destroyOnClose
       >
         <Form form={saveForm} layout="vertical" onFinish={save} preserve={false}>
-          <Form.Item name="title" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
+          <Form.Item
+            name="title"
+            label="名称"
+            rules={[{ required: true, message: '请输入名称' }]}
+          >
             <Input placeholder="例如：工作邮箱" autoFocus />
           </Form.Item>
           <Form.Item name="username" label="登录账号">

@@ -21,7 +21,9 @@ export default function UnlockVault(): JSX.Element {
           <h1>解锁 {APP_NAME}</h1>
         </div>
 
-        {error && <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />}
+        {error && (
+          <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />
+        )}
 
         <Form
           layout="vertical"

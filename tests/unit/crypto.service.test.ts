@@ -22,9 +22,9 @@ describe('CryptoService', () => {
 
   it('is not decryptable with the wrong master password', async () => {
     const vaultFile = await crypto.createVaultFile(payload, MASTER_PASSWORD);
-    await expect(crypto.openVaultFile(vaultFile, 'wrong master password value')).rejects.toMatchObject(
-      { code: ErrorCode.InvalidMasterPassword },
-    );
+    await expect(
+      crypto.openVaultFile(vaultFile, 'wrong master password value'),
+    ).rejects.toMatchObject({ code: ErrorCode.InvalidMasterPassword });
   });
 
   it('detects ciphertext tampering', async () => {
@@ -41,7 +41,11 @@ describe('CryptoService', () => {
 
   it('verifies a master password without exposing the data key', async () => {
     const vaultFile = await crypto.createVaultFile(payload, MASTER_PASSWORD);
-    await expect(crypto.verifyMasterPassword(vaultFile, MASTER_PASSWORD)).resolves.toBe(true);
-    await expect(crypto.verifyMasterPassword(vaultFile, 'not the password')).resolves.toBe(false);
+    await expect(crypto.verifyMasterPassword(vaultFile, MASTER_PASSWORD)).resolves.toBe(
+      true,
+    );
+    await expect(
+      crypto.verifyMasterPassword(vaultFile, 'not the password'),
+    ).resolves.toBe(false);
   });
 });

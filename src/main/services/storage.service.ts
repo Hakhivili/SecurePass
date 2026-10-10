@@ -119,7 +119,9 @@ export class StorageService {
   private async isLockStale(): Promise<boolean> {
     let content: LockFileContent;
     try {
-      content = JSON.parse(await fs.readFile(this.paths.lockFilePath, 'utf8')) as LockFileContent;
+      content = JSON.parse(
+        await fs.readFile(this.paths.lockFilePath, 'utf8'),
+      ) as LockFileContent;
     } catch {
       return true;
     }

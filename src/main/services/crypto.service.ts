@@ -9,7 +9,12 @@ import { argon2id } from 'hash-wasm';
 import { ARGON2ID_DEFAULTS } from '@shared/constants';
 import { AppError, ErrorCode } from '@shared/errors';
 import { VAULT_FORMAT_VERSION, VAULT_MAGIC } from '@shared/types';
-import type { Argon2idParams, EncryptedBlob, VaultFile, VaultPayload } from '@shared/types';
+import type {
+  Argon2idParams,
+  EncryptedBlob,
+  VaultFile,
+  VaultPayload,
+} from '@shared/types';
 
 const DATA_KEY_AAD = 'securepass:v1:data-key';
 const PAYLOAD_AAD = 'securepass:v1:payload';
@@ -24,7 +29,9 @@ export interface OpenedVault {
 }
 
 export class CryptoService {
-  constructor(readonly kdfOverrides: Partial<Omit<Argon2idParams, 'algorithm' | 'salt'>> = {}) {}
+  constructor(
+    readonly kdfOverrides: Partial<Omit<Argon2idParams, 'algorithm' | 'salt'>> = {},
+  ) {}
 
   async createKdfParams(): Promise<Argon2idParams> {
     return {
@@ -63,7 +70,9 @@ export class CryptoService {
 
     try {
       const iv = randomBytes(GCM_IV_BYTES);
-      const cipher = createCipheriv('aes-256-gcm', key, iv, { authTagLength: GCM_TAG_BYTES });
+      const cipher = createCipheriv('aes-256-gcm', key, iv, {
+        authTagLength: GCM_TAG_BYTES,
+      });
       cipher.setAAD(Buffer.from(aad, 'utf8'));
       const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
       return {
@@ -96,11 +105,18 @@ export class CryptoService {
         decipher.final(),
       ]);
     } catch (error) {
-      throw new AppError(ErrorCode.InvalidMasterPassword, '密码错误或密码库文件已损坏', error);
+      throw new AppError(
+        ErrorCode.InvalidMasterPassword,
+        '密码错误或密码库文件已损坏',
+        error,
+      );
     }
   }
 
-  async createVaultFile(payload: VaultPayload, masterPassword: string): Promise<VaultFile> {
+  async createVaultFile(
+    payload: VaultPayload,
+    masterPassword: string,
+  ): Promise<VaultFile> {
     const kdf = await this.createKdfParams();
     const kek = await this.deriveKey(masterPassword, kdf);
     const dataKey = this.generateDataKey();
@@ -129,7 +145,10 @@ export class CryptoService {
     }
   }
 
-  async openVaultFile(vaultFile: VaultFile, masterPassword: string): Promise<OpenedVault> {
+  async openVaultFile(
+    vaultFile: VaultFile,
+    masterPassword: string,
+  ): Promise<OpenedVault> {
     const kek = await this.deriveKey(masterPassword, vaultFile.kdf);
     let dataKey: Buffer;
     try {
@@ -161,7 +180,10 @@ export class CryptoService {
     }
   }
 
-  async verifyMasterPassword(vaultFile: VaultFile, masterPassword: string): Promise<boolean> {
+  async verifyMasterPassword(
+    vaultFile: VaultFile,
+    masterPassword: string,
+  ): Promise<boolean> {
     let dataKey: Buffer;
     try {
       const kek = await this.deriveKey(masterPassword, vaultFile.kdf);

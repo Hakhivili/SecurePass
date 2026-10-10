@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ExportOutlined,
-  ImportOutlined,
-  SaveOutlined,
-} from '@ant-design/icons';
+import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
 import { App, Button, Card, Col, Form, Input, Row, Segmented, Select } from 'antd';
 import { DEFAULT_SETTINGS, type AppSettings, type AppTheme } from '@shared/types';
 import { getApi, getErrorMessage } from '../../services/ipc';
@@ -120,7 +116,9 @@ export default function Settings(): JSX.Element {
                     value,
                     label: `${value} 分钟`,
                   }))}
-                  onChange={(value) => void updateSetting({ autoLockTimeoutMinutes: value })}
+                  onChange={(value) =>
+                    void updateSetting({ autoLockTimeoutMinutes: value })
+                  }
                 />
               </Form.Item>
               <Form.Item label="复制后清理剪贴板">
@@ -130,7 +128,9 @@ export default function Settings(): JSX.Element {
                     value,
                     label: `${value} 秒`,
                   }))}
-                  onChange={(value) => void updateSetting({ clearClipboardSeconds: value })}
+                  onChange={(value) =>
+                    void updateSetting({ clearClipboardSeconds: value })
+                  }
                 />
               </Form.Item>
               <Form.Item label="主题">
@@ -185,7 +185,12 @@ export default function Settings(): JSX.Element {
               >
                 <Input.Password autoComplete="new-password" />
               </Form.Item>
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={busy}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SaveOutlined />}
+                loading={busy}
+              >
                 修改主密码
               </Button>
             </Form>

@@ -1,8 +1,4 @@
-import {
-  KeyOutlined,
-  SettingOutlined,
-  UnorderedListOutlined,
-} from '@ant-design/icons';
+import { KeyOutlined, SettingOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../../utils/constants';

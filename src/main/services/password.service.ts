@@ -71,12 +71,14 @@ export class PasswordService {
     if (uniqueRatio < 0.5) entropyBits *= 0.6;
     if (/^(.)\1+$/.test(password)) entropyBits = Math.min(entropyBits, 8);
     if (/^(?:0123|1234|abcd|qwerty|asdf)/i.test(password)) entropyBits *= 0.7;
-    if (COMMON_PASSWORDS.has(password.toLowerCase())) entropyBits = Math.min(entropyBits, 10);
+    if (COMMON_PASSWORDS.has(password.toLowerCase()))
+      entropyBits = Math.min(entropyBits, 10);
 
     const score = scoreEntropy(entropyBits);
     const suggestions: string[] = [];
     if (characters.length < 12) suggestions.push('建议至少 12 个字符');
-    if (countCharacterClasses(password) < 3) suggestions.push('建议混合大小写、数字和符号');
+    if (countCharacterClasses(password) < 3)
+      suggestions.push('建议混合大小写、数字和符号');
     if (uniqueRatio < 0.6) suggestions.push('避免大量重复字符');
 
     return {
@@ -94,13 +96,18 @@ export function buildCharset(config: PasswordConfig): {
 } {
   validateConfig(config);
   const requiredSets: string[] = [];
-  if (config.includeUppercase) requiredSets.push(filterAmbiguous(CHARSETS.uppercase, config));
-  if (config.includeLowercase) requiredSets.push(filterAmbiguous(CHARSETS.lowercase, config));
+  if (config.includeUppercase)
+    requiredSets.push(filterAmbiguous(CHARSETS.uppercase, config));
+  if (config.includeLowercase)
+    requiredSets.push(filterAmbiguous(CHARSETS.lowercase, config));
   if (config.includeNumbers) requiredSets.push(filterAmbiguous(CHARSETS.numbers, config));
   if (config.includeSymbols) requiredSets.push(filterAmbiguous(CHARSETS.symbols, config));
 
   if (requiredSets.some((set) => set.length === 0)) {
-    throw new AppError(ErrorCode.InvalidInput, '排除规则导致某个字符集为空，无法生成密码');
+    throw new AppError(
+      ErrorCode.InvalidInput,
+      '排除规则导致某个字符集为空，无法生成密码',
+    );
   }
 
   return { charset: requiredSets.join(''), requiredSets };
@@ -128,7 +135,9 @@ export function validateConfig(config: PasswordConfig): void {
 
 function filterAmbiguous(charset: string, config: PasswordConfig): string {
   if (!config.excludeAmbiguous) return charset;
-  return [...charset].filter((character) => !AMBIGUOUS_CHARACTERS.has(character)).join('');
+  return [...charset]
+    .filter((character) => !AMBIGUOUS_CHARACTERS.has(character))
+    .join('');
 }
 
 function pickRandom(charset: string): string {

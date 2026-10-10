@@ -12,7 +12,12 @@ interface VaultItemProps {
   onEdit: () => void;
 }
 
-export default function VaultItem({ item, open, onClose, onEdit }: VaultItemProps): JSX.Element {
+export default function VaultItem({
+  item,
+  open,
+  onClose,
+  onEdit,
+}: VaultItemProps): JSX.Element {
   const { message } = App.useApp();
 
   const copy = async (value: string, label: string) => {
@@ -62,7 +67,10 @@ export default function VaultItem({ item, open, onClose, onEdit }: VaultItemProp
             <span className="detail-value">
               <Space.Compact style={{ width: '100%' }}>
                 <Input.Password readOnly value={item.password} />
-                <Button icon={<CopyOutlined />} onClick={() => void copy(item.password, '密码')} />
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => void copy(item.password, '密码')}
+                />
               </Space.Compact>
             </span>
           </div>
@@ -77,7 +85,9 @@ export default function VaultItem({ item, open, onClose, onEdit }: VaultItemProp
           <div className="detail-row">
             <span className="detail-label">标签</span>
             <span className="detail-value">
-              {item.tags.length > 0 ? item.tags.map((tag) => <Tag key={tag}>{tag}</Tag>) : '-'}
+              {item.tags.length > 0
+                ? item.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
+                : '-'}
             </span>
           </div>
           <div className="detail-row">
@@ -88,7 +98,7 @@ export default function VaultItem({ item, open, onClose, onEdit }: VaultItemProp
           </div>
           <Divider style={{ margin: '12px 0' }} />
           <div style={{ color: '#6b7280', fontSize: 12 }}>
-            创建：{formatDateTime(item.createdAt)}  修改：{formatDateTime(item.updatedAt)}
+            创建：{formatDateTime(item.createdAt)} 修改：{formatDateTime(item.updatedAt)}
           </div>
         </div>
       )}

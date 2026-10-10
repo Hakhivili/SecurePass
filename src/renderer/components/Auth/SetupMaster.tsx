@@ -40,7 +40,12 @@ export default function SetupMaster(): JSX.Element {
         </div>
 
         {(error || localError) && (
-          <Alert type="error" showIcon message={error ?? localError} style={{ marginBottom: 16 }} />
+          <Alert
+            type="error"
+            showIcon
+            message={error ?? localError}
+            style={{ marginBottom: 16 }}
+          />
         )}
 
         <Form form={form} layout="vertical" onFinish={submit} requiredMark={false}>

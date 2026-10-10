@@ -19,7 +19,11 @@ beforeEach(async () => {
   baseDir = await fs.mkdtemp(path.join(os.tmpdir(), 'securepass-vault-'));
   paths = createVaultPaths(baseDir);
   const storage = new StorageService(paths);
-  const crypto = new CryptoService({ iterations: 1, memorySizeKiB: 1024, parallelism: 1 });
+  const crypto = new CryptoService({
+    iterations: 1,
+    memorySizeKiB: 1024,
+    parallelism: 1,
+  });
   vault = new VaultService(storage, crypto, paths);
 });
 
@@ -89,7 +93,10 @@ describe('VaultService', () => {
       tags: ['更新'],
       isFavorite: true,
     });
-    expect((await vault.list())[0]).toMatchObject({ title: '站点（已改）', isFavorite: true });
+    expect((await vault.list())[0]).toMatchObject({
+      title: '站点（已改）',
+      isFavorite: true,
+    });
     await vault.deleteItem(created.id);
     await expect(vault.list()).resolves.toEqual([]);
   });
@@ -99,9 +106,9 @@ describe('VaultService', () => {
     const backup = vault.getVaultFileSnapshot();
     const newPassword = 'a completely new master password';
     await vault.changeMasterPassword(MASTER_PASSWORD, newPassword);
-    await expect(vault.changeMasterPassword(MASTER_PASSWORD, 'another password value')).rejects.toMatchObject(
-      { code: ErrorCode.InvalidMasterPassword },
-    );
+    await expect(
+      vault.changeMasterPassword(MASTER_PASSWORD, 'another password value'),
+    ).rejects.toMatchObject({ code: ErrorCode.InvalidMasterPassword });
 
     vault.lock();
     await expect(vault.unlock(MASTER_PASSWORD)).rejects.toMatchObject({
@@ -109,7 +116,11 @@ describe('VaultService', () => {
     });
     await vault.unlock(newPassword);
 
-    const crypto = new CryptoService({ iterations: 1, memorySizeKiB: 1024, parallelism: 1 });
+    const crypto = new CryptoService({
+      iterations: 1,
+      memorySizeKiB: 1024,
+      parallelism: 1,
+    });
     await expect(crypto.openVaultFile(backup, MASTER_PASSWORD)).resolves.toBeDefined();
   });
 
@@ -124,7 +135,10 @@ describe('VaultService', () => {
       isFavorite: false,
     });
 
-    const previousBackupPath = await vault.replaceFromBackupFile(snapshot, MASTER_PASSWORD);
+    const previousBackupPath = await vault.replaceFromBackupFile(
+      snapshot,
+      MASTER_PASSWORD,
+    );
     await expect(vault.list()).resolves.toEqual([]);
     expect(previousBackupPath).toBeTruthy();
     await expect(fs.access(previousBackupPath as string)).resolves.toBeUndefined();
@@ -138,10 +152,14 @@ describe('VaultService', () => {
     expect(listener).toHaveBeenCalledTimes(1);
 
     await vault.unlock(MASTER_PASSWORD);
-    await expect(vault.updateSettings({ autoLockTimeoutMinutes: 0 })).rejects.toMatchObject({
+    await expect(
+      vault.updateSettings({ autoLockTimeoutMinutes: 0 }),
+    ).rejects.toMatchObject({
       code: ErrorCode.InvalidInput,
     });
-    await expect(vault.updateSettings({ clearClipboardSeconds: 30 })).resolves.toMatchObject({
+    await expect(
+      vault.updateSettings({ clearClipboardSeconds: 30 }),
+    ).resolves.toMatchObject({
       ...DEFAULT_SETTINGS,
     });
   });

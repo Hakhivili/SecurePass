@@ -80,7 +80,9 @@ export default function PasswordVault(): JSX.Element {
   return (
     <div className="page">
       <h2 className="page-title">密码库</h2>
-      <p className="page-description">记录、搜索和编辑本地账户资料；密码内容不参与搜索。</p>
+      <p className="page-description">
+        记录、搜索和编辑本地账户资料；密码内容不参与搜索。
+      </p>
 
       <div className="vault-toolbar">
         <VaultSearch value={query} onChange={setQuery} />

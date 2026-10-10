@@ -71,13 +71,21 @@ export default function VaultEditor({
       width={560}
     >
       <Form form={form} layout="vertical" onFinish={submit} preserve={false}>
-        <Form.Item name="title" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
+        <Form.Item
+          name="title"
+          label="名称"
+          rules={[{ required: true, message: '请输入名称' }]}
+        >
           <Input autoFocus placeholder="例如：工作邮箱" />
         </Form.Item>
         <Form.Item name="username" label="登录账号">
           <Input autoComplete="off" />
         </Form.Item>
-        <Form.Item name="password" label="密码" rules={[{ required: true, message: '请输入密码' }]}>
+        <Form.Item
+          name="password"
+          label="密码"
+          rules={[{ required: true, message: '请输入密码' }]}
+        >
           <Input.Password autoComplete="off" />
         </Form.Item>
         <Form.Item name="url" label="网站或应用地址">

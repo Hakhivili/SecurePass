@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { BrowserWindow} from 'electron';
+import type { BrowserWindow } from 'electron';
 import { app, dialog } from 'electron';
 import { AppError, ErrorCode } from '@shared/errors';
 import type { BackupResult, RestoreResult } from '@shared/types';
@@ -33,7 +33,10 @@ export class BackupService {
     return { path: result.filePath, canceled: false };
   }
 
-  async restoreBackup(parent: BrowserWindow | null, password: string): Promise<RestoreResult> {
+  async restoreBackup(
+    parent: BrowserWindow | null,
+    password: string,
+  ): Promise<RestoreResult> {
     const options = {
       title: '选择加密备份',
       properties: ['openFile'] as Array<'openFile'>,

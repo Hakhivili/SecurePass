@@ -14,7 +14,10 @@ import type { AppContext } from '../app-context';
 
 type MainWindowProvider = () => BrowserWindow | null;
 
-export function registerIpcHandlers(context: AppContext, getMainWindow: MainWindowProvider): void {
+export function registerIpcHandlers(
+  context: AppContext,
+  getMainWindow: MainWindowProvider,
+): void {
   const handle = <TResult>(
     channel: string,
     handler: (...args: unknown[]) => Promise<TResult> | TResult,
@@ -51,7 +54,10 @@ export function registerIpcHandlers(context: AppContext, getMainWindow: MainWind
     context.vault.deleteItem(assertString(id, '记录编号')),
   );
   handle(IPC.vaultChangeMasterPassword, async (input) => {
-    const payload = assertObject(input, '输入') as unknown as VaultChangeMasterPasswordInput;
+    const payload = assertObject(
+      input,
+      '输入',
+    ) as unknown as VaultChangeMasterPasswordInput;
     await context.vault.changeMasterPassword(
       assertString(payload.currentPassword, '当前主密码'),
       assertString(payload.newPassword, '新主密码'),
@@ -66,7 +72,9 @@ export function registerIpcHandlers(context: AppContext, getMainWindow: MainWind
     );
   });
   handle(IPC.generatorGenerate, (config) =>
-    context.password.generatePassword(assertObject(config, '生成参数') as unknown as PasswordConfig),
+    context.password.generatePassword(
+      assertObject(config, '生成参数') as unknown as PasswordConfig,
+    ),
   );
   handle(IPC.passwordStrength, (password) =>
     context.password.calculateStrength(assertString(password, '密码')),
@@ -82,7 +90,6 @@ export function registerIpcHandlers(context: AppContext, getMainWindow: MainWind
       settings.clearClipboardSeconds,
     );
   });
-
 }
 
 async function readSettings(context: AppContext): Promise<AppSettings> {

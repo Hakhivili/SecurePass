@@ -27,17 +27,17 @@ SecurePass 是单机、离线优先的桌面密码管理工具。首版不包含
 
 ## 模块职责
 
-| 模块 | 职责 |
-| --- | --- |
-| `src/main/services/crypto.service.ts` | Argon2id 派生、AES-256-GCM 封装、vault 文件结构校验 |
-| `src/main/services/storage.service.ts` | 原子写入、上一版本备份、单写者锁文件 |
-| `src/main/services/vault.service.ts` | 会话状态、自动锁定、记录校验、CRUD、改主密码、恢复 |
-| `src/main/services/backup.service.ts` | 保存/打开对话框、备份读写与错误处理 |
-| `src/main/services/password.service.ts` | 无偏随机生成、字符规则校验、强度估算 |
-| `src/main/ipc/index.ts` | IPC 路由、参数校验、错误序列化 |
-| `src/preload/index.ts` | 上下文隔离桥与结果解包 |
-| `src/renderer/**` | 界面、状态管理、交互流程 |
-| `src/shared/**` | 类型、常量与错误码 |
+| 模块                                    | 职责                                                |
+| --------------------------------------- | --------------------------------------------------- |
+| `src/main/services/crypto.service.ts`   | Argon2id 派生、AES-256-GCM 封装、vault 文件结构校验 |
+| `src/main/services/storage.service.ts`  | 原子写入、上一版本备份、单写者锁文件                |
+| `src/main/services/vault.service.ts`    | 会话状态、自动锁定、记录校验、CRUD、改主密码、恢复  |
+| `src/main/services/backup.service.ts`   | 保存/打开对话框、备份读写与错误处理                 |
+| `src/main/services/password.service.ts` | 无偏随机生成、字符规则校验、强度估算                |
+| `src/main/ipc/index.ts`                 | IPC 路由、参数校验、错误序列化                      |
+| `src/preload/index.ts`                  | 上下文隔离桥与结果解包                              |
+| `src/renderer/**`                       | 界面、状态管理、交互流程                            |
+| `src/shared/**`                         | 类型、常量与错误码                                  |
 
 ## 密钥流程
 
@@ -71,8 +71,18 @@ SecurePass 是单机、离线优先的桌面密码管理工具。首版不包含
     "parallelism": 4,
     "hashLength": 32
   },
-  "wrappedDataKey": { "algorithm": "aes-256-gcm", "iv": "...", "ciphertext": "...", "authTag": "..." },
-  "payload": { "algorithm": "aes-256-gcm", "iv": "...", "ciphertext": "...", "authTag": "..." },
+  "wrappedDataKey": {
+    "algorithm": "aes-256-gcm",
+    "iv": "...",
+    "ciphertext": "...",
+    "authTag": "..."
+  },
+  "payload": {
+    "algorithm": "aes-256-gcm",
+    "iv": "...",
+    "ciphertext": "...",
+    "authTag": "..."
+  },
   "createdAt": 0,
   "updatedAt": 0
 }

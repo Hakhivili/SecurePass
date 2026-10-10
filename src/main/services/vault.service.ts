@@ -204,7 +204,10 @@ export class VaultService {
     await this.persist();
   }
 
-  async changeMasterPassword(currentPassword: string, newPassword: string): Promise<void> {
+  async changeMasterPassword(
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
     this.touch();
     const vaultFile = this.requireVaultFile();
     const dataKey = this.requireDataKey();
@@ -265,7 +268,10 @@ export class VaultService {
       await this.storage.copyCurrentTo(backupOfPreviousPath);
     }
 
-    const nextVaultFile = await this.crypto.createVaultFile(opened.payload, masterPassword);
+    const nextVaultFile = await this.crypto.createVaultFile(
+      opened.payload,
+      masterPassword,
+    );
     await this.storage.writeVaultFile(nextVaultFile);
     const reopened = await this.crypto.openVaultFile(nextVaultFile, masterPassword);
     this.setSession(reopened.vaultFile, reopened.payload, reopened.dataKey);
@@ -321,7 +327,9 @@ export class VaultService {
 
   private scheduleAutoLock(): void {
     this.clearAutoLockTimer();
-    const minutes = this.payload?.settings.autoLockTimeoutMinutes ?? DEFAULT_SETTINGS.autoLockTimeoutMinutes;
+    const minutes =
+      this.payload?.settings.autoLockTimeoutMinutes ??
+      DEFAULT_SETTINGS.autoLockTimeoutMinutes;
     this.autoLockAt = this.now() + minutes * 60_000;
     this.autoLockTimer = setTimeout(() => this.lock(), minutes * 60_000);
   }
@@ -351,7 +359,11 @@ export function validateNewMasterPassword(masterPassword: string): void {
 }
 
 export function validatePayload(payload: VaultPayload): void {
-  if (!payload || payload.schemaVersion !== PAYLOAD_SCHEMA_VERSION || !Array.isArray(payload.items)) {
+  if (
+    !payload ||
+    payload.schemaVersion !== PAYLOAD_SCHEMA_VERSION ||
+    !Array.isArray(payload.items)
+  ) {
     throw new AppError(ErrorCode.CorruptedVault, '密码库数据结构版本不受支持');
   }
   for (const item of payload.items) {
@@ -366,7 +378,12 @@ function normalizeDraft(draft: VaultItemDraft): VaultItemDraft {
   }
 
   const title = requireText(draft.title, '名称', MAX_TITLE_LENGTH, true);
-  const username = requireText(draft.username ?? '', '登录账号', MAX_USERNAME_LENGTH, false);
+  const username = requireText(
+    draft.username ?? '',
+    '登录账号',
+    MAX_USERNAME_LENGTH,
+    false,
+  );
   const password = requirePassword(draft.password);
   const url = optionalText(draft.url, '网站或应用地址', MAX_URL_LENGTH);
   const category = optionalText(draft.category, '分类', MAX_CATEGORY_LENGTH);
@@ -400,7 +417,10 @@ function requireText(
     throw new AppError(ErrorCode.InvalidInput, `${fieldName}为必填项`);
   }
   if ([...value].length > maxLength) {
-    throw new AppError(ErrorCode.InvalidInput, `${fieldName}不能超过 ${maxLength} 个字符`);
+    throw new AppError(
+      ErrorCode.InvalidInput,
+      `${fieldName}不能超过 ${maxLength} 个字符`,
+    );
   }
   return value;
 }
@@ -418,7 +438,11 @@ function requirePassword(value: unknown): string {
   return value;
 }
 
-function optionalText(value: unknown, fieldName: string, maxLength: number): string | undefined {
+function optionalText(
+  value: unknown,
+  fieldName: string,
+  maxLength: number,
+): string | undefined {
   if (value === undefined || value === null || value === '') return undefined;
   return requireText(value, fieldName, maxLength, false);
 }

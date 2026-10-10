@@ -42,7 +42,11 @@ export default function VaultList({
           render: (title: string, record) => (
             <Space size={6}>
               {record.isFavorite && <StarFilled style={{ color: '#f59e0b' }} />}
-              <Button type="link" style={{ padding: 0 }} onClick={() => onView(record.id)}>
+              <Button
+                type="link"
+                style={{ padding: 0 }}
+                onClick={() => onView(record.id)}
+              >
                 {title}
               </Button>
             </Space>
@@ -79,7 +83,11 @@ export default function VaultList({
           render: (_value, record) => (
             <Space size={2}>
               <Tooltip title="查看">
-                <Button type="text" icon={<EyeOutlined />} onClick={() => onView(record.id)} />
+                <Button
+                  type="text"
+                  icon={<EyeOutlined />}
+                  onClick={() => onView(record.id)}
+                />
               </Tooltip>
               <Tooltip title="复制账号">
                 <Button
@@ -97,7 +105,11 @@ export default function VaultList({
                 />
               </Tooltip>
               <Tooltip title="编辑">
-                <Button type="text" icon={<EditOutlined />} onClick={() => onEdit(record.id)} />
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={() => onEdit(record.id)}
+                />
               </Tooltip>
               <Popconfirm
                 title="删除这条记录？"
