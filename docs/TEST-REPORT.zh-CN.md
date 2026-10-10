@@ -143,15 +143,15 @@
 
 ## 6. 本阶段修复的缺陷与新增能力
 
-| 类型 | 内容                                                                  | 位置                                                     |
-| ---- | --------------------------------------------------------------------- | -------------------------------------------------------- |
-| 缺陷 | 编辑记录会清空 `lastUsed`（最近使用时间）                             | `src/main/services/vault.service.ts` + 单测              |
-| 缺陷 | 保存失败或取消后编辑表单被清空                                        | `VaultEditor.tsx` / `PasswordVault/index.tsx`            |
-| 缺陷 | `theme` / `language` 设置已持久化但界面未生效                         | 新增 `i18n/`、`utils/theme.ts`、CSS 变量与 antd 算法切换 |
-| 功能 | 重复录入提醒（任务书 §3.2）                                           | `utils/duplicates.ts`、`utils/use-duplicate-guard.tsx`   |
-| 改进 | 主进程只返回错误码/提示码，界面文案集中到 `i18n/messages.ts`（中/英） | `src/shared/types/password.types.ts`、`docs/API.md`      |
-| 改进 | 强度建议与生成器提示改为展示在界面上（原先计算但未显示）              | `PasswordStrength.tsx`、`GeneratorDisplay.tsx`           |
-| 清理 | 移除死代码 `truncate()`、`MAX_SEARCH_RESULTS` 之外的无用导出          | `src/renderer/utils/format.ts` 等                        |
+| 类型 | 内容                                                                  | 位置                                                      |
+| ---- | --------------------------------------------------------------------- | --------------------------------------------------------- |
+| 缺陷 | 编辑记录会清空 `lastUsed`（最近使用时间）                             | `src/main/services/vault.service.ts` + 单测               |
+| 缺陷 | 保存失败或取消后编辑表单被清空                                        | `VaultEditor.tsx` / `PasswordVault/index.tsx`             |
+| 缺陷 | `theme` / `language` 设置已持久化但界面未生效                         | 新增 `i18n/`、`utils/theme.ts`、CSS 变量与 antd 算法切换  |
+| 功能 | 重复录入提醒（任务书 §3.2）                                           | `utils/duplicates.ts`、`utils/use-duplicate-guard.tsx`    |
+| 改进 | 主进程只返回错误码/提示码，界面文案集中到 `i18n/messages.ts`（中/英） | `src/shared/types/password.types.ts`、`docs/API.md`       |
+| 改进 | 强度建议与生成器提示改为展示在界面上（原先计算但未显示）              | `PasswordStrength.tsx`、`GeneratorDisplay.tsx`            |
+| 清理 | 移除死代码 `truncate()` 与重复的错误码映射函数                        | `src/renderer/utils/format.ts`、`utils/ui-preferences.ts` |
 
 ---
 

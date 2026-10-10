@@ -1,6 +1,5 @@
 import type { AppLanguage, AppTheme } from '@shared/types';
 import { DEFAULT_SETTINGS } from '@shared/types';
-import type { ErrorCodeValue } from '@shared/errors';
 
 /**
  * 主题与语言属于「界面偏好」，不是机密数据：
@@ -60,9 +59,4 @@ export function writeUiPreferences(preferences: Partial<UiPreferences>): void {
   } catch {
     // localStorage 不可用时静默忽略：界面偏好不是关键数据。
   }
-}
-
-/** 把主进程返回的错误码映射为本地化文案所需的字典键。 */
-export function errorMessageKey(code: ErrorCodeValue | undefined): string {
-  return code ? `error.${code}` : 'error.UNKNOWN';
 }
