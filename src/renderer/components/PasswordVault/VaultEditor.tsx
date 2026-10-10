@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { Form, Input, Modal, Select, Switch } from 'antd';
 import type { VaultItem, VaultItemDraft } from '@shared/types';
+import { useI18n } from '../../i18n';
 
 interface VaultEditorProps {
   open: boolean;
   item: VaultItem | null;
   busy: boolean;
   onCancel: () => void;
-  onSubmit: (draft: VaultItemDraft) => Promise<void>;
+  /** 返回 true 表示已保存（关闭并清空表单）；false 表示取消或失败（保留输入）。 */
+  onSubmit: (draft: VaultItemDraft) => Promise<boolean>;
 }
 
 interface VaultForm {
@@ -29,6 +31,7 @@ export default function VaultEditor({
   onSubmit,
 }: VaultEditorProps): JSX.Element {
   const [form] = Form.useForm<VaultForm>();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!open) return;
@@ -45,7 +48,7 @@ export default function VaultEditor({
   }, [open, item, form]);
 
   const submit = async (values: VaultForm) => {
-    await onSubmit({
+    const saved = await onSubmit({
       title: values.title,
       username: values.username ?? '',
       password: values.password,
@@ -55,17 +58,18 @@ export default function VaultEditor({
       notes: values.notes,
       isFavorite: Boolean(values.isFavorite),
     });
-    form.resetFields();
+    // 保存失败或用户在重复提醒中选择「返回修改」时，保留已填写的内容
+    if (saved) form.resetFields();
   };
 
   return (
     <Modal
-      title={item ? '编辑记录' : '新增记录'}
+      title={item ? t('vault.editorEdit') : t('vault.editorCreate')}
       open={open}
       onCancel={onCancel}
       onOk={() => form.submit()}
-      okText="保存"
-      cancelText="取消"
+      okText={t('common.save')}
+      cancelText={t('common.cancel')}
       confirmLoading={busy}
       destroyOnClose
       width={560}
@@ -73,34 +77,38 @@ export default function VaultEditor({
       <Form form={form} layout="vertical" onFinish={submit} preserve={false}>
         <Form.Item
           name="title"
-          label="名称"
-          rules={[{ required: true, message: '请输入名称' }]}
+          label={t('form.title')}
+          rules={[{ required: true, message: t('form.titleRequired') }]}
         >
-          <Input autoFocus placeholder="例如：工作邮箱" />
+          <Input autoFocus placeholder={t('form.titlePlaceholder')} />
         </Form.Item>
-        <Form.Item name="username" label="登录账号">
+        <Form.Item name="username" label={t('form.username')}>
           <Input autoComplete="off" />
         </Form.Item>
         <Form.Item
           name="password"
-          label="密码"
-          rules={[{ required: true, message: '请输入密码' }]}
+          label={t('vault.labelPassword')}
+          rules={[{ required: true, message: t('vault.passwordRequired') }]}
         >
           <Input.Password autoComplete="off" />
         </Form.Item>
-        <Form.Item name="url" label="网站或应用地址">
+        <Form.Item name="url" label={t('form.url')}>
           <Input autoComplete="off" />
         </Form.Item>
-        <Form.Item name="category" label="分类">
+        <Form.Item name="category" label={t('form.category')}>
           <Input />
         </Form.Item>
-        <Form.Item name="tags" label="标签">
-          <Select mode="tags" tokenSeparators={[',']} placeholder="输入后回车添加" />
+        <Form.Item name="tags" label={t('form.tags')}>
+          <Select
+            mode="tags"
+            tokenSeparators={[',']}
+            placeholder={t('form.tagsPlaceholder')}
+          />
         </Form.Item>
-        <Form.Item name="notes" label="备注">
+        <Form.Item name="notes" label={t('form.notes')}>
           <Input.TextArea rows={3} />
         </Form.Item>
-        <Form.Item name="isFavorite" label="收藏" valuePropName="checked">
+        <Form.Item name="isFavorite" label={t('form.favorite')} valuePropName="checked">
           <Switch />
         </Form.Item>
       </Form>

@@ -2,6 +2,8 @@ import { CopyOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert, Button, Input, Space } from 'antd';
 import type { GeneratedPassword, PasswordStrengthResult } from '@shared/types';
 import PasswordStrength from '../Common/PasswordStrength';
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '../../i18n/messages';
 
 interface GeneratorDisplayProps {
   result: GeneratedPassword | null;
@@ -22,6 +24,8 @@ export default function GeneratorDisplay({
   onCopy,
   onSave,
 }: GeneratorDisplayProps): JSX.Element {
+  const { t } = useI18n();
+
   return (
     <div>
       {error && (
@@ -31,10 +35,10 @@ export default function GeneratorDisplay({
         <Input.Password
           readOnly
           value={result?.password ?? ''}
-          placeholder="点击生成按钮创建密码"
+          placeholder={t('generator.placeholder')}
         />
         <Button icon={<CopyOutlined />} onClick={onCopy} disabled={!result}>
-          复制
+          {t('generator.copy')}
         </Button>
         <Button
           type="primary"
@@ -42,17 +46,22 @@ export default function GeneratorDisplay({
           onClick={onRegenerate}
           loading={busy}
         >
-          重新生成
+          {t('generator.regenerate')}
         </Button>
         <Button icon={<SaveOutlined />} onClick={onSave} disabled={!result}>
-          保存
+          {t('generator.save')}
         </Button>
       </div>
       <PasswordStrength strength={strength} />
-      {result && result.warnings.length > 0 && (
+      {result && result.warningCodes.length > 0 && (
         <Space direction="vertical" size={4} style={{ marginTop: 12 }}>
-          {result.warnings.map((warning) => (
-            <Alert key={warning} type="warning" showIcon message={warning} />
+          {result.warningCodes.map((code) => (
+            <Alert
+              key={code}
+              type="warning"
+              showIcon
+              message={t(`warning.${code}` as MessageKey)}
+            />
           ))}
         </Space>
       )}

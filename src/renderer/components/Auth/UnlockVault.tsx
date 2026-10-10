@@ -2,6 +2,8 @@ import { UnlockOutlined } from '@ant-design/icons';
 import { Alert, Button, Form, Input } from 'antd';
 import { APP_NAME } from '@shared/constants';
 import { useAuthStore } from '../../store/auth.store';
+import { useI18n } from '../../i18n';
+import { getErrorMessage } from '../../services/ipc';
 
 interface UnlockForm {
   masterPassword: string;
@@ -12,18 +14,24 @@ export default function UnlockVault(): JSX.Element {
   const busy = useAuthStore((state) => state.busy);
   const error = useAuthStore((state) => state.error);
   const clearError = useAuthStore((state) => state.clearError);
+  const { t } = useI18n();
 
   return (
     <div className="auth-shell">
       <div className="auth-panel">
         <div className="auth-brand">
           <UnlockOutlined style={{ fontSize: 24, color: '#2563eb' }} />
-          <h1>解锁 {APP_NAME}</h1>
+          <h1>{t('unlock.title', { app: APP_NAME })}</h1>
         </div>
 
-        {error && (
-          <Alert type="error" showIcon message={error} style={{ marginBottom: 16 }} />
-        )}
+        {error ? (
+          <Alert
+            type="error"
+            showIcon
+            message={getErrorMessage(error, t)}
+            style={{ marginBottom: 16 }}
+          />
+        ) : null}
 
         <Form
           layout="vertical"
@@ -34,8 +42,8 @@ export default function UnlockVault(): JSX.Element {
         >
           <Form.Item
             name="masterPassword"
-            label="主密码"
-            rules={[{ required: true, message: '请输入主密码' }]}
+            label={t('unlock.master')}
+            rules={[{ required: true, message: t('unlock.masterRequired') }]}
           >
             <Input.Password
               autoFocus
@@ -44,7 +52,7 @@ export default function UnlockVault(): JSX.Element {
             />
           </Form.Item>
           <Button type="primary" htmlType="submit" block loading={busy}>
-            解锁
+            {t('unlock.submit')}
           </Button>
         </Form>
       </div>

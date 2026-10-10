@@ -4,6 +4,8 @@ import type { VaultItem as VaultItemModel } from '@shared/types';
 import { copySecret } from '../../utils/clipboard';
 import { formatDateTime } from '../../utils/format';
 import { getErrorMessage } from '../../services/ipc';
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '../../i18n/messages';
 
 interface VaultItemProps {
   item: VaultItemModel | null;
@@ -19,28 +21,29 @@ export default function VaultItem({
   onEdit,
 }: VaultItemProps): JSX.Element {
   const { message } = App.useApp();
+  const { t, language } = useI18n();
 
-  const copy = async (value: string, label: string) => {
+  const copy = async (value: string, successKey: MessageKey) => {
     try {
       await copySecret(value);
-      message.success(`${label}已复制，稍后将自动清理剪贴板`);
+      message.success(t(successKey));
     } catch (error) {
-      message.error(getErrorMessage(error));
+      message.error(getErrorMessage(error, t));
     }
   };
 
   return (
     <Modal
-      title={item ? item.title : '记录详情'}
+      title={item ? item.title : t('vault.detailTitle')}
       open={open}
       onCancel={onClose}
       footer={
         <Space>
           <Button icon={<EditOutlined />} onClick={onEdit}>
-            编辑
+            {t('vault.actionEdit')}
           </Button>
           <Button type="primary" onClick={onClose}>
-            关闭
+            {t('common.close')}
           </Button>
         </Space>
       }
@@ -49,7 +52,7 @@ export default function VaultItem({
       {item && (
         <div>
           <div className="detail-row">
-            <span className="detail-label">登录账号</span>
+            <span className="detail-label">{t('vault.labelUsername')}</span>
             <span className="detail-value">
               {item.username || '-'}
               {item.username && (
@@ -57,33 +60,33 @@ export default function VaultItem({
                   type="link"
                   size="small"
                   icon={<CopyOutlined />}
-                  onClick={() => void copy(item.username, '账号')}
+                  onClick={() => void copy(item.username, 'vault.usernameCopied')}
                 />
               )}
             </span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">密码</span>
+            <span className="detail-label">{t('vault.labelPassword')}</span>
             <span className="detail-value">
               <Space.Compact style={{ width: '100%' }}>
                 <Input.Password readOnly value={item.password} />
                 <Button
                   icon={<CopyOutlined />}
-                  onClick={() => void copy(item.password, '密码')}
+                  onClick={() => void copy(item.password, 'vault.passwordCopied')}
                 />
               </Space.Compact>
             </span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">地址</span>
+            <span className="detail-label">{t('vault.labelUrl')}</span>
             <span className="detail-value">{item.url || '-'}</span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">分类</span>
+            <span className="detail-label">{t('vault.labelCategory')}</span>
             <span className="detail-value">{item.category || '-'}</span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">标签</span>
+            <span className="detail-label">{t('vault.labelTags')}</span>
             <span className="detail-value">
               {item.tags.length > 0
                 ? item.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
@@ -91,14 +94,17 @@ export default function VaultItem({
             </span>
           </div>
           <div className="detail-row">
-            <span className="detail-label">备注</span>
+            <span className="detail-label">{t('vault.labelNotes')}</span>
             <span className="detail-value" style={{ whiteSpace: 'pre-wrap' }}>
               {item.notes || '-'}
             </span>
           </div>
           <Divider style={{ margin: '12px 0' }} />
-          <div style={{ color: '#6b7280', fontSize: 12 }}>
-            创建：{formatDateTime(item.createdAt)} 修改：{formatDateTime(item.updatedAt)}
+          <div className="detail-meta">
+            {t('vault.timestamps', {
+              created: formatDateTime(item.createdAt, language),
+              updated: formatDateTime(item.updatedAt, language),
+            })}
           </div>
         </div>
       )}

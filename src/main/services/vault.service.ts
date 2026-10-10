@@ -182,11 +182,14 @@ export class VaultService {
     }
 
     const existing = payload.items[index] as VaultItem;
+    const normalized = normalizeDraft(draft);
     const item: VaultItem = {
-      ...normalizeDraft(draft),
+      ...normalized,
       id: existing.id,
       createdAt: existing.createdAt,
       updatedAt: this.now(),
+      // 渲染层不会回传 lastUsed，编辑时必须保留原值，否则「最近使用时间」会被清空。
+      lastUsed: normalized.lastUsed ?? existing.lastUsed,
     };
     payload.items[index] = item;
     await this.persist();

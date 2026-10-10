@@ -3,7 +3,10 @@ import { SafetyCertificateOutlined } from '@ant-design/icons';
 import { Alert, Button, Form, Input } from 'antd';
 import { APP_NAME, VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { useAuthStore } from '../../store/auth.store';
-import { validateMasterPassword } from '../../utils/validation';
+import { masterPasswordErrorKey } from '../../utils/validation';
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '../../i18n/messages';
+import { getErrorMessage } from '../../services/ipc';
 
 interface SetupForm {
   masterPassword: string;
@@ -12,38 +15,45 @@ interface SetupForm {
 
 export default function SetupMaster(): JSX.Element {
   const [form] = Form.useForm<SetupForm>();
-  const [localError, setLocalError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<MessageKey | null>(null);
   const createVault = useAuthStore((state) => state.createVault);
   const busy = useAuthStore((state) => state.busy);
   const error = useAuthStore((state) => state.error);
+  const { t } = useI18n();
 
   const submit = async (values: SetupForm) => {
     setLocalError(null);
-    const passwordError = validateMasterPassword(values.masterPassword);
-    if (passwordError) {
-      setLocalError(passwordError);
+    const passwordErrorKey = masterPasswordErrorKey(values.masterPassword);
+    if (passwordErrorKey) {
+      setLocalError(passwordErrorKey);
       return;
     }
     if (values.masterPassword !== values.confirmPassword) {
-      setLocalError('两次输入的主密码不一致');
+      setLocalError('setup.mismatch');
       return;
     }
     await createVault(values.masterPassword);
   };
+
+  const alertMessage = error
+    ? getErrorMessage(error, t)
+    : localError
+      ? t(localError)
+      : null;
 
   return (
     <div className="auth-shell">
       <div className="auth-panel">
         <div className="auth-brand">
           <SafetyCertificateOutlined style={{ fontSize: 24, color: '#2563eb' }} />
-          <h1>创建 {APP_NAME} 密码库</h1>
+          <h1>{t('setup.title', { app: APP_NAME })}</h1>
         </div>
 
-        {(error || localError) && (
+        {alertMessage && (
           <Alert
             type="error"
             showIcon
-            message={error ?? localError}
+            message={alertMessage}
             style={{ marginBottom: 16 }}
           />
         )}
@@ -51,27 +61,25 @@ export default function SetupMaster(): JSX.Element {
         <Form form={form} layout="vertical" onFinish={submit} requiredMark={false}>
           <Form.Item
             name="masterPassword"
-            label="主密码"
-            rules={[{ required: true, message: '请输入主密码' }]}
+            label={t('setup.master')}
+            rules={[{ required: true, message: t('setup.masterRequired') }]}
           >
             <Input.Password autoFocus autoComplete="new-password" />
           </Form.Item>
           <Form.Item
             name="confirmPassword"
-            label="确认主密码"
-            rules={[{ required: true, message: '请再次输入主密码' }]}
+            label={t('setup.confirm')}
+            rules={[{ required: true, message: t('setup.confirmRequired') }]}
           >
             <Input.Password autoComplete="new-password" />
           </Form.Item>
           <Button type="primary" htmlType="submit" block loading={busy}>
-            创建密码库
+            {t('setup.submit')}
           </Button>
         </Form>
 
         <div className="auth-help">
-          主密码至少 {VAULT_PASSWORD_MIN_LENGTH} 个字符，允许空格和较长口令。
-          <br />
-          忘记主密码后，已有的加密备份也无法直接解密。本工具不提供主密码找回。
+          {t('setup.help', { min: VAULT_PASSWORD_MIN_LENGTH })}
         </div>
       </div>
     </div>

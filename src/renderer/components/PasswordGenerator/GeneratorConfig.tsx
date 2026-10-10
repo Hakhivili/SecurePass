@@ -1,6 +1,7 @@
 import { Checkbox, Form, InputNumber, Slider, Switch } from 'antd';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
 import type { PasswordConfig } from '@shared/types';
+import { useI18n } from '../../i18n';
 
 interface GeneratorConfigProps {
   config: PasswordConfig;
@@ -11,11 +12,12 @@ export default function GeneratorConfig({
   config,
   onChange,
 }: GeneratorConfigProps): JSX.Element {
+  const { t } = useI18n();
   const patch = (partial: Partial<PasswordConfig>) => onChange({ ...config, ...partial });
 
   return (
     <Form layout="vertical">
-      <Form.Item label={`密码长度：${config.length}`}>
+      <Form.Item label={t('generator.length', { length: config.length })}>
         <Slider
           min={PASSWORD_MIN_LENGTH}
           max={PASSWORD_MAX_LENGTH}
@@ -23,39 +25,39 @@ export default function GeneratorConfig({
           onChange={(length) => patch({ length })}
         />
       </Form.Item>
-      <Form.Item label="字符类型">
+      <Form.Item label={t('generator.classes')}>
         <Checkbox
           checked={config.includeUppercase}
           onChange={(event) => patch({ includeUppercase: event.target.checked })}
         >
-          大写字母
+          {t('generator.uppercase')}
         </Checkbox>
         <Checkbox
           checked={config.includeLowercase}
           onChange={(event) => patch({ includeLowercase: event.target.checked })}
         >
-          小写字母
+          {t('generator.lowercase')}
         </Checkbox>
         <Checkbox
           checked={config.includeNumbers}
           onChange={(event) => patch({ includeNumbers: event.target.checked })}
         >
-          数字
+          {t('generator.numbers')}
         </Checkbox>
         <Checkbox
           checked={config.includeSymbols}
           onChange={(event) => patch({ includeSymbols: event.target.checked })}
         >
-          特殊符号
+          {t('generator.symbols')}
         </Checkbox>
       </Form.Item>
-      <Form.Item label="排除易混淆字符（0/O、1/l/I）">
+      <Form.Item label={t('generator.excludeAmbiguous')}>
         <Switch
           checked={config.excludeAmbiguous}
           onChange={(excludeAmbiguous) => patch({ excludeAmbiguous })}
         />
       </Form.Item>
-      <Form.Item label="直接输入长度">
+      <Form.Item label={t('generator.lengthInput')}>
         <InputNumber
           min={PASSWORD_MIN_LENGTH}
           max={PASSWORD_MAX_LENGTH}

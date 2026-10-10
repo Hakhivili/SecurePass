@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import type { VaultItem, VaultItemDraft, VaultSummary } from '@shared/types';
-import { getApi, getErrorMessage } from '../services/ipc';
+import { getApi } from '../services/ipc';
 
 interface VaultState {
   items: VaultSummary[];
   loading: boolean;
-  error: string | null;
+  /** 保存原始错误对象，由界面按当前语言本地化。 */
+  error: unknown;
   load: () => Promise<void>;
   createItem: (draft: VaultItemDraft) => Promise<VaultItem>;
   updateItem: (id: string, draft: VaultItemDraft) => Promise<VaultItem>;
@@ -23,7 +24,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     try {
       set({ items: await getApi().vault.list(), loading: false });
     } catch (error) {
-      set({ loading: false, error: getErrorMessage(error) });
+      set({ loading: false, error });
     }
   },
 

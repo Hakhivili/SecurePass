@@ -57,7 +57,7 @@ describe('PasswordService', () => {
     expect(service.satisfiesConfig(password, config)).toBe(true);
   });
 
-  it('reports low entropy configs with a warning instead of a security claim', () => {
+  it('reports low entropy configs with a warning code instead of a security claim', () => {
     const result = service.generatePassword({
       ...DEFAULT_PASSWORD_CONFIG,
       length: 8,
@@ -65,6 +65,40 @@ describe('PasswordService', () => {
       includeNumbers: false,
       includeSymbols: false,
     });
-    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warningCodes.length).toBeGreaterThan(0);
+    expect(result.warningCodes).toContain('short-length');
+    expect(result.warningCodes).toContain('letters-only');
+  });
+
+  it('returns language-neutral warning codes only', () => {
+    const result = service.generatePassword({
+      ...DEFAULT_PASSWORD_CONFIG,
+      length: 20,
+      includeSymbols: false,
+    });
+    expect(result.warningCodes.every((code) => /^[a-z-]+$/.test(code))).toBe(true);
+  });
+});
+
+describe('PasswordService.calculateStrength', () => {
+  it('returns a score and language-neutral suggestion codes', () => {
+    const empty = service.calculateStrength('');
+    expect(empty).toEqual({ score: 0, entropyBits: 0, suggestionCodes: ['empty'] });
+
+    const weak = service.calculateStrength('123456');
+    expect(weak.score).toBeLessThanOrEqual(1);
+    expect(weak.suggestionCodes).toContain('too-short');
+
+    const strong = service.calculateStrength('7Kp!vQ2x#Rz9Lm4T');
+    expect(strong.score).toBeGreaterThanOrEqual(3);
+    expect(strong.suggestionCodes).not.toContain('too-short');
+  });
+
+  it('penalises repeated characters and common passwords', () => {
+    const repeated = service.calculateStrength('aaaaaaaaaaaa');
+    expect(repeated.suggestionCodes).toContain('avoid-repeats');
+
+    const common = service.calculateStrength('password');
+    expect(common.score).toBe(0);
   });
 });

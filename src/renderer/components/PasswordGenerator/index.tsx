@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { App, Card, Col, Form, Input, Modal, Row, Select, Switch } from 'antd';
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
 import {
   DEFAULT_PASSWORD_CONFIG,
   type GeneratedPassword,
@@ -10,6 +11,8 @@ import {
 import { getApi, getErrorMessage } from '../../services/ipc';
 import { useVaultStore } from '../../store/vault.store';
 import { copySecret } from '../../utils/clipboard';
+import { useDuplicateGuard } from '../../utils/use-duplicate-guard';
+import { useI18n } from '../../i18n';
 import GeneratorConfig from './GeneratorConfig';
 import GeneratorDisplay from './GeneratorDisplay';
 
@@ -25,6 +28,7 @@ interface SaveForm {
 
 export default function PasswordGenerator(): JSX.Element {
   const { message } = App.useApp();
+  const { t } = useI18n();
   const [saveForm] = Form.useForm<SaveForm>();
   const [config, setConfig] = useState<PasswordConfig>({ ...DEFAULT_PASSWORD_CONFIG });
   const [result, setResult] = useState<GeneratedPassword | null>(null);
@@ -33,6 +37,7 @@ export default function PasswordGenerator(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const createItem = useVaultStore((state) => state.createItem);
+  const confirmIfDuplicate = useDuplicateGuard();
 
   const generate = useCallback(async () => {
     setBusy(true);
@@ -42,13 +47,13 @@ export default function PasswordGenerator(): JSX.Element {
       setResult(generated);
       setStrength(await getApi().password.strength(generated.password));
     } catch (generationError) {
-      setError(getErrorMessage(generationError));
+      setError(getErrorMessage(generationError, t));
       setResult(null);
       setStrength(null);
     } finally {
       setBusy(false);
     }
-  }, [config]);
+  }, [config, t]);
 
   useEffect(() => {
     void generate();
@@ -66,31 +71,43 @@ export default function PasswordGenerator(): JSX.Element {
       tags: values.tags ?? [],
       isFavorite: Boolean(values.isFavorite),
     };
+
+    const proceed = await confirmIfDuplicate({
+      title: draft.title,
+      username: draft.username,
+      url: draft.url,
+    });
+    // 用户选择「返回修改」时保留弹窗中的输入内容
+    if (!proceed) return;
+
     try {
       await createItem(draft);
       setSaveOpen(false);
       saveForm.resetFields();
-      message.success('已保存到密码库');
+      message.success(t('generator.saved'));
     } catch (saveError) {
-      void message.error(getErrorMessage(saveError));
+      void message.error(getErrorMessage(saveError, t));
     }
   };
 
   return (
     <div className="page">
-      <h2 className="page-title">密码生成器</h2>
+      <h2 className="page-title">{t('generator.title')}</h2>
       <p className="page-description">
-        使用系统安全随机数生成 8-20 位密码，未保存的结果不会写入磁盘。
+        {t('generator.description', {
+          min: PASSWORD_MIN_LENGTH,
+          max: PASSWORD_MAX_LENGTH,
+        })}
       </p>
 
       <Row gutter={20}>
         <Col xs={24} lg={10}>
-          <Card title="生成规则" size="small">
+          <Card title={t('generator.rulesCard')} size="small">
             <GeneratorConfig config={config} onChange={setConfig} />
           </Card>
         </Col>
         <Col xs={24} lg={14}>
-          <Card title="生成结果" size="small">
+          <Card title={t('generator.resultCard')} size="small">
             <GeneratorDisplay
               result={result}
               strength={strength}
@@ -100,8 +117,8 @@ export default function PasswordGenerator(): JSX.Element {
               onCopy={() => {
                 if (!result) return;
                 void copySecret(result.password)
-                  .then(() => message.success('已复制，稍后将自动清理剪贴板'))
-                  .catch((copyError) => message.error(getErrorMessage(copyError)));
+                  .then(() => message.success(t('generator.copied')))
+                  .catch((copyError) => message.error(getErrorMessage(copyError, t)));
               }}
               onSave={() => setSaveOpen(true)}
             />
@@ -110,38 +127,42 @@ export default function PasswordGenerator(): JSX.Element {
       </Row>
 
       <Modal
-        title="保存到密码库"
+        title={t('generator.saveTitle')}
         open={saveOpen}
         onCancel={() => setSaveOpen(false)}
         onOk={() => saveForm.submit()}
-        okText="保存"
-        cancelText="取消"
+        okText={t('common.save')}
+        cancelText={t('common.cancel')}
         destroyOnClose
       >
         <Form form={saveForm} layout="vertical" onFinish={save} preserve={false}>
           <Form.Item
             name="title"
-            label="名称"
-            rules={[{ required: true, message: '请输入名称' }]}
+            label={t('form.title')}
+            rules={[{ required: true, message: t('form.titleRequired') }]}
           >
-            <Input placeholder="例如：工作邮箱" autoFocus />
+            <Input placeholder={t('form.titlePlaceholder')} autoFocus />
           </Form.Item>
-          <Form.Item name="username" label="登录账号">
+          <Form.Item name="username" label={t('form.username')}>
             <Input autoComplete="off" />
           </Form.Item>
-          <Form.Item name="url" label="网站或应用地址">
+          <Form.Item name="url" label={t('form.url')}>
             <Input autoComplete="off" />
           </Form.Item>
-          <Form.Item name="category" label="分类">
+          <Form.Item name="category" label={t('form.category')}>
             <Input />
           </Form.Item>
-          <Form.Item name="tags" label="标签">
-            <Select mode="tags" tokenSeparators={[',']} placeholder="输入后回车添加" />
+          <Form.Item name="tags" label={t('form.tags')}>
+            <Select
+              mode="tags"
+              tokenSeparators={[',']}
+              placeholder={t('form.tagsPlaceholder')}
+            />
           </Form.Item>
-          <Form.Item name="notes" label="备注">
+          <Form.Item name="notes" label={t('form.notes')}>
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item name="isFavorite" label="收藏" valuePropName="checked">
+          <Form.Item name="isFavorite" label={t('form.favorite')} valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>

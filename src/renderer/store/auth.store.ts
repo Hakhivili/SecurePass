@@ -1,12 +1,13 @@
 import { create } from 'zustand';
-import { getApi, getErrorMessage } from '../services/ipc';
+import { getApi } from '../services/ipc';
 
 interface AuthState {
   initialized: boolean;
   unlocked: boolean;
   loading: boolean;
   busy: boolean;
-  error: string | null;
+  /** 保存原始错误对象，由界面按当前语言本地化（主进程只提供错误码）。 */
+  error: unknown;
   bootstrap: () => Promise<void>;
   createVault: (masterPassword: string) => Promise<boolean>;
   unlock: (masterPassword: string) => Promise<boolean>;
@@ -27,7 +28,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const status = await getApi().vault.status();
       set({ initialized: status.initialized, unlocked: status.unlocked, loading: false });
     } catch (error) {
-      set({ loading: false, error: getErrorMessage(error) });
+      set({ loading: false, error });
     }
   },
 
@@ -38,7 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ initialized: true, unlocked: true, busy: false });
       return true;
     } catch (error) {
-      set({ busy: false, error: getErrorMessage(error) });
+      set({ busy: false, error });
       return false;
     }
   },
@@ -50,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ unlocked: true, busy: false });
       return true;
     } catch (error) {
-      set({ busy: false, error: getErrorMessage(error) });
+      set({ busy: false, error });
       return false;
     }
   },

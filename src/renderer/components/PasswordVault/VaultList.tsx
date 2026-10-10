@@ -8,6 +8,7 @@ import {
 import { Button, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import type { VaultSummary } from '@shared/types';
 import { formatDateTime } from '../../utils/format';
+import { useI18n } from '../../i18n';
 
 interface VaultListProps {
   items: VaultSummary[];
@@ -28,16 +29,18 @@ export default function VaultList({
   onCopyPassword,
   onDelete,
 }: VaultListProps): JSX.Element {
+  const { t, language } = useI18n();
+
   return (
     <Table<VaultSummary>
       rowKey="id"
       loading={loading}
       dataSource={items}
       pagination={{ pageSize: 12, hideOnSinglePage: true }}
-      locale={{ emptyText: '暂无记录' }}
+      locale={{ emptyText: t('vault.empty') }}
       columns={[
         {
-          title: '名称',
+          title: t('vault.columnTitle'),
           dataIndex: 'title',
           render: (title: string, record) => (
             <Space size={6}>
@@ -53,13 +56,13 @@ export default function VaultList({
           ),
         },
         {
-          title: '登录账号',
+          title: t('vault.columnUsername'),
           dataIndex: 'username',
           ellipsis: true,
           render: (username: string) => username || '-',
         },
         {
-          title: '分类 / 标签',
+          title: t('vault.columnCategoryTags'),
           dataIndex: 'category',
           render: (_value: string | undefined, record) => (
             <Space size={4} wrap>
@@ -71,25 +74,25 @@ export default function VaultList({
           ),
         },
         {
-          title: '修改时间',
+          title: t('vault.columnUpdatedAt'),
           dataIndex: 'updatedAt',
           width: 170,
-          render: (value: number) => formatDateTime(value),
+          render: (value: number) => formatDateTime(value, language),
         },
         {
-          title: '操作',
+          title: t('vault.columnActions'),
           key: 'actions',
           width: 220,
           render: (_value, record) => (
             <Space size={2}>
-              <Tooltip title="查看">
+              <Tooltip title={t('vault.actionView')}>
                 <Button
                   type="text"
                   icon={<EyeOutlined />}
                   onClick={() => onView(record.id)}
                 />
               </Tooltip>
-              <Tooltip title="复制账号">
+              <Tooltip title={t('vault.actionCopyUsername')}>
                 <Button
                   type="text"
                   icon={<CopyOutlined />}
@@ -97,14 +100,14 @@ export default function VaultList({
                   onClick={() => onCopyUsername(record.username)}
                 />
               </Tooltip>
-              <Tooltip title="复制密码">
+              <Tooltip title={t('vault.actionCopyPassword')}>
                 <Button
                   type="text"
                   icon={<CopyOutlined />}
                   onClick={() => onCopyPassword(record.id)}
                 />
               </Tooltip>
-              <Tooltip title="编辑">
+              <Tooltip title={t('vault.actionEdit')}>
                 <Button
                   type="text"
                   icon={<EditOutlined />}
@@ -112,14 +115,14 @@ export default function VaultList({
                 />
               </Tooltip>
               <Popconfirm
-                title="删除这条记录？"
-                description="已有加密备份中的记录不会被同步删除。"
-                okText="删除"
-                cancelText="取消"
+                title={t('vault.deleteConfirmTitle')}
+                description={t('vault.deleteConfirmDescription')}
+                okText={t('vault.actionDelete')}
+                cancelText={t('common.cancel')}
                 okButtonProps={{ danger: true }}
                 onConfirm={() => onDelete(record.id)}
               >
-                <Tooltip title="删除">
+                <Tooltip title={t('vault.actionDelete')}>
                   <Button type="text" danger icon={<DeleteOutlined />} />
                 </Tooltip>
               </Popconfirm>

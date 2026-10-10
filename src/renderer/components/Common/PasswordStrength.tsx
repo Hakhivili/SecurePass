@@ -1,4 +1,6 @@
 import type { PasswordStrengthResult } from '@shared/types';
+import { useI18n } from '../../i18n';
+import type { MessageKey } from '../../i18n/messages';
 
 interface PasswordStrengthProps {
   strength: PasswordStrengthResult | null;
@@ -7,7 +9,12 @@ interface PasswordStrengthProps {
 export default function PasswordStrength({
   strength,
 }: PasswordStrengthProps): JSX.Element | null {
+  const { t } = useI18n();
   if (!strength) return null;
+
+  const advice = strength.suggestionCodes
+    .map((code) => t(`strength.suggestion.${code}` as MessageKey))
+    .join(' · ');
 
   return (
     <div className="strength-meter">
@@ -21,10 +28,11 @@ export default function PasswordStrength({
           />
         ))}
       </div>
-      <span>{strength.label}</span>
-      <span style={{ color: '#6b7280', fontSize: 12 }}>
-        估算熵值 {strength.entropyBits} bit
+      <span>{t(`strength.${strength.score}` as MessageKey)}</span>
+      <span className="detail-meta">
+        {t('strength.entropy', { bits: strength.entropyBits })}
       </span>
+      {advice && <span className="strength-advice">{advice}</span>}
     </div>
   );
 }

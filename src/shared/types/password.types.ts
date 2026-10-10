@@ -7,18 +7,27 @@ export interface PasswordConfig {
   excludeAmbiguous: boolean;
 }
 
+/**
+ * 生成器提示项。主进程只返回稳定的「提示码」，由渲染层按当前语言翻译，
+ * 这样接口不绑定任何一种语言。
+ */
+export type GeneratorWarningCode = 'short-length' | 'low-entropy' | 'letters-only';
+
 export interface GeneratedPassword {
   password: string;
   entropyBits: number;
   charsetSize: number;
-  warnings: string[];
+  warningCodes: GeneratorWarningCode[];
 }
+
+/** 强度改进建议码，同样由渲染层负责本地化。 */
+export type StrengthSuggestionCode =
+  'empty' | 'too-short' | 'mix-character-classes' | 'avoid-repeats';
 
 export interface PasswordStrengthResult {
   score: 0 | 1 | 2 | 3 | 4;
-  label: string;
   entropyBits: number;
-  suggestions: string[];
+  suggestionCodes: StrengthSuggestionCode[];
 }
 
 export const DEFAULT_PASSWORD_CONFIG: PasswordConfig = {

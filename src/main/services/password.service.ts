@@ -3,8 +3,10 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { AppError, ErrorCode } from '@shared/errors';
 import type {
   GeneratedPassword,
+  GeneratorWarningCode,
   PasswordConfig,
   PasswordStrengthResult,
+  StrengthSuggestionCode,
 } from '@shared/types';
 
 export const CHARSETS = {
@@ -47,7 +49,7 @@ export class PasswordService {
       password,
       entropyBits: round(entropyBits, 2),
       charsetSize: charset.length,
-      warnings: buildWarnings(config, entropyBits),
+      warningCodes: buildWarningCodes(config, entropyBits),
     };
   }
 
@@ -62,7 +64,7 @@ export class PasswordService {
   calculateStrength(password: string): PasswordStrengthResult {
     const characters = [...password];
     if (characters.length === 0) {
-      return { score: 0, label: '空', entropyBits: 0, suggestions: ['请输入密码'] };
+      return { score: 0, entropyBits: 0, suggestionCodes: ['empty'] };
     }
 
     const poolSize = estimatePoolSize(password);
@@ -75,17 +77,16 @@ export class PasswordService {
       entropyBits = Math.min(entropyBits, 10);
 
     const score = scoreEntropy(entropyBits);
-    const suggestions: string[] = [];
-    if (characters.length < 12) suggestions.push('建议至少 12 个字符');
+    const suggestionCodes: StrengthSuggestionCode[] = [];
+    if (characters.length < 12) suggestionCodes.push('too-short');
     if (countCharacterClasses(password) < 3)
-      suggestions.push('建议混合大小写、数字和符号');
-    if (uniqueRatio < 0.6) suggestions.push('避免大量重复字符');
+      suggestionCodes.push('mix-character-classes');
+    if (uniqueRatio < 0.6) suggestionCodes.push('avoid-repeats');
 
     return {
       score,
-      label: STRENGTH_LABELS[score],
       entropyBits: round(entropyBits, 1),
-      suggestions,
+      suggestionCodes,
     };
   }
 }
@@ -154,13 +155,14 @@ function shuffle(values: string[]): void {
   }
 }
 
-function buildWarnings(config: PasswordConfig, entropyBits: number): string[] {
-  const warnings: string[] = [];
-  if (config.length < 12) warnings.push('长度较短，建议 12 位以上');
-  if (entropyBits < 60) warnings.push('字符空间有限，不建议用于高价值账户');
-  if (!config.includeSymbols && !config.includeNumbers) {
-    warnings.push('仅使用字母时更容易被猜解');
-  }
+function buildWarningCodes(
+  config: PasswordConfig,
+  entropyBits: number,
+): GeneratorWarningCode[] {
+  const warnings: GeneratorWarningCode[] = [];
+  if (config.length < 12) warnings.push('short-length');
+  if (entropyBits < 60) warnings.push('low-entropy');
+  if (!config.includeSymbols && !config.includeNumbers) warnings.push('letters-only');
   return warnings;
 }
 
@@ -189,8 +191,6 @@ function scoreEntropy(entropyBits: number): 0 | 1 | 2 | 3 | 4 {
   if (entropyBits < 100) return 3;
   return 4;
 }
-
-const STRENGTH_LABELS = ['很弱', '弱', '一般', '强', '很强'] as const;
 
 function round(value: number, digits: number): number {
   const factor = 10 ** digits;

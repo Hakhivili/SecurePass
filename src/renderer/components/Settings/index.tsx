@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
 import { App, Button, Card, Col, Form, Input, Row, Segmented, Select } from 'antd';
-import { DEFAULT_SETTINGS, type AppSettings, type AppTheme } from '@shared/types';
+import { VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
+import { DEFAULT_SETTINGS } from '@shared/types';
+import type { AppSettings, AppTheme } from '@shared/types';
 import { getApi, getErrorMessage } from '../../services/ipc';
 import { useSettingsStore } from '../../store/settings.store';
 import { useAuthStore } from '../../store/auth.store';
-import { validateMasterPassword } from '../../utils/validation';
+import { masterPasswordErrorKey } from '../../utils/validation';
+import { useI18n } from '../../i18n';
 
 interface PasswordForm {
   currentPassword: string;
@@ -15,6 +18,7 @@ interface PasswordForm {
 
 export default function Settings(): JSX.Element {
   const { message, modal } = App.useApp();
+  const { t } = useI18n();
   const [passwordForm] = Form.useForm<PasswordForm>();
   const settings = useSettingsStore((state) => state.settings);
   const load = useSettingsStore((state) => state.load);
@@ -31,20 +35,20 @@ export default function Settings(): JSX.Element {
   const updateSetting = async (patch: Partial<AppSettings>) => {
     try {
       await update(patch);
-      message.success('设置已保存');
+      message.success(t('settings.saved'));
     } catch (error) {
-      message.error(getErrorMessage(error));
+      message.error(getErrorMessage(error, t));
     }
   };
 
   const changePassword = async (values: PasswordForm) => {
-    const passwordError = validateMasterPassword(values.newPassword);
-    if (passwordError) {
-      message.error(passwordError);
+    const passwordErrorKey = masterPasswordErrorKey(values.newPassword);
+    if (passwordErrorKey) {
+      message.error(t(passwordErrorKey, { min: VAULT_PASSWORD_MIN_LENGTH }));
       return;
     }
     if (values.newPassword !== values.confirmPassword) {
-      message.error('两次输入的新主密码不一致');
+      message.error(t('settings.newMasterMismatch'));
       return;
     }
     setBusy(true);
@@ -54,9 +58,9 @@ export default function Settings(): JSX.Element {
         newPassword: values.newPassword,
       });
       passwordForm.resetFields();
-      message.success('主密码已修改，旧备份仍需使用旧主密码解锁');
+      message.success(t('settings.changed'));
     } catch (error) {
-      message.error(getErrorMessage(error));
+      message.error(getErrorMessage(error, t));
     } finally {
       setBusy(false);
     }
@@ -67,10 +71,10 @@ export default function Settings(): JSX.Element {
     try {
       const result = await getApi().vault.exportBackup();
       if (!result.canceled) {
-        message.success('加密备份已导出');
+        message.success(t('settings.exported'));
       }
     } catch (error) {
-      message.error(getErrorMessage(error));
+      message.error(getErrorMessage(error, t));
     } finally {
       setBackupBusy(false);
     }
@@ -78,7 +82,7 @@ export default function Settings(): JSX.Element {
 
   const restoreBackup = async () => {
     if (!restorePassword) {
-      message.error('请输入备份的主密码');
+      message.error(t('settings.restorePasswordRequired'));
       return;
     }
     setBackupBusy(true);
@@ -87,14 +91,14 @@ export default function Settings(): JSX.Element {
       if (result.canceled) return;
       setRestorePassword('');
       modal.success({
-        title: '恢复完成',
+        title: t('settings.restoreDone'),
         content: result.backupOfPreviousPath
-          ? `当前密码库已替换，替换前的加密备份保存在：${result.backupOfPreviousPath}`
-          : '密码库已从备份恢复。',
+          ? t('settings.restoreDoneWithBackup', { path: result.backupOfPreviousPath })
+          : t('settings.restoreDoneSimple'),
       });
       await load();
     } catch (error) {
-      message.error(getErrorMessage(error));
+      message.error(getErrorMessage(error, t));
     } finally {
       setBackupBusy(false);
     }
@@ -102,54 +106,54 @@ export default function Settings(): JSX.Element {
 
   return (
     <div className="page">
-      <h2 className="page-title">设置</h2>
-      <p className="page-description">锁定策略、剪贴板清理、主密码与加密备份。</p>
+      <h2 className="page-title">{t('settings.title')}</h2>
+      <p className="page-description">{t('settings.description')}</p>
 
       <Row gutter={20}>
         <Col xs={24} xl={12}>
-          <Card title="常规" size="small" className="settings-section">
+          <Card title={t('settings.general')} size="small" className="settings-section">
             <Form layout="vertical">
-              <Form.Item label="自动锁定（无操作后）">
+              <Form.Item label={t('settings.autoLock')}>
                 <Select
                   value={settings.autoLockTimeoutMinutes}
                   options={[1, 5, 10, 15, 30, 60].map((value) => ({
                     value,
-                    label: `${value} 分钟`,
+                    label: t('settings.minutes', { value }),
                   }))}
                   onChange={(value) =>
                     void updateSetting({ autoLockTimeoutMinutes: value })
                   }
                 />
               </Form.Item>
-              <Form.Item label="复制后清理剪贴板">
+              <Form.Item label={t('settings.clipboard')}>
                 <Select
                   value={settings.clearClipboardSeconds}
                   options={[5, 15, 30, 60, 120].map((value) => ({
                     value,
-                    label: `${value} 秒`,
+                    label: t('settings.seconds', { value }),
                   }))}
                   onChange={(value) =>
                     void updateSetting({ clearClipboardSeconds: value })
                   }
                 />
               </Form.Item>
-              <Form.Item label="主题">
+              <Form.Item label={t('settings.theme')}>
                 <Segmented<AppTheme>
                   value={settings.theme}
                   options={[
-                    { value: 'light', label: '浅色' },
-                    { value: 'dark', label: '深色' },
-                    { value: 'auto', label: '跟随系统' },
+                    { value: 'light', label: t('settings.themeLight') },
+                    { value: 'dark', label: t('settings.themeDark') },
+                    { value: 'auto', label: t('settings.themeAuto') },
                   ]}
                   onChange={(value) => void updateSetting({ theme: value })}
                 />
               </Form.Item>
-              <Form.Item label="语言">
+              <Form.Item label={t('settings.language')}>
                 <Select
                   value={settings.language}
                   options={[
-                    { value: 'zh-CN', label: '简体中文' },
-                    { value: 'en', label: 'English' },
+                    { value: 'zh-CN', label: t('settings.languageZhCN') },
+                    { value: 'en', label: t('settings.languageEn') },
                   ]}
                   onChange={(value) => void updateSetting({ language: value })}
                 />
@@ -159,29 +163,31 @@ export default function Settings(): JSX.Element {
         </Col>
 
         <Col xs={24} xl={12}>
-          <Card title="修改主密码" size="small" className="settings-section">
-            <p style={{ color: '#6b7280', fontSize: 13 }}>
-              修改后需要重新派生密钥；旧备份不会被改写，仍需旧主密码解锁。
-            </p>
+          <Card
+            title={t('settings.changeMaster')}
+            size="small"
+            className="settings-section"
+          >
+            <p>{t('settings.changeMasterHelp')}</p>
             <Form form={passwordForm} layout="vertical" onFinish={changePassword}>
               <Form.Item
                 name="currentPassword"
-                label="当前主密码"
-                rules={[{ required: true, message: '请输入当前主密码' }]}
+                label={t('settings.currentMaster')}
+                rules={[{ required: true, message: t('settings.currentMasterRequired') }]}
               >
                 <Input.Password autoComplete="current-password" />
               </Form.Item>
               <Form.Item
                 name="newPassword"
-                label="新主密码"
-                rules={[{ required: true, message: '请输入新主密码' }]}
+                label={t('settings.newMaster')}
+                rules={[{ required: true, message: t('settings.newMasterRequired') }]}
               >
                 <Input.Password autoComplete="new-password" />
               </Form.Item>
               <Form.Item
                 name="confirmPassword"
-                label="确认新主密码"
-                rules={[{ required: true, message: '请再次输入新主密码' }]}
+                label={t('settings.confirmMaster')}
+                rules={[{ required: true, message: t('settings.confirmMasterRequired') }]}
               >
                 <Input.Password autoComplete="new-password" />
               </Form.Item>
@@ -191,17 +197,15 @@ export default function Settings(): JSX.Element {
                 icon={<SaveOutlined />}
                 loading={busy}
               >
-                修改主密码
+                {t('settings.changeMasterSubmit')}
               </Button>
             </Form>
           </Card>
         </Col>
 
         <Col xs={24}>
-          <Card title="加密备份与恢复" size="small" className="settings-section">
-            <p style={{ color: '#6b7280', fontSize: 13 }}>
-              备份完整密文与加密参数，不提供默认明文导出。恢复采用“替换当前库”，替换前会自动保留当前库的加密副本。
-            </p>
+          <Card title={t('settings.backup')} size="small" className="settings-section">
+            <p>{t('settings.backupHelp')}</p>
             <Row gutter={20}>
               <Col xs={24} md={12}>
                 <Button
@@ -209,13 +213,13 @@ export default function Settings(): JSX.Element {
                   loading={backupBusy}
                   onClick={() => void exportBackup()}
                 >
-                  导出加密备份
+                  {t('settings.export')}
                 </Button>
               </Col>
               <Col xs={24} md={12}>
                 <Input.Password
                   value={restorePassword}
-                  placeholder="输入备份文件的主密码"
+                  placeholder={t('settings.restorePasswordPlaceholder')}
                   onChange={(event) => setRestorePassword(event.target.value)}
                   style={{ marginBottom: 8 }}
                 />
@@ -225,22 +229,22 @@ export default function Settings(): JSX.Element {
                   loading={backupBusy}
                   onClick={() => void restoreBackup()}
                 >
-                  选择备份并恢复
+                  {t('settings.restore')}
                 </Button>
               </Col>
             </Row>
-            <div className="auth-help">
-              恢复前会验证主密码与文件完整性；密码错误、文件损坏或版本不兼容时不会覆盖当前数据。
-            </div>
+            <div className="auth-help">{t('settings.restoreHelp')}</div>
           </Card>
         </Col>
       </Row>
 
-      <div style={{ marginTop: 12 }}>
-        <Button onClick={() => void lock()}>立即锁定</Button>
-        <span style={{ marginLeft: 12, color: '#6b7280', fontSize: 13 }}>
-          默认设置：自动锁定 {DEFAULT_SETTINGS.autoLockTimeoutMinutes} 分钟，剪贴板{' '}
-          {DEFAULT_SETTINGS.clearClipboardSeconds} 秒后清理
+      <div className="settings-footer">
+        <Button onClick={() => void lock()}>{t('settings.lockNow')}</Button>
+        <span className="settings-defaults">
+          {t('settings.defaults', {
+            minutes: DEFAULT_SETTINGS.autoLockTimeoutMinutes,
+            seconds: DEFAULT_SETTINGS.clearClipboardSeconds,
+          })}
         </span>
       </div>
     </div>

@@ -101,6 +101,41 @@ describe('VaultService', () => {
     await expect(vault.list()).resolves.toEqual([]);
   });
 
+  it('编辑记录时保留 lastUsed，除非显式传入新值', async () => {
+    await vault.create(MASTER_PASSWORD);
+    const created = await vault.createItem({
+      title: '站点',
+      username: 'a',
+      password: 'secret-value',
+      tags: [],
+      isFavorite: false,
+      lastUsed: 1_700_000_000_000,
+    });
+    expect(created.lastUsed).toBe(1_700_000_000_000);
+
+    // 渲染层的编辑表单不会回传 lastUsed，编辑后必须保留原值
+    const edited = await vault.updateItem(created.id, {
+      title: '站点（已改）',
+      username: 'a',
+      password: 'secret-value',
+      tags: [],
+      isFavorite: false,
+    });
+    expect(edited.lastUsed).toBe(1_700_000_000_000);
+    expect((await vault.get(created.id))?.lastUsed).toBe(1_700_000_000_000);
+
+    // 显式传入新值时应覆盖
+    const explicit = await vault.updateItem(created.id, {
+      title: '站点（已改）',
+      username: 'a',
+      password: 'secret-value',
+      tags: [],
+      isFavorite: false,
+      lastUsed: 1_800_000_000_000,
+    });
+    expect(explicit.lastUsed).toBe(1_800_000_000_000);
+  });
+
   it('changes the master password without re-encrypting old backups', async () => {
     await vault.create(MASTER_PASSWORD);
     const backup = vault.getVaultFileSnapshot();
