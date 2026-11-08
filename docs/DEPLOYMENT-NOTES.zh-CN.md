@@ -12,13 +12,13 @@
 
 ## 1. 部署结果
 
-| 项目         | 内容                                                                                         |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| 源码解压     | 82 个条目 → 81 个源文件，与 zip 内容一致，未做任何修改                                       |
-| 基线快照     | `D:\ToolsDataSite\.baseline\SecurePass-0.1.0-source`（用于后续 diff/回滚）                   |
-| 依赖安装     | `npm ci` + `npm install`（Electron 二进制单独下载）                                          |
-| node_modules | 31,082 个文件，约 545 MB                                                                     |
-| 副产物目录   | `.npm-cache`（69 MB）、`.electron-cache`（110 MB）、`.tmp`（构建临时目录），均在项目目录之外 |
+| 项目         | 内容                                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| 源码解压     | 82 个条目 → 81 个源文件，与 zip 内容一致，未做任何修改                                                                          |
+| 基线快照     | 已删除（原始状态保存在 git 提交 `62b5f8d`，无需再保留副本）                                                                     |
+| 依赖安装     | `npm ci` + `npm install`（Electron 二进制单独下载）                                                                             |
+| node_modules | 31,082 个文件，约 545 MB                                                                                                        |
+| 缓存目录     | 统一收纳在工作区根目录 **单个隐藏目录** `.securepass-local\`（`npm-cache\` + `electron\`，约 248 MB；可整体删除，下次自动重下） |
 
 ### 工具链版本
 
@@ -327,13 +327,13 @@ npm install --ignore-scripts --prefer-offline --no-audit --no-fund
 **原因**：`npm install --ignore-scripts` 或中断的安装会替换 `node_modules/electron` 目录，
 但没有执行提取脚本，导致 `node_modules/electron/dist` 为空、`path.txt` 缺失。
 
-**修复**（仓库外的 `.electron-cache` 里已有安装包，不用重新下载）：
+**修复**（`D:\ToolsDataSite\.securepass-local\electron` 里已有安装包，不用重新下载）：
 
 ```powershell
 cd D:\ToolsDataSite\SecurePass
 $env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"
-$env:ELECTRON_CACHE="D:\ToolsDataSite\.electron-cache"
-$env:electron_config_cache="D:\ToolsDataSite\.electron-cache"
+$env:ELECTRON_CACHE="D:\ToolsDataSite\.securepass-local\electron"
+$env:electron_config_cache="D:\ToolsDataSite\.securepass-local\electron"
 node node_modules/electron/install.js
 ```
 
@@ -346,12 +346,12 @@ node -e "console.log(require('electron'))"
 
 ### 10.3 其它环境提示
 
-| 现象                                                                        | 说明 / 处理                                                                                              |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `npm warn Unknown env config "side-effects-cache"`                          | 来自本机环境变量 `npm_config_side_effects_cache=false`，无害；删除该变量即可消除                         |
-| GitHub 不可直连，`electron` 下载失败                                        | 用 10.2 的镜像变量；或 `$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"` 后重装 |
-| `npm run dev` 报端口被占用                                                  | `vite.config.ts` 设了 `strictPort: true` 且端口固定 5173，先释放该端口                                   |
-| `npm run build` 报 `remove C:\Users\...\Temp\esbuild-...: Access is denied` | 构建临时目录不可写；把 `TEMP`/`TMP` 指到可写目录后重试：`$env:TEMP="D:\ToolsDataSite\.tmp"`              |
+| 现象                                                                        | 说明 / 处理                                                                                                  |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `npm warn Unknown env config "side-effects-cache"`                          | 来自本机环境变量 `npm_config_side_effects_cache=false`，无害；删除该变量即可消除                             |
+| GitHub 不可直连，`electron` 下载失败                                        | 用 10.2 的镜像变量；或 `$env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"` 后重装     |
+| `npm run dev` 报端口被占用                                                  | `vite.config.ts` 设了 `strictPort: true` 且端口固定 5173，先释放该端口                                       |
+| `npm run build` 报 `remove C:\Users\...\Temp\esbuild-...: Access is denied` | 构建临时目录不可写；把 `TEMP`/`TMP` 指到可写目录后重试：`$env:TEMP="D:\ToolsDataSite\.securepass-local\tmp"` |
 
 ### 10.4 `npm run dev` 后界面显示「无法连接到 localhost」
 
@@ -409,7 +409,45 @@ D:\ToolsDataSite\SecurePass\release\win-unpacked\SecurePass.exe
 ```powershell
 $env:ELECTRON_MIRROR="https://registry.npmmirror.com/-/binary/electron/"
 $env:ELECTRON_BUILDER_BINARIES_MIRROR="https://registry.npmmirror.com/-/binary/electron-builder-binaries/"
-$env:ELECTRON_BUILDER_CACHE="D:\ToolsDataSite\.electron-builder-cache"   # 默认缓存在工作区外，受限环境需重定向
-$env:TEMP="D:\ToolsDataSite\.tmp"
+$env:ELECTRON_BUILDER_CACHE="D:\ToolsDataSite\.securepass-local\electron-builder-cache"  # 默认缓存在工作区外，受限环境需重定向
+New-Item -ItemType Directory -Force -Path D:\ToolsDataSite\.securepass-local\tmp | Out-Null
+$env:TEMP="D:\ToolsDataSite\.securepass-local\tmp"
 npm run package
 ```
+
+### 10.7 工作区被打了**低完整性标签（Low IL）**，导致 exe 双击无反应、无法新建文件
+
+这是 **DSH 沙箱的设计行为**，不是本项目的问题。官方 FAQ 说明：授权采用「复用缓存、永不撤销」策略，
+**ACL 与低完整性标签会永久保留在项目（工作区）根目录**。
+
+**症状**：
+
+| 症状                                                                        | 说明                                                                                                                                                                         |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 双击工作区内的 `SecurePass.exe` 毫无反应、窗口不出现                        | exe 继承了 Low 标签 → `CreateProcess` 取 `min(令牌 IL, 映像 IL)` → **进程以 Low IL 运行** → 写 `%APPDATA%`（Medium）被 no-write-up 拒绝 → Chromium 建不了 profile → 静默退出 |
+| 资源管理器 / VS Code / 普通终端里「无法新建」、保存失败、`npm install` 失败 | 这些是 Medium IL 进程，写入 Low 对象即 write-up，一律 `ACCESS_DENIED`                                                                                                        |
+| 应用 profile 目录从未生成                                                   | 判据：`%APPDATA%\SecurePass` 不存在，说明应用一次都没初始化成功                                                                                                              |
+
+**自检**：
+
+```powershell
+icacls "D:\ToolsDataSite"
+# 若出现 Mandatory Label\Low Mandatory Level:(OI)(CI)(NW) 即命中此问题
+icacls "D:\ToolsDataSite\SecurePass\release\win-unpacked\SecurePass.exe"
+```
+
+**应对（推荐顺序）**：
+
+1. **把要运行的东西复制出工作区，再运行**（最可靠）：
+   用**资源管理器**把 `release\win-unpacked` 整个复制到桌面或其他盘（如 `C:\Users\<你>\Desktop\SecurePass`），
+   再双击其中的 `SecurePass.exe`。新文件从目标目录继承 **Medium** 标签，进程即为正常 Medium IL。
+   ⚠️ 必须用资源管理器（Medium IL）复制；用沙箱命令复制出来的副本仍然是 Low。
+2. **热更新开发同理**：把整份项目复制到工作区外，再在那边 `npm install && npm run dev`。
+3. 手工修正标签（可能因缺少 `SeSecurityPrivilege` 被拒，且下次会话会重新打标，不推荐长期依赖）：
+
+   ```powershell
+   icacls "D:\ToolsDataSite" /setintegritylevel Medium /T /C
+   ```
+
+**结论**：工作区只用于**编辑源码与跑测试构建**（本助手的命令以 Low IL 运行，写 Low 对象没问题）；
+**运行真实窗口与打包产物必须在工作区外执行**。
