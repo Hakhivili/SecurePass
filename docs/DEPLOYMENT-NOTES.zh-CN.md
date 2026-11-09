@@ -401,8 +401,21 @@ D:\ToolsDataSite\SecurePass\release\win-unpacked\SecurePass.exe
 
 1. **开启开发者模式**（推荐，一次性）：设置 → 系统 → 开发者选项 → 打开「开发人员模式」，然后重新 `npm run package`；
 2. 用**管理员身份**打开终端，再执行 `npm run package`；
-3. 只需绿色版时：应用本体在失败前已打包完成，`release\win-unpacked\SecurePass.exe` 可直接运行
-   （代价：exe 未写入自定义图标与版本元数据，使用 Electron 默认图标）。
+3. **直接用绿色版脚本**（不需要任何特权，跳过 rcedit）：
+
+   ```powershell
+   npm run package:portable
+   ```
+
+   它使用 `electron-builder.portable.yml`（`extends` 主配置，仅把 `win.signAndEditExecutable` 设为 `false`），
+   产出 `release\win-unpacked\SecurePass.exe`；代价是 exe 使用 Electron 默认图标与版本元数据。
+   正式发布仍应修复特权后执行 `npm run package` 生成安装包。
+
+4. 只需一次性的绿色版时：应用本体在失败前已打包完成，`release\win-unpacked\SecurePass.exe` 可直接运行。
+
+> ⚠️ **打包前必须先关闭正在运行的 `SecurePass.exe`**：正在运行的实例会锁住
+> `release\win-unpacked\*.dll`，导致 electron-builder 清空输出目录时报
+> `remove ...d3dcompiler_47.dll: Access is denied`。
 
 打包（GitHub 不可直连时需要镜像）：
 

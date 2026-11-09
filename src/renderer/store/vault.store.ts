@@ -5,6 +5,8 @@ import { getApi } from '../services/ipc';
 interface VaultState {
   items: VaultSummary[];
   loading: boolean;
+  /** 是否成功加载过列表（重复录入检查依赖它判断数据是否可信）。 */
+  loaded: boolean;
   /** 保存原始错误对象，由界面按当前语言本地化。 */
   error: unknown;
   load: () => Promise<void>;
@@ -17,14 +19,15 @@ interface VaultState {
 export const useVaultStore = create<VaultState>((set, get) => ({
   items: [],
   loading: false,
+  loaded: false,
   error: null,
 
   load: async () => {
     set({ loading: true, error: null });
     try {
-      set({ items: await getApi().vault.list(), loading: false });
+      set({ items: await getApi().vault.list(), loading: false, loaded: true });
     } catch (error) {
-      set({ loading: false, error });
+      set({ loading: false, loaded: false, error });
     }
   },
 
@@ -45,7 +48,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     await get().load();
   },
 
-  clear: () => set({ items: [], error: null }),
+  clear: () => set({ items: [], loaded: false, error: null }),
 }));
 
 export function filterItems(items: VaultSummary[], query: string): VaultSummary[] {

@@ -13,9 +13,14 @@ interface SetupForm {
   confirmPassword: string;
 }
 
+interface LocalError {
+  key: MessageKey;
+  params?: Record<string, string | number>;
+}
+
 export default function SetupMaster(): JSX.Element {
   const [form] = Form.useForm<SetupForm>();
-  const [localError, setLocalError] = useState<MessageKey | null>(null);
+  const [localError, setLocalError] = useState<LocalError | null>(null);
   const createVault = useAuthStore((state) => state.createVault);
   const busy = useAuthStore((state) => state.busy);
   const error = useAuthStore((state) => state.error);
@@ -25,11 +30,15 @@ export default function SetupMaster(): JSX.Element {
     setLocalError(null);
     const passwordErrorKey = masterPasswordErrorKey(values.masterPassword);
     if (passwordErrorKey) {
-      setLocalError(passwordErrorKey);
+      // 这里必须带上 min 参数，否则会把 "{min}" 原样显示给用户
+      setLocalError({
+        key: passwordErrorKey,
+        params: { min: VAULT_PASSWORD_MIN_LENGTH },
+      });
       return;
     }
     if (values.masterPassword !== values.confirmPassword) {
-      setLocalError('setup.mismatch');
+      setLocalError({ key: 'setup.mismatch' });
       return;
     }
     await createVault(values.masterPassword);
@@ -38,7 +47,7 @@ export default function SetupMaster(): JSX.Element {
   const alertMessage = error
     ? getErrorMessage(error, t)
     : localError
-      ? t(localError)
+      ? t(localError.key, localError.params)
       : null;
 
   return (

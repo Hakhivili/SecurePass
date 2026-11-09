@@ -20,12 +20,16 @@ export function useDuplicateGuard(): (
 ) => Promise<boolean> {
   const { modal } = App.useApp();
   const { t } = useI18n();
-  const items = useVaultStore((state) => state.items);
+  const loaded = useVaultStore((state) => state.loaded);
+  const load = useVaultStore((state) => state.load);
 
   return useCallback(
-    (input, excludeId) => {
+    async (input, excludeId) => {
+      // 直接从密码生成器保存时列表可能还没加载过，先拉一次，避免漏报重复
+      if (!loaded) await load();
+      const items = useVaultStore.getState().items;
       const duplicates = findDuplicateItems(items, input, excludeId);
-      if (duplicates.length === 0) return Promise.resolve(true);
+      if (duplicates.length === 0) return true;
 
       return new Promise<boolean>((resolve) => {
         modal.confirm({
@@ -47,6 +51,6 @@ export function useDuplicateGuard(): (
         });
       });
     },
-    [items, modal, t],
+    [loaded, load, modal, t],
   );
 }
