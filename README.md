@@ -8,6 +8,9 @@ generator, vault CRUD, settings and encrypted backup/restore are implemented, wh
 
 ## Features
 
+- **Unlock on demand**: the generator works right after launch; the master password is only
+  required for vault actions (view / save / edit)
+- Generator and vault live on a single workbench page (generator as a horizontal block on top)
 - Cryptographically secure random password generation (8-20 characters)
 - Configurable character classes and ambiguous-character exclusion
 - Local encrypted vault with CRUD, search, categories and tags

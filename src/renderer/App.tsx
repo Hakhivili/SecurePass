@@ -3,16 +3,20 @@ import { HashRouter } from 'react-router-dom';
 import { App as AntApp, ConfigProvider, Spin, theme as antdTheme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
-import SetupMaster from './components/Auth/SetupMaster';
-import UnlockVault from './components/Auth/UnlockVault';
 import MainLayout from './components/Common/Layout';
 import { useAuthStore } from './store/auth.store';
 import { useVaultStore } from './store/vault.store';
 import { useSettingsStore } from './store/settings.store';
 import { applyResolvedTheme, resolveTheme, useSystemTheme } from './utils/theme';
 
+/**
+ * 应用根组件。
+ *
+ * 鉴权模型：启动即进入工作台（密码生成器可直接使用），
+ * 只有涉及密码库的操作才按需解锁 —— 因此这里不再有「创建/解锁」全屏门禁，
+ * 解锁界面由密码库区块与按需解锁对话框承载。
+ */
 export default function App(): JSX.Element {
-  const initialized = useAuthStore((state) => state.initialized);
   const unlocked = useAuthStore((state) => state.unlocked);
   const loading = useAuthStore((state) => state.loading);
   const bootstrap = useAuthStore((state) => state.bootstrap);
@@ -34,28 +38,16 @@ export default function App(): JSX.Element {
     const unsubscribe = window.securepass.events.onLocked(() => {
       handleLocked();
       useVaultStore.getState().clear();
+      // 锁定后自动锁定/剪贴板回落到默认值，但主题与语言保持
+      void useSettingsStore.getState().load();
     });
     return unsubscribe;
   }, [bootstrap, handleLocked]);
 
-  // 锁定状态下 settings:get 只返回默认值，因此解锁后再加载真实设置。
+  // 解锁状态变化时重新加载设置：界面偏好始终可读，保险库设置仅解锁后可读。
   useEffect(() => {
-    if (unlocked) void loadSettings();
+    void loadSettings();
   }, [unlocked, loadSettings]);
-
-  const content = loading ? (
-    <div className="app-loading">
-      <Spin size="large" />
-    </div>
-  ) : !initialized ? (
-    <SetupMaster />
-  ) : !unlocked ? (
-    <UnlockVault />
-  ) : (
-    <HashRouter>
-      <MainLayout />
-    </HashRouter>
-  );
 
   return (
     <ConfigProvider
@@ -71,7 +63,17 @@ export default function App(): JSX.Element {
         },
       }}
     >
-      <AntApp>{content}</AntApp>
+      <AntApp>
+        {loading ? (
+          <div className="app-loading">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <HashRouter>
+            <MainLayout />
+          </HashRouter>
+        )}
+      </AntApp>
     </ConfigProvider>
   );
 }

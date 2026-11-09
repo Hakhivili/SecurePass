@@ -273,3 +273,93 @@ body {
     max-width: none;
   }
 }
+
+/* ===== 工作台：生成器（横向长方形）+ 密码库 ===== */
+.workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workbench-block .ant-card-head-title {
+  font-weight: 600;
+}
+
+.workbench-hint {
+  color: var(--sp-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.generator-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+}
+
+.generator-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.generator-label {
+  color: var(--sp-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.generator-slider {
+  width: 176px;
+}
+
+.generator-length-input {
+  width: 64px;
+}
+
+.generator-classes {
+  gap: 12px;
+}
+
+.workbench-generator .generator-result {
+  margin-top: 12px;
+}
+
+.workbench-generator .strength-meter {
+  margin-top: 8px;
+}
+
+/* ===== 密码库锁定态 ===== */
+.vault-locked {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.vault-access {
+  width: 100%;
+  max-width: 380px;
+}
+
+.vault-access-brand {
+  margin-bottom: 6px;
+}
+
+.vault-access-brand h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.vault-access-hint {
+  margin: 0 0 14px;
+  color: var(--sp-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.vault-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}

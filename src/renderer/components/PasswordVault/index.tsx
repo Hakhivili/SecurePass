@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
+import { LockOutlined, PlusOutlined } from '@ant-design/icons';
 import { App, Button } from 'antd';
 import type { VaultItem, VaultItemDraft } from '@shared/types';
 import { getApi, getErrorMessage } from '../../services/ipc';
+import { useAuthStore } from '../../store/auth.store';
 import { filterItems, useVaultStore } from '../../store/vault.store';
 import { copySecret } from '../../utils/clipboard';
 import { useDuplicateGuard } from '../../utils/use-duplicate-guard';
 import { useI18n } from '../../i18n';
+import VaultAccessPanel from '../Auth/VaultAccessPanel';
 import VaultEditor from './VaultEditor';
 import VaultItemDetail from './VaultItem';
 import VaultList from './VaultList';
 import VaultSearch from './VaultSearch';
 
+/**
+ * 密码库面板：未解锁时只渲染解锁/创建表单，解锁后才加载并展示记录。
+ * 它与密码生成器同处一个页面，但生成器不受这里的锁定影响。
+ */
 export default function PasswordVault(): JSX.Element {
   const { message } = App.useApp();
   const { t } = useI18n();
+  const unlocked = useAuthStore((state) => state.unlocked);
+  const lock = useAuthStore((state) => state.lock);
   const items = useVaultStore((state) => state.items);
   const loading = useVaultStore((state) => state.loading);
   const error = useVaultStore((state) => state.error);
@@ -32,8 +40,16 @@ export default function PasswordVault(): JSX.Element {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (unlocked) void load();
+  }, [unlocked, load]);
+
+  if (!unlocked) {
+    return (
+      <div className="vault-locked">
+        <VaultAccessPanel />
+      </div>
+    );
+  }
 
   const openCreate = () => {
     setEditing(null);
@@ -90,15 +106,17 @@ export default function PasswordVault(): JSX.Element {
   };
 
   return (
-    <div className="page">
-      <h2 className="page-title">{t('vault.title')}</h2>
-      <p className="page-description">{t('vault.description')}</p>
-
+    <>
       <div className="vault-toolbar">
         <VaultSearch value={query} onChange={setQuery} />
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          {t('vault.newItem')}
-        </Button>
+        <div className="vault-toolbar-actions">
+          <Button icon={<LockOutlined />} onClick={() => void lock()}>
+            {t('vault.lock')}
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            {t('vault.newItem')}
+          </Button>
+        </div>
       </div>
 
       {error ? <div className="vault-error">{getErrorMessage(error, t)}</div> : null}
@@ -136,6 +154,6 @@ export default function PasswordVault(): JSX.Element {
           if (detail) void openEdit(detail.id);
         }}
       />
-    </div>
+    </>
   );
 }

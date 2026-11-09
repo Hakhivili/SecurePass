@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
-import { App, Button, Card, Col, Form, Input, Row, Segmented, Select } from 'antd';
+import { Alert, App, Button, Card, Col, Form, Input, Row, Segmented, Select } from 'antd';
 import { VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import type { AppSettings, AppTheme } from '@shared/types';
@@ -27,6 +27,7 @@ export default function Settings(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const lock = useAuthStore((state) => state.lock);
+  const unlocked = useAuthStore((state) => state.unlocked);
 
   useEffect(() => {
     void load();
@@ -109,12 +110,22 @@ export default function Settings(): JSX.Element {
       <h2 className="page-title">{t('settings.title')}</h2>
       <p className="page-description">{t('settings.description')}</p>
 
+      {!unlocked && (
+        <Alert
+          type="info"
+          showIcon
+          message={t('settings.lockedNotice')}
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       <Row gutter={20}>
         <Col xs={24} xl={12}>
           <Card title={t('settings.general')} size="small" className="settings-section">
             <Form layout="vertical">
               <Form.Item label={t('settings.autoLock')}>
                 <Select
+                  disabled={!unlocked}
                   value={settings.autoLockTimeoutMinutes}
                   options={[1, 5, 10, 15, 30, 60].map((value) => ({
                     value,
@@ -127,6 +138,7 @@ export default function Settings(): JSX.Element {
               </Form.Item>
               <Form.Item label={t('settings.clipboard')}>
                 <Select
+                  disabled={!unlocked}
                   value={settings.clearClipboardSeconds}
                   options={[5, 15, 30, 60, 120].map((value) => ({
                     value,
@@ -196,6 +208,7 @@ export default function Settings(): JSX.Element {
                 htmlType="submit"
                 icon={<SaveOutlined />}
                 loading={busy}
+                disabled={!unlocked}
               >
                 {t('settings.changeMasterSubmit')}
               </Button>
@@ -211,6 +224,7 @@ export default function Settings(): JSX.Element {
                 <Button
                   icon={<ExportOutlined />}
                   loading={backupBusy}
+                  disabled={!unlocked}
                   onClick={() => void exportBackup()}
                 >
                   {t('settings.export')}
@@ -227,6 +241,7 @@ export default function Settings(): JSX.Element {
                   danger
                   icon={<ImportOutlined />}
                   loading={backupBusy}
+                  disabled={!unlocked}
                   onClick={() => void restoreBackup()}
                 >
                   {t('settings.restore')}

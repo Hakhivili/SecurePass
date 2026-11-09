@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS } from '@shared/types';
 import type {
   AppSettings,
   PasswordConfig,
+  UiPreferences,
   VaultChangeMasterPasswordInput,
   VaultItemDraft,
   VaultStatus,
@@ -82,6 +83,10 @@ export function registerIpcHandlers(
   handle(IPC.settingsGet, () => readSettings(context));
   handle(IPC.settingsUpdate, (patch) =>
     context.vault.updateSettings(assertObject(patch, '设置') as Partial<AppSettings>),
+  );
+  handle(IPC.uiPreferencesGet, () => context.preferences.read());
+  handle(IPC.uiPreferencesUpdate, (patch) =>
+    context.preferences.update(assertObject(patch, '界面偏好') as Partial<UiPreferences>),
   );
   handle(IPC.clipboardCopySecret, async (value) => {
     const settings = await readSettings(context);

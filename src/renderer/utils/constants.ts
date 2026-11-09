@@ -6,7 +6,6 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { key: '/generator', labelKey: 'nav.generator' },
-  { key: '/vault', labelKey: 'nav.vault' },
+  { key: '/workbench', labelKey: 'nav.workbench' },
   { key: '/settings', labelKey: 'nav.settings' },
 ];

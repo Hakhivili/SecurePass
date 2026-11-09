@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { App, Card, Col, Form, Input, Modal, Row, Select, Switch } from 'antd';
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
+import { App, Form, Input, Modal, Select, Switch } from 'antd';
 import {
   DEFAULT_PASSWORD_CONFIG,
   type GeneratedPassword,
@@ -9,6 +8,8 @@ import {
   type VaultItemDraft,
 } from '@shared/types';
 import { getApi, getErrorMessage } from '../../services/ipc';
+import { useAuthStore } from '../../store/auth.store';
+import { useVaultGateStore } from '../../store/vault-gate.store';
 import { useVaultStore } from '../../store/vault.store';
 import { copySecret } from '../../utils/clipboard';
 import { useDuplicateGuard } from '../../utils/use-duplicate-guard';
@@ -26,6 +27,10 @@ interface SaveForm {
   isFavorite?: boolean;
 }
 
+/**
+ * 密码生成器面板：生成/复制不需要解锁；只有「保存到密码库」需要主密码。
+ * 布局为横向长方形（规则行 + 结果行 + 强度提示），放在密码库区块上方。
+ */
 export default function PasswordGenerator(): JSX.Element {
   const { message } = App.useApp();
   const { t } = useI18n();
@@ -59,6 +64,15 @@ export default function PasswordGenerator(): JSX.Element {
     void generate();
   }, [generate]);
 
+  /** 保存前先确保密码库已解锁（未解锁时弹出主密码对话框）。 */
+  const openSaveDialog = async () => {
+    if (!useAuthStore.getState().unlocked) {
+      const unlocked = await useVaultGateStore.getState().request('save');
+      if (!unlocked) return;
+    }
+    setSaveOpen(true);
+  };
+
   const save = async (values: SaveForm) => {
     if (!result) return;
     const draft: VaultItemDraft = {
@@ -91,40 +105,22 @@ export default function PasswordGenerator(): JSX.Element {
   };
 
   return (
-    <div className="page">
-      <h2 className="page-title">{t('generator.title')}</h2>
-      <p className="page-description">
-        {t('generator.description', {
-          min: PASSWORD_MIN_LENGTH,
-          max: PASSWORD_MAX_LENGTH,
-        })}
-      </p>
-
-      <Row gutter={20}>
-        <Col xs={24} lg={10}>
-          <Card title={t('generator.rulesCard')} size="small">
-            <GeneratorConfig config={config} onChange={setConfig} />
-          </Card>
-        </Col>
-        <Col xs={24} lg={14}>
-          <Card title={t('generator.resultCard')} size="small">
-            <GeneratorDisplay
-              result={result}
-              strength={strength}
-              error={error}
-              busy={busy}
-              onRegenerate={() => void generate()}
-              onCopy={() => {
-                if (!result) return;
-                void copySecret(result.password)
-                  .then(() => message.success(t('generator.copied')))
-                  .catch((copyError) => message.error(getErrorMessage(copyError, t)));
-              }}
-              onSave={() => setSaveOpen(true)}
-            />
-          </Card>
-        </Col>
-      </Row>
+    <>
+      <GeneratorConfig config={config} onChange={setConfig} />
+      <GeneratorDisplay
+        result={result}
+        strength={strength}
+        error={error}
+        busy={busy}
+        onRegenerate={() => void generate()}
+        onCopy={() => {
+          if (!result) return;
+          void copySecret(result.password)
+            .then(() => message.success(t('generator.copied')))
+            .catch((copyError) => message.error(getErrorMessage(copyError, t)));
+        }}
+        onSave={() => void openSaveDialog()}
+      />
 
       <Modal
         title={t('generator.saveTitle')}
@@ -167,6 +163,6 @@ export default function PasswordGenerator(): JSX.Element {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }

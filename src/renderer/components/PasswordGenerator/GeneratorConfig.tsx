@@ -1,4 +1,4 @@
-import { Checkbox, Form, InputNumber, Slider, Switch } from 'antd';
+import { Checkbox, InputNumber, Slider, Switch, Tooltip } from 'antd';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
 import type { PasswordConfig } from '@shared/types';
 import { useI18n } from '../../i18n';
@@ -8,6 +8,10 @@ interface GeneratorConfigProps {
   onChange: (config: PasswordConfig) => void;
 }
 
+/**
+ * 生成规则区：横向紧凑排布（长度 / 字符类型 / 排除易混淆），
+ * 配合「长方形」的生成器区块，避免占用过多纵向空间。
+ */
 export default function GeneratorConfig({
   config,
   onChange,
@@ -16,16 +20,29 @@ export default function GeneratorConfig({
   const patch = (partial: Partial<PasswordConfig>) => onChange({ ...config, ...partial });
 
   return (
-    <Form layout="vertical">
-      <Form.Item label={t('generator.length', { length: config.length })}>
+    <div className="generator-controls">
+      <div className="generator-control">
+        <span className="generator-label">{t('generator.lengthShort')}</span>
         <Slider
+          className="generator-slider"
           min={PASSWORD_MIN_LENGTH}
           max={PASSWORD_MAX_LENGTH}
           value={config.length}
           onChange={(length) => patch({ length })}
         />
-      </Form.Item>
-      <Form.Item label={t('generator.classes')}>
+        <InputNumber
+          size="small"
+          className="generator-length-input"
+          min={PASSWORD_MIN_LENGTH}
+          max={PASSWORD_MAX_LENGTH}
+          value={config.length}
+          onChange={(length) => {
+            if (typeof length === 'number') patch({ length });
+          }}
+        />
+      </div>
+
+      <div className="generator-control generator-classes">
         <Checkbox
           checked={config.includeUppercase}
           onChange={(event) => patch({ includeUppercase: event.target.checked })}
@@ -50,23 +67,18 @@ export default function GeneratorConfig({
         >
           {t('generator.symbols')}
         </Checkbox>
-      </Form.Item>
-      <Form.Item label={t('generator.excludeAmbiguous')}>
+      </div>
+
+      <div className="generator-control">
+        <Tooltip title={t('generator.excludeAmbiguous')}>
+          <span className="generator-label">{t('generator.excludeAmbiguousShort')}</span>
+        </Tooltip>
         <Switch
+          size="small"
           checked={config.excludeAmbiguous}
           onChange={(excludeAmbiguous) => patch({ excludeAmbiguous })}
         />
-      </Form.Item>
-      <Form.Item label={t('generator.lengthInput')}>
-        <InputNumber
-          min={PASSWORD_MIN_LENGTH}
-          max={PASSWORD_MAX_LENGTH}
-          value={config.length}
-          onChange={(length) => {
-            if (typeof length === 'number') patch({ length });
-          }}
-        />
-      </Form.Item>
-    </Form>
+      </div>
+    </div>
   );
 }

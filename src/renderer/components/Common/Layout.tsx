@@ -1,26 +1,23 @@
-import { KeyOutlined, SettingOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, SettingOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../../utils/constants';
-import { useAuthStore } from '../../store/auth.store';
 import { useI18n } from '../../i18n';
+import VaultAccessGate from '../Auth/VaultAccessGate';
 import Header from './Header';
-import PasswordGenerator from '../PasswordGenerator';
-import PasswordVault from '../PasswordVault';
+import Workbench from '../Workbench';
 import Settings from '../Settings';
 
 const { Sider, Content } = Layout;
 
 const ICONS: Record<string, JSX.Element> = {
-  '/generator': <KeyOutlined />,
-  '/vault': <UnorderedListOutlined />,
+  '/workbench': <AppstoreOutlined />,
   '/settings': <SettingOutlined />,
 };
 
 export default function MainLayout(): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
-  const lock = useAuthStore((state) => state.lock);
   const { t } = useI18n();
 
   return (
@@ -39,16 +36,17 @@ export default function MainLayout(): JSX.Element {
         />
       </Sider>
       <Layout>
-        <Header onLock={() => void lock()} />
+        <Header />
         <Content className="app-content">
           <Routes>
-            <Route path="/generator" element={<PasswordGenerator />} />
-            <Route path="/vault" element={<PasswordVault />} />
+            <Route path="/workbench" element={<Workbench />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/generator" replace />} />
+            <Route path="*" element={<Navigate to="/workbench" replace />} />
           </Routes>
         </Content>
       </Layout>
+      {/* 按需解锁对话框：生成器「保存」等操作会触发 */}
+      <VaultAccessGate />
     </Layout>
   );
 }

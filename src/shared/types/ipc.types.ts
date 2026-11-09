@@ -3,7 +3,7 @@ import type {
   PasswordConfig,
   PasswordStrengthResult,
 } from './password.types';
-import type { AppSettings } from './settings.types';
+import type { AppSettings, UiPreferences } from './settings.types';
 import type { VaultItem, VaultItemDraft, VaultSummary } from './vault.types';
 
 export const IPC = {
@@ -24,6 +24,8 @@ export const IPC = {
   passwordStrength: 'password:strength',
   settingsGet: 'settings:get',
   settingsUpdate: 'settings:update',
+  uiPreferencesGet: 'ui-preferences:get',
+  uiPreferencesUpdate: 'ui-preferences:update',
   clipboardCopySecret: 'clipboard:copy-secret',
   eventLocked: 'event:locked',
 } as const;
@@ -85,8 +87,14 @@ export interface SecurePassApi {
     strength(password: string): Promise<PasswordStrengthResult>;
   };
   settings: {
+    /** 保险库设置（自动锁定、剪贴板）：锁定状态下返回默认值。 */
     get(): Promise<AppSettings>;
     update(patch: Partial<AppSettings>): Promise<AppSettings>;
+  };
+  uiPreferences: {
+    /** 主题与语言：无需解锁即可读写。 */
+    get(): Promise<UiPreferences>;
+    update(patch: Partial<UiPreferences>): Promise<UiPreferences>;
   };
   clipboard: {
     copySecret(value: string): Promise<void>;

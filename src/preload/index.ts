@@ -38,6 +38,10 @@ const api: SecurePassApi = {
     get: () => invoke(IPC.settingsGet),
     update: (patch) => invoke(IPC.settingsUpdate, patch),
   },
+  uiPreferences: {
+    get: () => invoke(IPC.uiPreferencesGet),
+    update: (patch) => invoke(IPC.uiPreferencesUpdate, patch),
+  },
   clipboard: {
     copySecret: (value) => invoke(IPC.clipboardCopySecret, value),
   },

@@ -13,8 +13,7 @@ const zhCN = {
   'common.copy': '复制',
 
   // 导航
-  'nav.generator': '密码生成器',
-  'nav.vault': '密码库',
+  'nav.workbench': '工作台',
   'nav.settings': '设置',
 
   // 初始化
@@ -41,6 +40,7 @@ const zhCN = {
   'generator.rulesCard': '生成规则',
   'generator.resultCard': '生成结果',
   'generator.length': '密码长度：{length}',
+  'generator.lengthShort': '长度',
   'generator.lengthInput': '直接输入长度',
   'generator.classes': '字符类型',
   'generator.uppercase': '大写字母',
@@ -48,6 +48,7 @@ const zhCN = {
   'generator.numbers': '数字',
   'generator.symbols': '特殊符号',
   'generator.excludeAmbiguous': '排除易混淆字符（0/O、1/l/I）',
+  'generator.excludeAmbiguousShort': '排除易混淆字符',
   'generator.placeholder': '点击生成按钮创建密码',
   'generator.copy': '复制',
   'generator.regenerate': '重新生成',
@@ -71,6 +72,10 @@ const zhCN = {
   // 密码库
   'vault.title': '密码库',
   'vault.description': '记录、搜索和编辑本地账户资料；密码内容不参与搜索。',
+  'vault.lock': '锁定密码库',
+  'vault.unlockRequired': '需要解锁密码库',
+  'vault.lockedHint': '密码库已锁定。解锁后才能查看、搜索、复制或保存记录。',
+  'vault.createHint': '还没有密码库。设置主密码后即可保存记录；生成与复制不需要密码库。',
   'vault.newItem': '新增记录',
   'vault.searchPlaceholder': '搜索名称、账号、网站或标签',
   'vault.empty': '暂无记录',
@@ -115,6 +120,8 @@ const zhCN = {
   // 设置
   'settings.title': '设置',
   'settings.description': '锁定策略、剪贴板清理、主密码与加密备份。',
+  'settings.lockedNotice':
+    '自动锁定、剪贴板、主密码与备份需要先解锁密码库；主题与语言可随时修改。',
   'settings.general': '常规',
   'settings.autoLock': '自动锁定（无操作后）',
   'settings.minutes': '{value} 分钟',
@@ -203,8 +210,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'common.close': 'Close',
   'common.copy': 'Copy',
 
-  'nav.generator': 'Password generator',
-  'nav.vault': 'Vault',
+  'nav.workbench': 'Workbench',
   'nav.settings': 'Settings',
 
   'setup.title': 'Create your {app} vault',
@@ -228,6 +234,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'generator.rulesCard': 'Rules',
   'generator.resultCard': 'Result',
   'generator.length': 'Length: {length}',
+  'generator.lengthShort': 'Length',
   'generator.lengthInput': 'Type the length',
   'generator.classes': 'Character classes',
   'generator.uppercase': 'Uppercase',
@@ -235,6 +242,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'generator.numbers': 'Digits',
   'generator.symbols': 'Symbols',
   'generator.excludeAmbiguous': 'Exclude ambiguous characters (0/O, 1/l/I)',
+  'generator.excludeAmbiguousShort': 'Exclude ambiguous',
   'generator.placeholder': 'Click generate to create a password',
   'generator.copy': 'Copy',
   'generator.regenerate': 'Regenerate',
@@ -257,6 +265,12 @@ const en: Record<keyof typeof zhCN, string> = {
   'vault.title': 'Vault',
   'vault.description':
     'Store, search and edit local accounts. Passwords are never searched.',
+  'vault.lock': 'Lock vault',
+  'vault.unlockRequired': 'Unlock required',
+  'vault.lockedHint':
+    'The vault is locked. Unlock to view, search, copy or save records.',
+  'vault.createHint':
+    'No vault yet. Set a master password to start saving records; generating and copying work without a vault.',
   'vault.newItem': 'New record',
   'vault.searchPlaceholder': 'Search name, username, website or tag',
   'vault.empty': 'No records yet',
@@ -302,6 +316,8 @@ const en: Record<keyof typeof zhCN, string> = {
   'settings.title': 'Settings',
   'settings.description':
     'Locking policy, clipboard clearing, master password and encrypted backups.',
+  'settings.lockedNotice':
+    'Auto-lock, clipboard, master password and backups require an unlocked vault; theme and language can be changed anytime.',
   'settings.general': 'General',
   'settings.autoLock': 'Auto-lock after inactivity',
   'settings.minutes': '{value} min',

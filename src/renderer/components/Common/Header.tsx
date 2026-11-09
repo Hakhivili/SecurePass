@@ -1,14 +1,13 @@
 import { LockOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { APP_NAME } from '@shared/constants';
+import { useAuthStore } from '../../store/auth.store';
 import { useI18n } from '../../i18n';
 
-interface HeaderProps {
-  onLock: () => void;
-}
-
-export default function Header({ onLock }: HeaderProps): JSX.Element {
+export default function Header(): JSX.Element {
   const { t } = useI18n();
+  const unlocked = useAuthStore((state) => state.unlocked);
+  const lock = useAuthStore((state) => state.lock);
 
   return (
     <div className="app-header">
@@ -16,9 +15,11 @@ export default function Header({ onLock }: HeaderProps): JSX.Element {
         <SafetyCertificateOutlined />
         <span>{APP_NAME}</span>
       </div>
-      <Button icon={<LockOutlined />} onClick={onLock}>
-        {t('common.lock')}
-      </Button>
+      {unlocked && (
+        <Button icon={<LockOutlined />} onClick={() => void lock()}>
+          {t('common.lock')}
+        </Button>
+      )}
     </div>
   );
 }
