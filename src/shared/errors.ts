@@ -14,6 +14,7 @@ export const ErrorCode = {
   RestoreFailed: 'RESTORE_FAILED',
   CryptoFailure: 'CRYPTO_FAILURE',
   StorageFailure: 'STORAGE_FAILURE',
+  UntrustedSender: 'UNTRUSTED_SENDER',
   Internal: 'INTERNAL_ERROR',
 } as const;
 

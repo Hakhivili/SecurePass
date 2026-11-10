@@ -48,4 +48,30 @@ describe('CryptoService', () => {
       crypto.verifyMasterPassword(vaultFile, 'not the password'),
     ).resolves.toBe(false);
   });
+
+  it('treats a wrong-length IV as file corruption instead of a bad password', async () => {
+    const vaultFile = await crypto.createVaultFile(payload, MASTER_PASSWORD);
+    await expect(
+      crypto.openVaultFile(
+        { ...vaultFile, payload: { ...vaultFile.payload, iv: 'AAAA' } },
+        MASTER_PASSWORD,
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.CorruptedVault });
+  });
+
+  it('treats a wrong-length auth tag as file corruption', async () => {
+    const vaultFile = await crypto.createVaultFile(payload, MASTER_PASSWORD);
+    const truncated = Buffer.from(vaultFile.wrappedDataKey.authTag, 'base64')
+      .subarray(0, 8)
+      .toString('base64');
+    await expect(
+      crypto.openVaultFile(
+        {
+          ...vaultFile,
+          wrappedDataKey: { ...vaultFile.wrappedDataKey, authTag: truncated },
+        },
+        MASTER_PASSWORD,
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.CorruptedVault });
+  });
 });

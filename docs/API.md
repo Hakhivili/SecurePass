@@ -68,15 +68,41 @@ interface PasswordStrengthResult {
 | `get()`         | 读取保险库设置，锁定时返回默认值 |
 | `update(patch)` | 更新自动锁定、剪贴板（需已解锁） |
 
+```ts
+interface AppSettings {
+  autoLockTimeoutMinutes: number; // 1-60
+  clearClipboardSeconds: number; // 5-300
+}
+```
+
+> 早期版本把 `theme` / `language` 存在加密负载里，现已由 `uiPreferences` 接管；
+> 读取旧库时这两个遗留字段会被丢弃，并在下一次写入时从文件中消失。
+
 ## uiPreferences
 
-主题与语言不是机密数据，且必须在**未解锁**（甚至尚未创建密码库）时也能读写，
+主题、语言、强调色与生成器位置不是机密数据，且必须在**未解锁**（甚至尚未创建密码库）时也能读写，
 因此在主进程以明文 `ui-preferences.json` 单独保存，不进入加密负载。
 
-| 方法            | 说明                                   |
-| --------------- | -------------------------------------- |
-| `get()`         | 读取 `{ theme, language }`（无需解锁） |
-| `update(patch)` | 更新主题或语言，返回更新后的完整偏好   |
+| 方法            | 说明                               |
+| --------------- | ---------------------------------- |
+| `get()`         | 读取完整界面偏好（无需解锁）       |
+| `update(patch)` | 更新任意子集，返回更新后的完整偏好 |
+
+```ts
+interface UiPreferences {
+  theme: 'light' | 'dark' | 'auto';
+  language: 'en' | 'zh-CN';
+  accent: 'indigo' | 'blue' | 'emerald' | 'violet' | 'amber' | 'rose';
+  generatorPosition: 'top' | 'left' | 'right';
+}
+```
+
+## app
+
+| 方法            | 说明                                                                            |
+| --------------- | ------------------------------------------------------------------------------- |
+| `info()`        | 返回 `{ name, version, electron, chrome, node, dataDir, platform }`（关于面板） |
+| `openDataDir()` | 在系统文件管理器中打开数据目录                                                  |
 
 ## clipboard
 
@@ -107,3 +133,11 @@ interface PasswordStrengthResult {
 | `ITEM_NOT_FOUND`                     | 记录不存在               |
 | `BACKUP_FAILED` / `RESTORE_FAILED`   | 备份或恢复失败           |
 | `CRYPTO_FAILURE` / `STORAGE_FAILURE` | 加密或存储失败           |
+| `UNTRUSTED_SENDER`                   | 调用不来自应用主窗口     |
+| `INTERNAL_ERROR`                     | 未预期的内部错误         |
+
+## 调用来源校验
+
+所有 `ipcMain.handle` 通道（包括 `windowSyncTitleBar`）在处理请求前都会比对
+`event.sender` 与主窗口的 `webContents`；不一致时直接返回
+`{ ok: false, error: { code: 'UNTRUSTED_SENDER' } }` 并写入日志，业务处理器不会被执行。

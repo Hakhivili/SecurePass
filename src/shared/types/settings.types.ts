@@ -22,21 +22,17 @@ export interface UiPreferences {
 /**
  * 保险库相关设置（自动锁定、剪贴板）属于私密业务配置，仍保存在加密负载里。
  *
- * `theme` / `language` 字段为历史遗留：早期版本把它们存在负载内，
- * 现已由 `UiPreferences` 接管，读取时会被覆盖，保留字段仅用于兼容旧数据。
+ * 早期版本曾把 `theme` / `language` 也存在这里，现在由 `UiPreferences` 接管；
+ * 旧文件里的这两个字段在读取时会被丢弃（见 `normalizeSettings`）。
  */
 export interface AppSettings {
   autoLockTimeoutMinutes: number;
   clearClipboardSeconds: number;
-  theme: AppTheme;
-  language: AppLanguage;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   autoLockTimeoutMinutes: 5,
   clearClipboardSeconds: 30,
-  theme: 'auto',
-  language: 'zh-CN',
 };
 
 export const DEFAULT_UI_PREFERENCES: UiPreferences = {

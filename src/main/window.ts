@@ -1,12 +1,13 @@
 import path from 'node:path';
 import { BrowserWindow, dialog, screen, shell } from 'electron';
-import { APP_NAME, TITLE_BAR_HEIGHT } from '@shared/constants';
+import { APP_NAME, THEME_CHROME, TITLE_BAR_HEIGHT } from '@shared/constants';
 import {
   DEV_LOAD_MAX_RETRIES,
   DEV_LOAD_RETRY_DELAY_MS,
   ERR_ABORTED,
   resolveRendererTarget,
 } from './renderer-target';
+import { logError } from './services/log.service';
 import type { WindowStateService } from './services/window-state.service';
 
 export interface WindowChromeOptions {
@@ -16,9 +17,10 @@ export interface WindowChromeOptions {
   symbolColor: string;
 }
 
+/** 主题尚未读取时的兜底外观，直接取设计令牌，避免和 THEME_CHROME 脱钩。 */
 const DEFAULT_CHROME: WindowChromeOptions = {
-  backgroundColor: '#f4f5f7',
-  symbolColor: '#1f2937',
+  backgroundColor: THEME_CHROME.light.bg,
+  symbolColor: THEME_CHROME.light.text,
 };
 
 const MIN_WIDTH = 1000;
@@ -157,7 +159,7 @@ export function createMainWindow(
   // 连续失败则弹窗告知，而不是无限重载。
   let rendererRecoveries = 0;
   window.webContents.on('render-process-gone', (_event, details) => {
-    console.error(
+    logError(
       `[renderer] 渲染进程异常退出：${details.reason}（exitCode=${details.exitCode}）`,
     );
     if (details.reason === 'clean-exit' || window.isDestroyed()) return;

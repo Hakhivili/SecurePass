@@ -70,4 +70,36 @@ describe('负载结构校验与修补', () => {
       await fixture.dispose();
     }
   });
+
+  it('丢弃旧版本写在加密负载里的 theme/language 遗留字段', async () => {
+    const fixture = await createVaultFixture();
+    try {
+      const legacyPayload = {
+        schemaVersion: 1,
+        items: [],
+        settings: { ...DEFAULT_SETTINGS, theme: 'dark', language: 'en' },
+      } as unknown as VaultPayload;
+
+      expect(validatePayload(legacyPayload)).toBe(true);
+      expect(Object.keys(legacyPayload.settings).sort()).toEqual([
+        'autoLockTimeoutMinutes',
+        'clearClipboardSeconds',
+      ]);
+
+      const file = await fixture.crypto.createVaultFile(legacyPayload, MASTER_PASSWORD);
+      await fixture.storage.writeVaultFile(file);
+      await fixture.vault.unlock(MASTER_PASSWORD);
+
+      expect(await fixture.vault.getSettings()).toEqual({ ...DEFAULT_SETTINGS });
+
+      const written = await fixture.storage.readVaultFile();
+      const reopened = await fixture.crypto.openVaultFile(written, MASTER_PASSWORD);
+      expect(Object.keys(reopened.payload.settings).sort()).toEqual([
+        'autoLockTimeoutMinutes',
+        'clearClipboardSeconds',
+      ]);
+    } finally {
+      await fixture.dispose();
+    }
+  });
 });

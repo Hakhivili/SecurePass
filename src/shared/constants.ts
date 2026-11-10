@@ -164,7 +164,6 @@ export const VAULT_LOCK_FILE_NAME = 'vault.lock';
 export const UI_PREFERENCES_FILE_NAME = 'ui-preferences.json';
 /** 记住上次的窗口大小与位置。 */
 export const WINDOW_STATE_FILE_NAME = 'window-state.json';
-export const MAX_SEARCH_RESULTS = 1000;
 
 export const ARGON2ID_DEFAULTS = {
   iterations: 3,

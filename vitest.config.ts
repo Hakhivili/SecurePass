@@ -24,8 +24,21 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      include: ['src/**/*.ts'],
-      exclude: ['src/**/*.d.ts', 'src/main/index.ts', 'src/preload/**'],
+      // 前端组件也是产品代码：一并统计，避免「只测主进程」的假象。
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/main/index.ts',
+        'src/preload/**',
+        'src/shared/types/**',
+      ],
+      // 阈值按当前实测值（47.99% / 79.8% / 68.58%）留出余量，防止覆盖率悄悄回退。
+      thresholds: {
+        statements: 45,
+        branches: 70,
+        functions: 60,
+        lines: 45,
+      },
     },
   },
 });

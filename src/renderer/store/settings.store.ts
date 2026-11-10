@@ -21,7 +21,7 @@ interface SettingsState {
 const cached = readUiPreferences();
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
-  settings: { ...DEFAULT_SETTINGS, theme: cached.theme, language: cached.language },
+  settings: { ...DEFAULT_SETTINGS },
   ui: { ...cached },
   loading: false,
   error: null,
@@ -33,15 +33,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const ui = await getApi().uiPreferences.get();
       writeUiPreferences(ui);
 
-      let settings: AppSettings = {
-        ...DEFAULT_SETTINGS,
-        theme: ui.theme,
-        language: ui.language,
-      };
+      let settings: AppSettings = { ...DEFAULT_SETTINGS };
       // 自动锁定 / 剪贴板属于加密负载，仅解锁后可读
       if (useAuthStore.getState().unlocked) {
-        const vaultSettings = await getApi().settings.get();
-        settings = { ...vaultSettings, theme: ui.theme, language: ui.language };
+        settings = await getApi().settings.get();
       }
 
       set({ settings, ui, loading: false });
@@ -52,25 +47,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   update: async (patch) => {
     try {
-      const { theme, language, ...vaultPatch } = patch;
-      let ui = get().ui;
-
-      // 主题/语言属于界面偏好，走明文偏好通道（无需解锁）
-      if (theme !== undefined || language !== undefined) {
-        ui = await getApi().uiPreferences.update({ theme, language });
-        writeUiPreferences(ui);
-      }
-
       let vaultSettings = get().settings;
-      if (Object.keys(vaultPatch).length > 0) {
-        vaultSettings = await getApi().settings.update(vaultPatch);
+      if (Object.keys(patch).length > 0) {
+        vaultSettings = await getApi().settings.update(patch);
       }
 
-      set({
-        settings: { ...vaultSettings, theme: ui.theme, language: ui.language },
-        ui,
-        error: null,
-      });
+      set({ settings: vaultSettings, error: null });
     } catch (error) {
       set({ error });
       throw error;
@@ -81,11 +63,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     try {
       const ui = await getApi().uiPreferences.update(patch);
       writeUiPreferences(ui);
-      set({
-        ui,
-        settings: { ...get().settings, theme: ui.theme, language: ui.language },
-        error: null,
-      });
+      set({ ui, error: null });
     } catch (error) {
       set({ error });
       throw error;

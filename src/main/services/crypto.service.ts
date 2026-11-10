@@ -91,15 +91,19 @@ export class CryptoService {
       throw new AppError(ErrorCode.CorruptedVault, '加密数据格式无效');
     }
 
+    // 先校验结构：IV 或认证标签长度不对属于文件损坏，不应该报「主密码错误」。
+    const iv = Buffer.from(blob.iv, 'base64');
+    const authTag = Buffer.from(blob.authTag, 'base64');
+    if (iv.length !== GCM_IV_BYTES || authTag.length !== GCM_TAG_BYTES) {
+      throw new AppError(ErrorCode.CorruptedVault, '加密数据格式无效');
+    }
+
     try {
-      const decipher = createDecipheriv(
-        'aes-256-gcm',
-        key,
-        Buffer.from(blob.iv, 'base64'),
-        { authTagLength: GCM_TAG_BYTES },
-      );
+      const decipher = createDecipheriv('aes-256-gcm', key, iv, {
+        authTagLength: GCM_TAG_BYTES,
+      });
       decipher.setAAD(Buffer.from(aad, 'utf8'));
-      decipher.setAuthTag(Buffer.from(blob.authTag, 'base64'));
+      decipher.setAuthTag(authTag);
       return Buffer.concat([
         decipher.update(Buffer.from(blob.ciphertext, 'base64')),
         decipher.final(),

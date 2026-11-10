@@ -14,6 +14,12 @@ All notable changes to this project are documented in this file.
   data directory).
 - Keyboard shortcuts (`Ctrl/Cmd + N/F/L`) and screen-reader labels for icon-only actions.
 - Error boundary for the renderer plus `render-process-gone` recovery in the main process.
+- IPC sender validation: every channel rejects callers that are not the main window
+  (`UNTRUSTED_SENDER`).
+- Content Security Policy is also served as a response header for the dev server, navigation is
+  restricted to the dev origin, and permission checks are denied outright.
+- File logging in `userData/logs/main.log` with 512 KB rotation and redaction of secret fields.
+- Coverage reporting (`@vitest/coverage-v8`) with thresholds, and CI now runs `test:coverage`.
 - Root `SECURITY.md`, `THIRD-PARTY-NOTICES.md` and `docs/USER-GUIDE.zh-CN.md`.
 - Application icon, NSIS installer metadata and a `package-smoke` CI job.
 
@@ -29,14 +35,19 @@ All notable changes to this project are documented in this file.
 - Edits no longer clear `lastUsed`, a failed save no longer wipes the editor, and the generated
   password no longer flickers from out-of-order generator responses.
 - `{placeholder}` values in translated strings were rendered literally in some views.
+- A truncated IV or authentication tag is reported as `CORRUPTED_VAULT` instead of a wrong master
+  password.
 
 ### Changed
 
+- `AppSettings` no longer carries `theme` / `language`; the encrypted payload keeps only auto-lock
+  and clipboard settings, and legacy fields are dropped on the next write.
 - Dependencies are no longer shipped inside `app.asar`: front-end libraries are already bundled by
   Vite, which shrinks the archive from 75 MB to about 1.2 MB.
 - Windows executables now carry the application icon, product name and version (previously they kept
   Electron's defaults); the workaround config `electron-builder.portable.yml` was removed.
 - Releases are published to GitHub Releases with `SHA256SUMS.txt` instead of loose artifacts.
+- Unused exports (`satisfiesConfig`, `MAX_SEARCH_RESULTS`) were removed.
 
 ## [0.1.0] - 2026-10-05
 

@@ -94,9 +94,30 @@ AAD 固定为 `securepass:v1:data-key` 与 `securepass:v1:payload`，防止密�
 
 - 写入流程：写临时文件 → `fsync` → 备份当前文件 → 原子重命名替换正式文件。
 - 中断或写入失败时，正式文件保持旧版本，`.bak` 保留上一完整版本。
-- 锁文件保存 PID 与时间戳；进程退出或锁过期后可回收。
+- 锁文件保存 PID；持有者每 15 秒用 `utimes` 刷新 mtime 作为心跳。
+  判定规则：持有者进程存活即认为锁有效（与持有多久无关）；只有进程已退出，
+  或心跳停滞超过 60 秒（卡死 / PID 复用）才回收，避免长会话被第二个进程抢占后双写。
+- 自动锁定按「系统空闲（`powerMonitor.getSystemIdleTime`）与窗口失焦时长取较大者」计算，
+  每 5 秒评估一次；纯界面操作（生成器、编辑器打字）同样会续期。
+- 解锁时校验负载结构：缺失/重复的 `id` 与非法时间戳会被补齐并立即写回，
+  旧版本遗留在加密负载里的 `theme` / `language` 字段会被丢弃。
 - 恢复流程先验证主密码与文件完整性，再复制当前库为 `pre-restore` 加密副本，最后原子替换。
 - 密码库内容在解锁后常驻内存，锁定或退出时释放引用并清零可用 Buffer。
+
+## 安全加固
+
+- 渲染进程：`contextIsolation` + `sandbox` + 禁用 `nodeIntegration`；`index.html` 用 meta CSP
+  兜底，开发服务器响应另由 `webRequest.onHeadersReceived` 下发同样的策略（禁止
+  `object-src` / `base-uri` / 表单提交 / 被嵌入）。
+- `will-navigate` 只允许开发模式下同源跳转；其它 webContents 的 `setWindowOpenHandler`
+  一律 `deny`，外部链接交给系统浏览器。
+- 权限请求与权限检查双重拒绝（`setPermissionRequestHandler` + `setPermissionCheckHandler`）；
+  禁止 `<webview>` 挂载。
+- 所有 IPC 通道在处理前比对 `event.sender` 与主窗口 `webContents`，不匹配则返回
+  `UNTRUSTED_SENDER` 并记录日志。
+- 解密时先校验 IV / 认证标签长度：结构损坏报 `CORRUPTED_VAULT`，不再伪装成「主密码错误」。
+- 日志写入 `userData/logs/main.log`（超过 512 KB 轮转为 `main.log.1`），只记录事件与错误码，
+  序列化细节时对 `password` / `secret` / `token` / `dataKey` / `kek` / `dek` 字段统一脱敏。
 
 ## 渲染层数据流
 

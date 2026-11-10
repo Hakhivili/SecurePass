@@ -53,14 +53,6 @@ export class PasswordService {
     };
   }
 
-  satisfiesConfig(password: string, config: PasswordConfig): boolean {
-    if ([...password].length !== config.length) return false;
-    const { requiredSets } = buildCharset(config);
-    return requiredSets.every((set) =>
-      [...set].some((character) => password.includes(character)),
-    );
-  }
-
   calculateStrength(password: string): PasswordStrengthResult {
     const characters = [...password];
     if (characters.length === 0) {

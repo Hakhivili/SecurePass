@@ -1,7 +1,9 @@
 import { app, BrowserWindow, nativeTheme, powerMonitor } from 'electron';
+import path from 'node:path';
 import { createAppContext } from './app-context';
 import { registerIpcHandlers } from './ipc';
 import { applyGlobalSecurityPolicies, applySecurityPolicies } from './security';
+import { initLogger, logError, logInfo } from './services/log.service';
 import { createMainWindow } from './window';
 import { THEME_CHROME } from '@shared/constants';
 import { IPC } from '@shared/types';
@@ -15,12 +17,15 @@ if (!gotSingleInstanceLock) {
   let mainWindow: BrowserWindow | null = null;
   let quitting = false;
 
-  // 主进程兜底日志：任何未捕获异常都先记录，避免静默退出。
+  initLogger(path.join(context.paths.baseDir, 'logs'));
+  logInfo('应用启动', { version: app.getVersion(), platform: process.platform });
+
+  // 主进程兜底日志：任何未捕获异常都写入日志文件，避免静默退出。
   process.on('uncaughtException', (error) => {
-    console.error('[main] 未捕获异常', error);
+    logError('[main] 未捕获异常', error);
   });
   process.on('unhandledRejection', (reason) => {
-    console.error('[main] 未处理的 Promise 拒绝', reason);
+    logError('[main] 未处理的 Promise 拒绝', reason);
   });
 
   // 自动锁定依据「系统空闲 + 窗口失焦」，而不是只看密码库 IPC 调用：
@@ -99,6 +104,7 @@ if (!gotSingleInstanceLock) {
     void (async () => {
       context.clipboard.dispose();
       await context.vault.shutdown();
+      logInfo('应用退出');
       app.exit(0);
     })();
   });

@@ -486,9 +486,10 @@ export function validatePayload(payload: VaultPayload): boolean {
     throw new AppError(ErrorCode.CorruptedVault, '密码库数据结构版本不受支持');
   }
 
-  const repaired = repairItems(payload);
-  validateSettings(payload.settings);
-  return repaired;
+  const itemsRepaired = repairItems(payload);
+  const { settings, changed } = normalizeSettings(payload.settings);
+  if (changed) payload.settings = settings;
+  return itemsRepaired || changed;
 }
 
 /** 逐条校验记录，并补齐缺失/重复的 id 与非法时间戳。 */
@@ -629,9 +630,6 @@ function validateSettings(settings: AppSettings): void {
       `自动锁定时间必须在 ${MIN_AUTO_LOCK_MINUTES} 到 ${MAX_AUTO_LOCK_MINUTES} 分钟之间`,
     );
   }
-  if (!['light', 'dark', 'auto'].includes(settings.theme)) {
-    throw new AppError(ErrorCode.InvalidInput, '主题设置无效');
-  }
   if (
     !Number.isFinite(settings.clearClipboardSeconds) ||
     settings.clearClipboardSeconds < MIN_CLIPBOARD_SECONDS ||
@@ -642,7 +640,19 @@ function validateSettings(settings: AppSettings): void {
       `剪贴板清理时间必须在 ${MIN_CLIPBOARD_SECONDS} 到 ${MAX_CLIPBOARD_SECONDS} 秒之间`,
     );
   }
-  if (!['en', 'zh-CN'].includes(settings.language)) {
-    throw new AppError(ErrorCode.InvalidInput, '语言设置无效');
-  }
+}
+
+/**
+ * 只保留当前版本认识的字段：早期版本把 `theme` / `language` 存在加密负载里，
+ * 现在由明文的 `UiPreferences` 接管，读取旧库时顺手丢弃这两个遗留字段。
+ */
+function normalizeSettings(raw: unknown): { settings: AppSettings; changed: boolean } {
+  validateSettings(raw as AppSettings);
+  const source = raw as Record<string, unknown>;
+  const settings: AppSettings = {
+    autoLockTimeoutMinutes: source.autoLockTimeoutMinutes as number,
+    clearClipboardSeconds: source.clearClipboardSeconds as number,
+  };
+  const changed = Object.keys(source).length !== Object.keys(settings).length;
+  return { settings, changed };
 }

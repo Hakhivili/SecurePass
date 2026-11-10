@@ -220,6 +220,7 @@ const zhCN = {
   'error.RESTORE_FAILED': '恢复失败',
   'error.CRYPTO_FAILURE': '加密操作失败',
   'error.STORAGE_FAILURE': '写入磁盘失败，原文件未被修改',
+  'error.UNTRUSTED_SENDER': '调用来源不受信任，已拒绝',
   'error.INTERNAL_ERROR': '发生未知错误',
   'error.UNKNOWN': '操作失败，请重试',
 
@@ -476,6 +477,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'error.RESTORE_FAILED': 'Restore failed',
   'error.CRYPTO_FAILURE': 'Cryptographic operation failed',
   'error.STORAGE_FAILURE': 'Writing to disk failed; the original file was not modified',
+  'error.UNTRUSTED_SENDER': 'The caller was not trusted, the request was rejected',
   'error.INTERNAL_ERROR': 'An unknown error occurred',
   'error.UNKNOWN': 'Operation failed, please try again',
 

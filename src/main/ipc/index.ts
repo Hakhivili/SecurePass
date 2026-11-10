@@ -14,6 +14,7 @@ import type {
 import { ErrorCode, isAppError } from '@shared/errors';
 import { IPC } from '@shared/types';
 import type { AppContext } from '../app-context';
+import { logError } from '../services/log.service';
 
 type MainWindowProvider = () => BrowserWindow | null;
 
@@ -25,12 +26,20 @@ export function registerIpcHandlers(
     channel: string,
     handler: (...args: unknown[]) => Promise<TResult> | TResult,
   ): void => {
-    ipcMain.handle(channel, async (_event, ...args: unknown[]) => {
+    ipcMain.handle(channel, async (event, ...args: unknown[]) => {
+      if (!isTrustedSender(getMainWindow(), event.sender)) {
+        logError(`[ipc] ${channel} rejected: untrusted sender`);
+        return {
+          ok: false,
+          error: { code: ErrorCode.UntrustedSender, message: '拒绝来自未知窗口的调用' },
+        } satisfies IpcResult<TResult>;
+      }
+
       try {
         return { ok: true, data: await handler(...args) } satisfies IpcResult<TResult>;
       } catch (error) {
         const payload = toErrorPayload(error);
-        console.error(`[ipc] ${channel} failed: ${payload.code}`);
+        logError(`[ipc] ${channel} failed: ${payload.code}`, payload.message);
         return { ok: false, error: payload } satisfies IpcResult<TResult>;
       }
     });
@@ -91,6 +100,11 @@ export function registerIpcHandlers(
     context.preferences.update(assertObject(patch, '界面偏好') as Partial<UiPreferences>),
   );
   ipcMain.handle(IPC.windowSyncTitleBar, (event, options) => {
+    if (!isTrustedSender(getMainWindow(), event.sender)) {
+      logError(`[ipc] ${IPC.windowSyncTitleBar} rejected: untrusted sender`);
+      return;
+    }
+
     const payload = assertObject(
       options,
       '标题栏外观',
@@ -115,6 +129,17 @@ export function registerIpcHandlers(
       throw new Error(`无法打开数据目录：${errorMessage}`);
     }
   });
+}
+
+/**
+ * IPC 只接受来自应用自身主窗口的调用：即便有其它 webContents（被注入的 iframe、
+ * 未来新增的窗口）拿到了 preload 桥，也无法调用这些通道。
+ */
+export function isTrustedSender(
+  window: BrowserWindow | null,
+  sender: Electron.WebContents,
+): boolean {
+  return Boolean(window && !window.isDestroyed() && window.webContents === sender);
 }
 
 export function appInfo(context: AppContext): AppInfo {

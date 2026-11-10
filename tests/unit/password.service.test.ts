@@ -51,10 +51,11 @@ describe('PasswordService', () => {
     ).toThrowError(expect.objectContaining({ code: ErrorCode.InvalidInput }));
   });
 
-  it('validates generated passwords against the config', () => {
+  it('generates passwords that honour the requested config', () => {
     const config = { ...DEFAULT_PASSWORD_CONFIG, length: 16, includeSymbols: false };
-    const password = service.generatePassword(config).password;
-    expect(service.satisfiesConfig(password, config)).toBe(true);
+    const { password } = service.generatePassword(config);
+    expect([...password]).toHaveLength(16);
+    expect(password).not.toMatch(/[^A-Za-z0-9]/);
   });
 
   it('reports low entropy configs with a warning code instead of a security claim', () => {

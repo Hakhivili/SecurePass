@@ -3,32 +3,33 @@
 > 交付物对应任务书 §9「功能、异常和安全测试报告」。本报告覆盖任务书 §8 的 12 项验收标准，
 > 并给出可复现命令与实测数值。
 >
-> - 测试日期：2026-10-05
+> - 测试日期：2026-10-05（初版）／2026-11-11（第 4 批质量加固后更新）
 > - 被测版本：securepass@0.1.0（分支 `master`）
 > - 环境：Windows 10/11 x64、Node.js v24.9.0、npm 11.12.1、Vitest 2.1.9、jsdom 25.0.1
-> - 复现命令：`npm test`（单测）、`npm run test:coverage`（需先安装 `@vitest/coverage-v8`）
+> - 复现命令：`npm test`（单测）、`npm run test:coverage`（覆盖率，含阈值校验）
 
 ---
 
 ## 1. 结果汇总
 
-| 检查项              | 命令                   | 结果                                                  |
-| ------------------- | ---------------------- | ----------------------------------------------------- |
-| 单元 / 集成测试     | `npm test`             | ✅ **12 个文件、55 个用例全部通过**（约 2.6 s）       |
-| 类型检查            | `npm run typecheck`    | ✅ 0 错误（`strict` + `noUnusedLocals`）              |
-| 代码规范            | `npm run lint`         | ✅ 0 错误、0 警告                                     |
-| 格式检查            | `npm run format:check` | ✅ 全仓库符合 Prettier 配置                           |
-| 生产构建            | `npm run build`        | ✅ `dist/` + `dist-electron/` 产出成功                |
-| 密文落盘扫描        | 见 §3.7                | ✅ 正式文件、`.bak`、锁文件中均无业务明文             |
-| 性能基准（1000 条） | 见 §4                  | ✅ 搜索 0.43–1.93 ms、摘要列表 0.29 ms（预算 300 ms） |
+| 检查项              | 命令                    | 结果                                                         |
+| ------------------- | ----------------------- | ------------------------------------------------------------ |
+| 单元 / 集成测试     | `npm test`              | ✅ **21 个文件、107 个用例全部通过**（约 3.5 s）             |
+| 覆盖率              | `npm run test:coverage` | ✅ 语句 47.99%、分支 79.88%、函数 68.58%（阈值 45/70/60/45） |
+| 类型检查            | `npm run typecheck`     | ✅ 0 错误（`strict` + `noUnusedLocals`）                     |
+| 代码规范            | `npm run lint`          | ✅ 0 错误、0 警告                                            |
+| 格式检查            | `npm run format:check`  | ✅ 全仓库符合 Prettier 配置                                  |
+| 生产构建            | `npm run build`         | ✅ `dist/` + `dist-electron/` 产出成功                       |
+| 密文落盘扫描        | 见 §3.7                 | ✅ 正式文件、`.bak`、锁文件中均无业务明文                    |
+| 性能基准（1000 条） | 见 §4                   | ✅ 搜索 0.45–2.05 ms、摘要列表 0.27 ms（预算 300 ms）        |
 
 测试文件与用例数：
 
 | 测试文件                                         | 用例数 | 覆盖内容                                             |
 | ------------------------------------------------ | ------ | ---------------------------------------------------- |
-| `tests/unit/crypto.service.test.ts`              | 4      | KDF、加解密往返、错误密码、篡改检测、主密码校验      |
+| `tests/unit/crypto.service.test.ts`              | 6      | KDF、加解密往返、错误密码、篡改检测、IV/标签长度校验 |
 | `tests/unit/vault.service.test.ts`               | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置 |
-| `tests/unit/storage.service.test.ts`             | 2      | 原子写入、单写者锁                                   |
+| `tests/unit/storage.service.test.ts`             | 5      | 原子写入、单写者锁、心跳与陈旧锁回收                 |
 | `tests/unit/password.service.test.ts`            | 10     | 生成规则、无偏抽样、排除规则、强度与提示码           |
 | `tests/unit/plaintext-on-disk.test.ts`           | 2      | 落盘明文扫描（验收 7）                               |
 | `tests/unit/restore-fresh-environment.test.ts`   | 3      | 全新环境恢复、错误备份不覆盖（验收 9）               |
@@ -38,6 +39,15 @@
 | `tests/unit/renderer/search-performance.test.ts` | 3      | 渲染层搜索性能基准（验收 12）                        |
 | `tests/unit/renderer/duplicates.test.ts`         | 8      | 重复录入判定与排序                                   |
 | `tests/unit/renderer/vault-filter.test.ts`       | 2      | 搜索过滤语义                                         |
+| `tests/unit/auto-lock.test.ts`                   | 4      | 系统空闲/窗口失焦驱动的自动锁定                      |
+| `tests/unit/payload-integrity.test.ts`           | 5      | 负载结构修补、遗留 settings 字段迁移                 |
+| `tests/unit/preferences.service.test.ts`         | —      | 界面偏好规范化与写入                                 |
+| `tests/unit/window-state.service.test.ts`        | —      | 窗口大小/位置记忆                                    |
+| `tests/unit/i18n-placeholders.test.ts`           | 4      | 翻译占位符与双语键集合一致性                         |
+| `tests/unit/renderer-target.test.ts`             | —      | dev server 地址规范化与重试                          |
+| `tests/unit/security.test.ts`                    | 6      | CSP、权限拒绝、导航白名单                            |
+| `tests/unit/ipc-handlers.test.ts`                | 6      | IPC 来源校验、错误码透传、标题栏通道守卫             |
+| `tests/unit/log.service.test.ts`                 | 4      | 日志格式、脱敏、轮转                                 |
 
 ---
 
