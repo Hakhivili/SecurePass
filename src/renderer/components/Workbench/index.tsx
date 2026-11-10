@@ -1,5 +1,4 @@
 import { Card } from 'antd';
-import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { useI18n } from '../../i18n';
 import PasswordGenerator from '../PasswordGenerator';
 import PasswordVault from '../PasswordVault';
@@ -18,14 +17,7 @@ export default function Workbench(): JSX.Element {
         size="small"
         className="workbench-block workbench-generator"
         title={t('generator.title')}
-        extra={
-          <span className="workbench-hint">
-            {t('generator.description', {
-              min: PASSWORD_MIN_LENGTH,
-              max: PASSWORD_MAX_LENGTH,
-            })}
-          </span>
-        }
+        extra={<span className="workbench-hint">{t('generator.hintShort')}</span>}
       >
         <PasswordGenerator />
       </Card>
@@ -34,7 +26,7 @@ export default function Workbench(): JSX.Element {
         size="small"
         className="workbench-block workbench-vault"
         title={t('vault.title')}
-        extra={<span className="workbench-hint">{t('vault.description')}</span>}
+        extra={<span className="workbench-hint">{t('vault.hintShort')}</span>}
       >
         <PasswordVault />
       </Card>

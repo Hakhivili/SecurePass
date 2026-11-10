@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  ArrowLeftOutlined,
-  ExportOutlined,
-  ImportOutlined,
-  SaveOutlined,
-} from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert, App, Button, Card, Col, Form, Input, Row, Segmented, Select } from 'antd';
 import { VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { DEFAULT_SETTINGS } from '@shared/types';
@@ -33,7 +27,6 @@ export default function Settings(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const lock = useAuthStore((state) => state.lock);
-  const navigate = useNavigate();
   const unlocked = useAuthStore((state) => state.unlocked);
 
   useEffect(() => {
@@ -114,17 +107,6 @@ export default function Settings(): JSX.Element {
 
   return (
     <div className="page">
-      <Button
-        type="link"
-        className="settings-back"
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate('/workbench')}
-      >
-        {t('nav.backToWorkbench')}
-      </Button>
-      <h2 className="page-title">{t('settings.title')}</h2>
-      <p className="page-description">{t('settings.description')}</p>
-
       {!unlocked && (
         <Alert
           type="info"

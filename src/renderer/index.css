@@ -86,60 +86,71 @@ body {
   height: 100vh;
 }
 
+/* 顶栏与页面内容共用同一个容器，保证两者宽度、左右边距完全一致 */
+.app-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
 .app-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 20px;
+  height: 52px;
+  padding: 0 24px;
   background: var(--sp-surface);
   border-bottom: 1px solid var(--sp-border);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
 }
 
 .app-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 16px;
+  gap: 8px;
+  font-size: 15px;
   font-weight: 600;
 }
 
+.app-tabs {
+  display: flex;
+  align-items: stretch;
+}
+
+.app-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 2px solid transparent;
+  color: var(--sp-muted);
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.app-tab:hover {
+  color: var(--sp-text);
+}
+
+.app-tab.is-active {
+  color: var(--sp-text);
+  font-weight: 600;
+  border-bottom-color: #2563eb;
+}
+
 .app-content {
-  /* 底部留白：避免内容被左下角的设置入口遮挡 */
-  padding: 20px 24px 72px;
+  padding: 20px 24px 24px;
   overflow: auto;
   background: var(--sp-bg);
 }
 
 .page {
-  max-width: 1320px;
-  margin: 0 auto;
-}
-
-/* 左下角「设置」入口（替代原侧边栏） */
-.settings-entry {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  z-index: 20;
-  box-shadow: var(--sp-shadow);
-}
-
-.settings-back {
-  padding-left: 0;
-  margin-bottom: 4px;
-}
-
-.page-title {
-  margin: 0 0 4px;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.page-description {
-  margin: 0 0 20px;
-  color: var(--sp-muted);
-  font-size: 13px;
+  width: 100%;
 }
 
 .generator-result {
@@ -332,12 +343,31 @@ body {
   gap: 12px;
 }
 
+/* 生成器区块加高：结果行更高、行间距更松 */
+.workbench-generator .ant-card-body {
+  padding: 20px 24px 22px;
+}
+
 .workbench-generator .generator-result {
-  margin-top: 12px;
+  margin-top: 0;
+}
+
+.workbench-generator .generator-result .ant-input-affix-wrapper,
+.workbench-generator .generator-result .ant-input {
+  height: 44px;
+  font-size: 15px;
+}
+
+.workbench-generator .generator-result .ant-btn {
+  height: 44px;
+}
+
+.workbench-generator .generator-controls {
+  margin-bottom: 18px;
 }
 
 .workbench-generator .strength-meter {
-  margin-top: 8px;
+  margin-top: 14px;
 }
 
 /* ===== 密码库锁定态 ===== */

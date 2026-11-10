@@ -15,7 +15,6 @@ const zhCN = {
   // 导航
   'nav.workbench': '工作台',
   'nav.settings': '设置',
-  'nav.backToWorkbench': '返回工作台',
 
   // 初始化
   'setup.title': '创建 {app} 密码库',
@@ -36,6 +35,7 @@ const zhCN = {
 
   // 密码生成器
   'generator.title': '密码生成器',
+  'generator.hintShort': '8–20 位 · 可配置字符类型',
   'generator.description':
     '使用系统安全随机数生成 {min}-{max} 位密码，未保存的结果不会写入磁盘。',
   'generator.rulesCard': '生成规则',
@@ -73,6 +73,7 @@ const zhCN = {
   // 密码库
   'vault.title': '密码库',
   'vault.description': '记录、搜索和编辑本地账户资料；密码内容不参与搜索。',
+  'vault.hintShort': '密码不参与搜索',
   'vault.lock': '锁定密码库',
   'vault.unlockRequired': '需要解锁密码库',
   'vault.lockedHint': '密码库已锁定。解锁后才能查看、搜索、复制或保存记录。',
@@ -213,7 +214,6 @@ const en: Record<keyof typeof zhCN, string> = {
 
   'nav.workbench': 'Workbench',
   'nav.settings': 'Settings',
-  'nav.backToWorkbench': 'Back to workbench',
 
   'setup.title': 'Create your {app} vault',
   'setup.master': 'Master password',
@@ -231,6 +231,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'unlock.submit': 'Unlock',
 
   'generator.title': 'Password generator',
+  'generator.hintShort': '8–20 chars · configurable classes',
   'generator.description':
     'Generates {min}-{max} character passwords with the system CSPRNG. Unsaved results are never written to disk.',
   'generator.rulesCard': 'Rules',
@@ -267,6 +268,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'vault.title': 'Vault',
   'vault.description':
     'Store, search and edit local accounts. Passwords are never searched.',
+  'vault.hintShort': 'Passwords are not searched',
   'vault.lock': 'Lock vault',
   'vault.unlockRequired': 'Unlock required',
   'vault.lockedHint':
