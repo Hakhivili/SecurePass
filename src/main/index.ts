@@ -1,4 +1,4 @@
-import { app, BrowserWindow, powerMonitor } from 'electron';
+import { app, BrowserWindow, nativeTheme, powerMonitor } from 'electron';
 import { createAppContext } from './app-context';
 import { registerIpcHandlers } from './ipc';
 import { applyGlobalSecurityPolicies, applySecurityPolicies } from './security';
@@ -28,8 +28,21 @@ if (!gotSingleInstanceLock) {
     }
   });
 
-  void app.whenReady().then(() => {
-    mainWindow = createMainWindow();
+  const resolveWindowChrome = async (): Promise<{
+    backgroundColor: string;
+    symbolColor: string;
+  }> => {
+    const preferences = await context.preferences.read();
+    const dark =
+      preferences.theme === 'dark' ||
+      (preferences.theme === 'auto' && nativeTheme.shouldUseDarkColors);
+    return dark
+      ? { backgroundColor: '#141414', symbolColor: '#e5e7eb' }
+      : { backgroundColor: '#f4f5f7', symbolColor: '#1f2937' };
+  };
+
+  void app.whenReady().then(async () => {
+    mainWindow = createMainWindow(await resolveWindowChrome());
     applySecurityPolicies(mainWindow);
     registerIpcHandlers(context, () => mainWindow);
 
@@ -42,8 +55,10 @@ if (!gotSingleInstanceLock) {
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        mainWindow = createMainWindow();
-        applySecurityPolicies(mainWindow);
+        void resolveWindowChrome().then((chrome) => {
+          mainWindow = createMainWindow(chrome);
+          applySecurityPolicies(mainWindow);
+        });
       }
     });
   });

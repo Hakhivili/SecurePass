@@ -45,6 +45,9 @@ const api: SecurePassApi = {
   clipboard: {
     copySecret: (value) => invoke(IPC.clipboardCopySecret, value),
   },
+  titleBar: {
+    sync: (options) => invoke(IPC.windowSyncTitleBar, options),
+  },
   events: {
     onLocked: (callback) => {
       const listener = () => callback();

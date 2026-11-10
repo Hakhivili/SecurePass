@@ -93,25 +93,35 @@ body {
   margin: 0 auto;
 }
 
-/* 固定定位的导航按钮（不随内容滚动）：工作台右上「设置」/ 设置页左上「返回工作台」 */
-.top-action {
+/* 应用顶栏 = 自绘标题栏（系统标题栏已隐藏）：整条可拖动，右侧让出系统窗口按钮 */
+.app-titlebar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  /* 右侧留白给最小化/最大化/关闭按钮（titleBarOverlay 区域） */
+  padding: 0 150px 0 10px;
+  background: var(--sp-bg);
+  user-select: none;
+  -webkit-app-region: drag;
+}
+
+.app-titlebar-action {
+  -webkit-app-region: no-drag;
+}
+
+/* 左下角「设置」入口 */
+.settings-entry {
   position: fixed;
-  top: 10px;
+  left: 16px;
+  bottom: 16px;
   z-index: 20;
   box-shadow: var(--sp-shadow);
 }
 
-.top-action-left {
-  left: 16px;
-}
-
-.top-action-right {
-  right: 16px;
-}
-
 .app-content {
-  /* 顶部留白：让出固定导航按钮的位置 */
-  padding: 54px 24px 24px;
+  padding: 12px 24px 72px;
   overflow: auto;
   background: var(--sp-bg);
 }

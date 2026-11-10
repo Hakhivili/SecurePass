@@ -26,6 +26,7 @@ export const IPC = {
   settingsUpdate: 'settings:update',
   uiPreferencesGet: 'ui-preferences:get',
   uiPreferencesUpdate: 'ui-preferences:update',
+  windowSyncTitleBar: 'window:sync-title-bar',
   clipboardCopySecret: 'clipboard:copy-secret',
   eventLocked: 'event:locked',
 } as const;
@@ -64,6 +65,12 @@ export interface RestoreResult {
   backupOfPreviousPath?: string;
 }
 
+export interface TitleBarOverlayOptions {
+  color: string;
+  symbolColor: string;
+  height?: number;
+}
+
 export interface SecurePassApi {
   vault: {
     exists(): Promise<boolean>;
@@ -98,6 +105,10 @@ export interface SecurePassApi {
   };
   clipboard: {
     copySecret(value: string): Promise<void>;
+  };
+  titleBar: {
+    /** 主题变化时同步系统窗口按钮区域（overlay）的底色与符号颜色。 */
+    sync(options: TitleBarOverlayOptions): Promise<void>;
   };
   events: {
     onLocked(callback: () => void): () => void;

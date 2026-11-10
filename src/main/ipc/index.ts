@@ -1,8 +1,9 @@
-import { ipcMain, type BrowserWindow } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import type {
   AppSettings,
   PasswordConfig,
+  TitleBarOverlayOptions,
   UiPreferences,
   VaultChangeMasterPasswordInput,
   VaultItemDraft,
@@ -88,6 +89,17 @@ export function registerIpcHandlers(
   handle(IPC.uiPreferencesUpdate, (patch) =>
     context.preferences.update(assertObject(patch, '界面偏好') as Partial<UiPreferences>),
   );
+  ipcMain.handle(IPC.windowSyncTitleBar, (event, options) => {
+    const payload = assertObject(
+      options,
+      '标题栏外观',
+    ) as unknown as TitleBarOverlayOptions;
+    BrowserWindow.fromWebContents(event.sender)?.setTitleBarOverlay({
+      color: assertString(payload.color, '底色'),
+      symbolColor: assertString(payload.symbolColor, '符号颜色'),
+      height: typeof payload.height === 'number' ? payload.height : undefined,
+    });
+  });
   handle(IPC.clipboardCopySecret, async (value) => {
     const settings = await readSettings(context);
     context.clipboard.copySecret(

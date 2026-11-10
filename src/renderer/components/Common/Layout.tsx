@@ -1,19 +1,17 @@
-import { ArrowLeftOutlined, SettingOutlined } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 import { Button, Layout } from 'antd';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../../i18n';
 import VaultAccessGate from '../Auth/VaultAccessGate';
+import TitleBar from './TitleBar';
 import Workbench from '../Workbench';
 import Settings from '../Settings';
 
 const { Content } = Layout;
 
 /**
- * 外壳：没有应用内标题栏（品牌名只在系统窗口标题里），也没有侧边栏。
- *
- * 导航是右上/左上两个固定按钮，不随内容滚动：
- * - 工作台：右上角「设置」
- * - 设置页：左上角「返回工作台」
+ * 外壳：顶部是自绘标题栏（替代系统标题栏），没有侧边栏。
+ * 「设置」入口固定在左下角；设置页通过顶栏左侧的「返回工作台」返回。
  * 两页内容共用 `.app-container`，宽度与左右边距完全一致。
  */
 export default function MainLayout(): JSX.Element {
@@ -24,6 +22,7 @@ export default function MainLayout(): JSX.Element {
 
   return (
     <Layout className="app-shell">
+      <TitleBar />
       <Content className="app-content">
         <div className="app-container">
           <Routes>
@@ -34,17 +33,9 @@ export default function MainLayout(): JSX.Element {
         </div>
       </Content>
 
-      {onSettingsPage ? (
+      {!onSettingsPage && (
         <Button
-          className="top-action top-action-left"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/workbench')}
-        >
-          {t('nav.backToWorkbench')}
-        </Button>
-      ) : (
-        <Button
-          className="top-action top-action-right"
+          className="settings-entry"
           icon={<SettingOutlined />}
           onClick={() => navigate('/settings')}
         >

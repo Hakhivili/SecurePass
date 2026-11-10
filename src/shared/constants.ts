@@ -1,6 +1,9 @@
 export const APP_NAME = 'SecurePass';
 export const APP_ID = 'com.securepass.desktop';
 
+/** 自绘标题栏（应用顶栏）高度，同时用于 Electron titleBarOverlay 的高度。 */
+export const TITLE_BAR_HEIGHT = 48;
+
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 20;
 export const VAULT_PASSWORD_MIN_LENGTH = 15;

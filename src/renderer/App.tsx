@@ -3,11 +3,21 @@ import { HashRouter } from 'react-router-dom';
 import { App as AntApp, ConfigProvider, Spin, theme as antdTheme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
+import { TITLE_BAR_HEIGHT } from '@shared/constants';
 import MainLayout from './components/Common/Layout';
 import { useAuthStore } from './store/auth.store';
 import { useVaultStore } from './store/vault.store';
 import { useSettingsStore } from './store/settings.store';
 import { applyResolvedTheme, resolveTheme, useSystemTheme } from './utils/theme';
+
+/**
+ * 自绘标题栏的配色：必须与 CSS 变量 --sp-bg 保持一致，
+ * 这样系统窗口按钮（titleBarOverlay）区域的底色与页面无缝衔接。
+ */
+const TITLE_BAR_COLORS = {
+  light: { color: '#f4f5f7', symbolColor: '#1f2937' },
+  dark: { color: '#141414', symbolColor: '#e5e7eb' },
+} as const;
 
 /**
  * 应用根组件。
@@ -31,6 +41,10 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     applyResolvedTheme(resolvedTheme);
+    // 让系统窗口按钮区域跟随主题，避免出现一条颜色不一致的标题栏
+    void window.securepass.titleBar
+      .sync({ ...TITLE_BAR_COLORS[resolvedTheme], height: TITLE_BAR_HEIGHT })
+      .catch(() => undefined);
   }, [resolvedTheme]);
 
   useEffect(() => {
