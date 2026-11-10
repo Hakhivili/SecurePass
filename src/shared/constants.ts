@@ -2,7 +2,7 @@ export const APP_NAME = 'SecurePass';
 export const APP_ID = 'com.securepass.desktop';
 
 /** 自绘标题栏（应用顶栏）高度，同时用于 Electron titleBarOverlay 的高度。 */
-export const TITLE_BAR_HEIGHT = 48;
+export const TITLE_BAR_HEIGHT = 56;
 
 /**
  * 界面配色令牌（唯一来源）。
@@ -11,18 +11,18 @@ export const TITLE_BAR_HEIGHT = 48;
  */
 export const THEME_CHROME = {
   light: {
-    bg: '#eef1f6',
-    surface: '#ffffff',
-    text: '#171a1f',
-    textSecondary: '#525c6b',
-    textTertiary: '#848e9d',
-    border: '#e2e6ed',
-    accent: '#4c6ef5',
-    accentSoft: 'rgba(76, 110, 245, 0.10)',
-    success: '#2f9e44',
-    warning: '#f08c00',
-    danger: '#e03131',
-    shadow: '0 8px 24px -12px rgba(16, 24, 40, 0.2)',
+    bg: '#f2f0ed',
+    surface: '#fbfaf8',
+    text: '#221f1c',
+    textSecondary: '#5c564f',
+    textTertiary: '#8c867d',
+    border: '#e5e1da',
+    accent: '#4a63e7',
+    accentSoft: 'rgba(74, 99, 231, 0.10)',
+    success: '#2f8f46',
+    warning: '#d97b06',
+    danger: '#cf3232',
+    shadow: '0 8px 24px -14px rgba(28, 25, 23, 0.22)',
   },
   dark: {
     bg: '#15171b',

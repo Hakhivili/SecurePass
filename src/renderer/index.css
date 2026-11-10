@@ -4,24 +4,25 @@
    数值需与 src/shared/constants.ts 的 THEME_CHROME 保持一致
    ============================================================ */
 :root {
-  --sp-bg: #eef1f6;
-  --sp-surface: #ffffff;
-  --sp-surface-2: #f3f5f9;
-  --sp-border: #e2e6ed;
-  --sp-border-strong: #cfd6e0;
-  --sp-text: #171a1f;
-  --sp-text-2: #525c6b;
-  --sp-text-3: #848e9d;
-  --sp-accent: #4c6ef5;
-  --sp-accent-strong: #3b5bdb;
-  --sp-accent-soft: rgba(76, 110, 245, 0.1);
-  --sp-success: #2f9e44;
-  --sp-warning: #f08c00;
-  --sp-danger: #e03131;
-  --sp-danger-soft: rgba(224, 49, 49, 0.08);
-  --sp-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --sp-shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.2);
-  --sp-ring: 0 0 0 3px rgba(76, 110, 245, 0.16);
+  /* 暖中性（stone）色阶：卡片用暖白而非纯白，减轻浅色模式的刺眼感 */
+  --sp-bg: #f2f0ed;
+  --sp-surface: #fbfaf8;
+  --sp-surface-2: #f0ede8;
+  --sp-border: #e5e1da;
+  --sp-border-strong: #d6d0c8;
+  --sp-text: #221f1c;
+  --sp-text-2: #5c564f;
+  --sp-text-3: #8c867d;
+  --sp-accent: #4a63e7;
+  --sp-accent-strong: #3b51c9;
+  --sp-accent-soft: rgba(74, 99, 231, 0.1);
+  --sp-success: #2f8f46;
+  --sp-warning: #d97b06;
+  --sp-danger: #cf3232;
+  --sp-danger-soft: rgba(207, 50, 50, 0.08);
+  --sp-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
+  --sp-shadow-md: 0 8px 24px -14px rgba(28, 25, 23, 0.22);
+  --sp-ring: 0 0 0 3px rgba(74, 99, 231, 0.16);
   --sp-mono:
     ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, 'Liberation Mono', monospace;
   color: var(--sp-text);
@@ -131,9 +132,9 @@ body {
   flex: none;
   align-items: center;
   gap: 8px;
-  height: 48px;
+  height: 56px;
   /* 右侧让出系统的最小化/最大化/关闭按钮 */
-  padding: 0 150px 0 12px;
+  padding: 0 150px 0 14px;
   background: var(--sp-bg);
   user-select: none;
   -webkit-app-region: drag;
@@ -143,9 +144,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  height: 34px;
+  height: 40px;
   margin-left: -2px;
-  padding: 0 9px;
+  padding: 0 11px;
   border: none;
   border-radius: 9px;
   background: transparent;
@@ -160,13 +161,13 @@ body {
 }
 
 .titlebar-action:hover {
-  gap: 8px;
+  gap: 10px;
   background: var(--sp-surface-2);
   color: var(--sp-text);
 }
 
 .titlebar-action-icon {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .titlebar-action-label {
@@ -180,7 +181,7 @@ body {
 }
 
 .titlebar-action:hover .titlebar-action-label {
-  max-width: 96px;
+  max-width: 110px;
   opacity: 1;
 }
 
@@ -191,7 +192,7 @@ body {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 4px 24px 20px;
+  padding: 2px 24px 20px;
   overflow: hidden;
   background: var(--sp-bg);
 }
