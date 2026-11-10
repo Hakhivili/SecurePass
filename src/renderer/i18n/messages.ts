@@ -15,6 +15,7 @@ const zhCN = {
   // 导航
   'nav.workbench': '工作台',
   'nav.settings': '设置',
+  'nav.backToWorkbench': '返回工作台',
 
   // 初始化
   'setup.title': '创建 {app} 密码库',
@@ -212,6 +213,7 @@ const en: Record<keyof typeof zhCN, string> = {
 
   'nav.workbench': 'Workbench',
   'nav.settings': 'Settings',
+  'nav.backToWorkbench': 'Back to workbench',
 
   'setup.title': 'Create your {app} vault',
   'setup.master': 'Master password',

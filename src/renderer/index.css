@@ -104,20 +104,30 @@ body {
   font-weight: 600;
 }
 
-.app-sider {
-  background: var(--sp-surface) !important;
-  border-right: 1px solid var(--sp-border);
-}
-
 .app-content {
-  padding: 24px;
+  /* 底部留白：避免内容被左下角的设置入口遮挡 */
+  padding: 20px 24px 72px;
   overflow: auto;
   background: var(--sp-bg);
 }
 
 .page {
-  max-width: 1080px;
+  max-width: 1320px;
   margin: 0 auto;
+}
+
+/* 左下角「设置」入口（替代原侧边栏） */
+.settings-entry {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 20;
+  box-shadow: var(--sp-shadow);
+}
+
+.settings-back {
+  padding-left: 0;
+  margin-bottom: 4px;
 }
 
 .page-title {
@@ -261,7 +271,7 @@ body {
 
 @media (max-width: 760px) {
   .app-content {
-    padding: 16px;
+    padding: 16px 16px 64px;
   }
 
   .vault-toolbar {
