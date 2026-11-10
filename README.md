@@ -3,20 +3,21 @@
 SecurePass is an offline, cross-platform desktop password generator and encrypted local vault.
 It is built with Electron, React, TypeScript and Vite.
 
-The project is currently a foundation skeleton: the security core, storage format, IPC boundary,
-generator, vault CRUD, settings and encrypted backup/restore are implemented, while the UI is intentionally minimal.
-
 ## Features
 
 - **Unlock on demand**: the generator works right after launch; the master password is only
   required for vault actions (view / save / edit)
-- Generator and vault live on a single workbench page (generator as a horizontal block on top)
-- Cryptographically secure random password generation (8-20 characters)
-- Configurable character classes and ambiguous-character exclusion
-- Local encrypted vault with CRUD, search, categories and tags
+- Single workbench page: generator and vault side by side (layout is configurable)
+- Cryptographically secure random password generation (8-20 characters) with configurable
+  character classes, ambiguous-character exclusion, strength meter and entropy estimate
+- Local encrypted vault with CRUD, search, category filter, tags, favorites and undoable delete
+- Duplicate-entry warning before saving the same site/account twice
 - Argon2id key derivation and AES-256-GCM authenticated encryption
-- Automatic locking, system lock/suspend locking and clipboard auto-clear
+- Idle-aware auto locking (system idle time + window focus), system lock/suspend locking and
+  clipboard auto-clear
 - Encrypted backup export and replace-with-rollback restore
+- Dark / light / follow-system theme, six accent presets and Chinese/English UI
+- Keyboard shortcuts (`Ctrl/Cmd + N` new record, `+ F` search, `+ L` lock) and screen-reader labels
 - No network calls, no telemetry and no plaintext export by default
 
 ## Requirements
@@ -59,8 +60,13 @@ npm run build
 Packaging:
 
 ```bash
-npm run package
+npm run package       # installer for the current platform
+npm run package:dir   # unpacked directory only, fastest smoke test
 ```
+
+Builds are not code-signed; Windows SmartScreen and macOS Gatekeeper will ask for confirmation the
+first time the app runs. Compare the download against the `SHA256SUMS.txt` published with each
+release.
 
 ## Project Layout
 
@@ -70,9 +76,18 @@ src/
   preload/     Context-isolated bridge exposed as window.securepass
   renderer/    React UI, Zustand stores and renderer helpers
   shared/      Types, constants and error codes shared by all processes
+tools/         Icon and third-party notice generators
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/SECURITY.md](docs/SECURITY.md).
+## Documentation
+
+| Document                                             | Content                                                        |
+| ---------------------------------------------------- | -------------------------------------------------------------- |
+| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md) | 用户手册：安装、首次使用、备份、常见问题                       |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)         | Process model, auth lifecycle, extension points                |
+| [docs/API.md](docs/API.md)                           | IPC surface                                                    |
+| [SECURITY.md](SECURITY.md)                           | Threat model, crypto parameters, how to report a vulnerability |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)     | Licenses of bundled dependencies                               |
 
 ## Vault Location
 

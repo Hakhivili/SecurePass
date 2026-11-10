@@ -4,11 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version tag, for example v0.1.0
+        description: 'Version tag, for example v0.1.0'
         required: true
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  VERSION: ${{ github.event.inputs.version || github.ref_name }}
 
 jobs:
   package:
+    name: Package (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,15 +26,62 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
       - run: npm ci
-      - run: npm run package
+
+      # 让 package.json 的版本与即将发布的 tag 保持一致（0.1.0 ← v0.1.0）
+      - name: Sync version
+        shell: bash
+        run: npm pkg set version="${VERSION#v}"
+
+      - name: Package
+        run: npm run package
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - name: Strip unpacked directory
+        shell: bash
+        run: rm -rf release/*-unpacked release/*.blockmap
+
       - uses: actions/upload-artifact@v4
         with:
-          name: SecurePass-${{ matrix.os }}-${{ inputs.version }}
+          name: dist-${{ matrix.os }}
           path: release/**
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          ls -l
+          find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort |
+            while read -r file; do sha256sum "$file" >> SHA256SUMS.txt; done
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists, uploading assets"
+          else
+            gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" \
+              --title "SecurePass $VERSION" --generate-notes --target "$GITHUB_SHA"
+          fi
+          gh release upload "$VERSION" artifacts/* --repo "$GITHUB_REPOSITORY" --clobber

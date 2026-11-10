@@ -1,4 +1,9 @@
-# 安全说明
+# 安全说明 / Security Policy
+
+> English summary: SecurePass is an offline password manager. The vault file is encrypted with
+> AES-256-GCM under a key derived from the master password with Argon2id. Please report
+> vulnerabilities privately through GitHub Security Advisories
+> (`Security` tab → _Report a vulnerability_), not in public issues.
 
 ## 保护目标
 
@@ -37,8 +42,12 @@ Argon2id 参数可在目标设备上做性能测试后调整，参数与格式�
 以下情况会立即或定时锁定：
 
 - 用户点击“锁定”
-- 无操作达到配置的自动锁定时间（默认 5 分钟）
+- 系统空闲达到配置的自动锁定时间（默认 5 分钟）
+- 窗口失焦（切到其他应用）达到同样的时长
 - 操作系统锁屏或休眠
+
+应用每 5 秒轮询一次系统空闲时间与窗口焦点，取两者中更长的“离开时长”判断，
+因此用鼠标在生成器里点点划划不会被误续期，人离开电脑或长时间在别的窗口里打字都会照常锁定。
 
 锁定后清除界面明文、搜索结果和引用，所有需要解锁的资料访问返回 `VAULT_LOCKED`。
 
@@ -48,7 +57,10 @@ Argon2id 参数可在目标设备上做性能测试后调整，参数与格式�
 - 错误的恢复文件不会覆盖当前密码库。
 - 恢复前先复制当前库为 `pre-restore-<时间>.bak` 加密副本。
 - 密码库写入使用原子替换，磁盘空间不足或进程中断时保留旧版本。
-- 首版限制同一密码库只允许一个进程写入，通过锁文件实现。
+- 同一密码库只允许一个进程写入：锁文件记录持有者 pid，并由持有者每 15 秒刷新一次心跳；
+  只有「持有进程已退出」或「心跳停滞超过 60 秒」才会被判定为陈旧锁并被回收。
+- 打开旧版本文件时，缺失或重复的记录 id 与非法时间戳会被自动补齐并写回，
+  避免出现无法编辑或误删的记录。
 
 ## 备份语义
 
@@ -61,9 +73,10 @@ Argon2id 参数可在目标设备上做性能测试后调整，参数与格式�
 
 - 不自行实现密码算法。
 - Argon2id 使用持续维护的 `hash-wasm`；对称加密使用 Node.js `crypto` 内置实现。
-- 第三方依赖应在发布前生成清单、许可证信息和已知漏洞报告。
+- 运行时依赖的许可证清单一同发布，见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 
 ## 报告安全问题
 
-请不要在公开 Issue 中披露未修复的漏洞细节。请提供复现步骤、影响范围和建议修复方向，
-维护者确认后再协调公开时间。
+请不要在公开 Issue 中披露未修复的漏洞细节。请通过 GitHub 仓库的
+**Security → Report a vulnerability**（Security Advisories）私下报告，并附上复现步骤、
+影响范围和建议修复方向；维护者确认后再协调公开时间。

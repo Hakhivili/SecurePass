@@ -25,3 +25,27 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+  package-smoke:
+    # 打包冒烟：确认主进程与渲染层产物能被 electron-builder 打进 asar，
+    # 并守住体积预算（dist 里已包含全部前端依赖，asar 不应再装 node_modules）。
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run package:dir
+      - name: Verify package layout
+        shell: pwsh
+        run: |
+          $asar = Get-Item release/win-unpacked/resources/app.asar
+          $sizeMb = [math]::Round($asar.Length / 1MB, 2)
+          Write-Host "app.asar = $sizeMb MB"
+          if ($sizeMb -gt 6) { throw "app.asar 体积超出预算：$sizeMb MB" }
+          if (-not (Test-Path release/win-unpacked/SecurePass.exe)) { throw '缺少 SecurePass.exe' }
+          $info = (Get-Item release/win-unpacked/SecurePass.exe).VersionInfo
+          Write-Host "ProductName=$($info.ProductName) FileVersion=$($info.FileVersion)"
+          if ($info.ProductName -ne 'SecurePass') { throw "exe 元数据未写入：$($info.ProductName)" }

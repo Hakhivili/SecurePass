@@ -4,24 +4,38 @@ copyright: Copyright (c) 2026 SecurePass Contributors
 directories:
   output: release
   buildResources: build
+# dist/ 与 dist-electron/ 已经包含渲染层与主进程的全部代码；
+# 主进程只把 electron 与 hash-wasm 留作 external（见 dist-electron/main/index.js 的 require），
+# 其余依赖（antd / react / zustand …）都被 Vite 打进 dist/assets，无需再随包发布。
 files:
   - dist/**
   - dist-electron/**
   - package.json
+  - '!node_modules/**'
+  - node_modules/hash-wasm/package.json
+  - node_modules/hash-wasm/dist/**
+  - '!**/*.map'
+  - '!**/*.md'
+  - '!**/{test,tests,__tests__,example,examples,docs}/**'
 asar: true
+# hash-wasm 在运行时会加载 WebAssembly 模块，放在 asar 外更稳妥。
 asarUnpack:
-  - node_modules/hash-wasm/**
+  - node_modules/hash-wasm/dist/**
+icon: build/icon.png
 win:
+  icon: build/icon.ico
   target:
     - nsis
   artifactName: ${productName}-${version}-win-${arch}.${ext}
 mac:
+  icon: build/icon.png
   target:
     - dmg
     - zip
   category: public.app-category.utilities
   artifactName: ${productName}-${version}-mac-${arch}.${ext}
 linux:
+  icon: build/icon.png
   target:
     - AppImage
     - deb

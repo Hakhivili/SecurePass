@@ -397,21 +397,17 @@ D:\ToolsDataSite\SecurePass\release\win-unpacked\SecurePass.exe
 **原因**：electron-builder 会解压 `winCodeSign-2.6.0.7z`（内含 macOS 的符号链接），
 而 Windows 默认账户没有「创建符号链接」特权，7-Zip 报 `客户端没有所需的特权`，electron-builder 重试 4 次后中止。
 
-**处理（任选其一）**：
+**处理**：
 
 1. **开启开发者模式**（推荐，一次性）：设置 → 系统 → 开发者选项 → 打开「开发人员模式」，然后重新 `npm run package`；
 2. 用**管理员身份**打开终端，再执行 `npm run package`；
-3. **直接用绿色版脚本**（不需要任何特权，跳过 rcedit）：
+3. 只产出免安装目录（不做 NSIS 安装包）：`npm run package:dir`，产物在 `release\win-unpacked\`。
 
-   ```powershell
-   npm run package:portable
-   ```
-
-   它使用 `electron-builder.portable.yml`（`extends` 主配置，仅把 `win.signAndEditExecutable` 设为 `false`），
-   产出 `release\win-unpacked\SecurePass.exe`；代价是 exe 使用 Electron 默认图标与版本元数据。
-   正式发布仍应修复特权后执行 `npm run package` 生成安装包。
-
-4. 只需一次性的绿色版时：应用本体在失败前已打包完成，`release\win-unpacked\SecurePass.exe` 可直接运行。
+> 截至 2026-11-11 实测：在完全权限下 `npm run package:dir` 能正常下载 `winCodeSign-2.6.0.7z` 并
+> 由 rcedit 写入图标与版本信息（`ProductName=SecurePass`、`FileVersion=0.1.0`、
+> `CompanyName=SecurePass Contributors`），不再需要关闭 `win.signAndEditExecutable`。
+> 若再次遇到符号链接报错，按上面 1/2 处理即可（早期为规避该报错而加的
+> `electron-builder.portable.yml` 已删除）。
 
 > ⚠️ **打包前必须先关闭正在运行的 `SecurePass.exe`**：正在运行的实例会锁住
 > `release\win-unpacked\*.dll`，导致 electron-builder 清空输出目录时报

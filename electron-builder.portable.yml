@@ -1,9 +1,0 @@
-# 仅供「本机快速产出可双击运行的绿色版」使用：
-# 跳过 rcedit 步骤（写入图标/版本信息），因为 electron-builder 需要的
-# winCodeSign 压缩包内含 macOS 符号链接，Windows 默认账户没有创建符号链接的特权。
-#
-# 打包安装包请仍用 electron-builder.yml（`npm run package`），
-# 否则 exe 会保留 Electron 默认图标与版本元数据。
-extends: ./electron-builder.yml
-win:
-  signAndEditExecutable: false

@@ -24,13 +24,13 @@
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | MIT 许可证             | `LICENSE`                                                                                                                                        |
 | 中英文说明             | `README.md`、`README_CN.md`                                                                                                                      |
-| 架构 / 安全 / API 文档 | `docs/ARCHITECTURE.md`、`docs/SECURITY.md`、`docs/API.md`                                                                                        |
+| 架构 / 安全 / API 文档 | `docs/ARCHITECTURE.md`、`SECURITY.md`（根目录）、`docs/API.md`                                                                                   |
 | 需求基线 / 部署记录    | `docs/REQUIREMENTS-BASELINE.zh-CN.md`、`docs/DEPLOYMENT-NOTES.zh-CN.md`                                                                          |
 | 贡献指南与行为准则     | `CONTRIBUTING.md`、`CODE_OF_CONDUCT.md`                                                                                                          |
 | 变更日志               | `CHANGELOG.md`（0.1.0）                                                                                                                          |
 | Issue 模板             | `.github/ISSUE_TEMPLATE/{bug_report,feature_request}.md`                                                                                         |
 | CI（三平台）           | `.github/workflows/ci.yml`：`npm ci` → format:check → typecheck → lint → test → build                                                            |
-| 发布流程               | `.github/workflows/release.yml`：三平台 `npm run package` 并上传产物                                                                             |
+| 发布流程               | `.github/workflows/release.yml`：三平台 `npm run package`，生成 `SHA256SUMS.txt` 并创建 GitHub Release                                           |
 | 工程规范               | `.editorconfig`、`.eslintrc.cjs`、`.prettierrc`、`.prettierignore`、`.gitignore`（忽略 `node_modules/dist/dist-electron/release/coverage/.env`） |
 | 代码格式化             | ✅ **2026-10-05 已统一**：全仓库通过 `npm run format:check`（此前 27 个文件不合格）                                                              |
 | 依赖安全               | `npm audit` 结果需在发布前复核（本次安装因沙箱网络限制未跑完整审计）                                                                             |
@@ -40,16 +40,25 @@
 
 ## 3. 待补齐（🔧 我可以直接做）
 
-| 项                       | 说明                                                                                                                                                             |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 根目录 `SECURITY.md`     | GitHub 的安全策略入口。当前安全说明在 `docs/SECURITY.md`，缺少「漏洞报告渠道」一节 → 需你提供联系方式（见第 4 节）                                               |
-| `THIRD-PARTY-NOTICES.md` | 第三方依赖与许可证清单；建议用一个脚本从 `node_modules` 生成，随版本更新（本次已算出清单，可直接落库）                                                           |
-| README 增强              | 徽章（CI / License / Release）、功能截图或 GIF、下载指引、`yourusername` 占位符替换                                                                              |
-| 应用图标                 | `build/icon.ico`（Windows）、`icon.icns`（macOS）、`512x512` PNG（Linux）。`electron-builder.yml` 已指向 `build/`，目录内目前只有 `README.md` → 打包使用默认图标 |
-| `CHANGELOG.md` 维护约定  | 增加「如何为下一个版本写变更」的说明，配合 Release 流程                                                                                                          |
-| GitHub 标签与里程碑      | 按草案建立：`bug/enhancement/feature/documentation/security`、`priority: high                                                                                    | medium | low`、`help wanted/good first issue`；里程碑 `v0.1.0 / v0.5.0 / v1.0.0` |
-| 测试覆盖率门槛           | 安装 `@vitest/coverage-v8`，在 CI 增加 `npm run test:coverage` 与阈值（草案建议 >80%）                                                                           |
-| `SHA256SUMS.txt`         | 发布时对安装包生成校验值并写入 Release 说明                                                                                                                      |
+| 项                      | 说明                                                                                   |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| README 增强             | 徽章（CI / License / Release）、功能截图或 GIF、下载指引、`yourusername` 占位符替换    |
+| `CHANGELOG.md` 维护约定 | 增加「如何为下一个版本写变更」的说明，配合 Release 流程                                |
+| GitHub 标签与里程碑     | 按草案建立：`bug/enhancement/feature/documentation/security`、`priority: high          | medium | low`、`help wanted/good first issue`；里程碑 `v0.1.0 / v0.5.0 / v1.0.0` |
+| 测试覆盖率门槛          | 安装 `@vitest/coverage-v8`，在 CI 增加 `npm run test:coverage` 与阈值（草案建议 >80%） |
+
+### 已完成（2026-11-11）
+
+| 项                       | 结果                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| 根目录 `SECURITY.md`     | 已从 `docs/` 移到仓库根目录，补「Security Advisories 私下上报」一节                                   |
+| `THIRD-PARTY-NOTICES.md` | 已生成，由 `node tools/generate-notices.mjs` 从 `package.json` 依赖重新生成                           |
+| 用户手册                 | `docs/USER-GUIDE.zh-CN.md`                                                                            |
+| 应用图标                 | `build/icon.png` / `build/icon.ico`（`python tools/generate-icon.py` 可重新生成），已在打包配置里引用 |
+| exe 元数据               | `ProductName=SecurePass`、`FileVersion=0.1.0`、`CompanyName=SecurePass Contributors`                  |
+| `SHA256SUMS.txt`         | `release.yml` 打包后自动生成并随 Release 上传                                                         |
+| 安装包体积               | `app.asar` 75 MB → 1.2 MB（前端依赖已被 Vite 打进 dist，不再重复随包）                                |
+| 打包冒烟                 | `ci.yml` 新增 `package-smoke` 任务，校验 exe 元数据与 asar 体积预算                                   |
 
 ---
 
