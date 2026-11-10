@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
 import { Alert, App, Button, Card, Form, Input, Segmented, Select, Tooltip } from 'antd';
-import { ACCENT_PRESETS } from '@shared/constants';
-import { VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
+import { ACCENT_PRESETS, VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import type {
   AccentId,
@@ -148,165 +147,159 @@ export default function Settings(): JSX.Element {
       )}
 
       <div className="settings-grid">
-        <div className="settings-col">
-          <Card title={t('settings.general')} size="small" className="settings-section">
-            <Form layout="vertical">
-              <Form.Item label={t('settings.autoLock')}>
-                <Select
-                  disabled={!unlocked}
-                  value={settings.autoLockTimeoutMinutes}
-                  options={[1, 5, 10, 15, 30, 60].map((value) => ({
-                    value,
-                    label: t('settings.minutes', { value }),
-                  }))}
-                  onChange={(value) =>
-                    void updateSetting({ autoLockTimeoutMinutes: value })
-                  }
-                />
-              </Form.Item>
-              <Form.Item label={t('settings.clipboard')}>
-                <Select
-                  disabled={!unlocked}
-                  value={settings.clearClipboardSeconds}
-                  options={[5, 15, 30, 60, 120].map((value) => ({
-                    value,
-                    label: t('settings.seconds', { value }),
-                  }))}
-                  onChange={(value) =>
-                    void updateSetting({ clearClipboardSeconds: value })
-                  }
-                />
-              </Form.Item>
-              <Form.Item label={t('settings.theme')}>
-                <Segmented<AppTheme>
-                  value={ui.theme}
-                  options={[
-                    { value: 'light', label: t('settings.themeLight') },
-                    { value: 'dark', label: t('settings.themeDark') },
-                    { value: 'auto', label: t('settings.themeAuto') },
-                  ]}
-                  onChange={(value) => void updateUiSetting({ theme: value })}
-                />
-              </Form.Item>
-              <Form.Item label={t('settings.accent')}>
-                <div className="accent-swatches">
-                  {ACCENT_IDS.map((id) => {
-                    const label = t(`accent.${id}` as MessageKey);
-                    return (
-                      <Tooltip key={id} title={label}>
-                        <button
-                          type="button"
-                          aria-label={label}
-                          title={label}
-                          className={`accent-swatch${
-                            ui.accent === id ? ' is-active' : ''
-                          }`}
-                          style={{ background: ACCENT_PRESETS[id].light.accent }}
-                          onClick={() => void updateUiSetting({ accent: id })}
-                        />
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </Form.Item>
-              <Form.Item label={t('settings.language')}>
-                <Select
-                  value={ui.language}
-                  options={[
-                    { value: 'zh-CN', label: t('settings.languageZhCN') },
-                    { value: 'en', label: t('settings.languageEn') },
-                  ]}
-                  onChange={(value) => void updateUiSetting({ language: value })}
-                />
-              </Form.Item>
-            </Form>
-          </Card>
-
-          <Card
-            title={t('settings.changeMaster')}
-            size="small"
-            className="settings-section"
-          >
-            <p>{t('settings.changeMasterHelp')}</p>
-            <Form form={passwordForm} layout="vertical" onFinish={changePassword}>
-              <Form.Item
-                name="currentPassword"
-                label={t('settings.currentMaster')}
-                rules={[{ required: true, message: t('settings.currentMasterRequired') }]}
-              >
-                <Input.Password autoComplete="current-password" />
-              </Form.Item>
-              <Form.Item
-                name="newPassword"
-                label={t('settings.newMaster')}
-                rules={[{ required: true, message: t('settings.newMasterRequired') }]}
-              >
-                <Input.Password autoComplete="new-password" />
-              </Form.Item>
-              <Form.Item
-                name="confirmPassword"
-                label={t('settings.confirmMaster')}
-                rules={[{ required: true, message: t('settings.confirmMasterRequired') }]}
-              >
-                <Input.Password autoComplete="new-password" />
-              </Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={<SaveOutlined />}
-                loading={busy}
+        <Card title={t('settings.general')} size="small" className="settings-section">
+          <Form layout="vertical">
+            <Form.Item label={t('settings.autoLock')}>
+              <Select
                 disabled={!unlocked}
-              >
-                {t('settings.changeMasterSubmit')}
-              </Button>
-            </Form>
-          </Card>
-        </div>
-
-        <div className="settings-col">
-          <Card title={t('settings.layout')} size="small" className="settings-section">
-            <p>{t('settings.layoutHelp')}</p>
-            <Segmented<GeneratorPosition>
-              block
-              value={ui.generatorPosition}
-              options={[
-                { value: 'top', label: t('settings.positionTop') },
-                { value: 'left', label: t('settings.positionLeft') },
-                { value: 'right', label: t('settings.positionRight') },
-              ]}
-              onChange={(value) => void updateUiSetting({ generatorPosition: value })}
-            />
-          </Card>
-
-          <Card title={t('settings.backup')} size="small" className="settings-section">
-            <p>{t('settings.backupHelp')}</p>
-            <div className="settings-actions">
-              <Button
-                icon={<ExportOutlined />}
-                loading={backupBusy}
-                disabled={!unlocked}
-                onClick={() => void exportBackup()}
-              >
-                {t('settings.export')}
-              </Button>
-              <Input.Password
-                value={restorePassword}
-                placeholder={t('settings.restorePasswordPlaceholder')}
-                onChange={(event) => setRestorePassword(event.target.value)}
+                value={settings.autoLockTimeoutMinutes}
+                options={[1, 5, 10, 15, 30, 60].map((value) => ({
+                  value,
+                  label: t('settings.minutes', { value }),
+                }))}
+                onChange={(value) =>
+                  void updateSetting({ autoLockTimeoutMinutes: value })
+                }
               />
-              <Button
-                danger
-                icon={<ImportOutlined />}
-                loading={backupBusy}
+            </Form.Item>
+            <Form.Item label={t('settings.clipboard')}>
+              <Select
                 disabled={!unlocked}
-                onClick={() => void restoreBackup()}
-              >
-                {t('settings.restore')}
-              </Button>
-            </div>
-            <div className="auth-help">{t('settings.restoreHelp')}</div>
-          </Card>
-        </div>
+                value={settings.clearClipboardSeconds}
+                options={[5, 15, 30, 60, 120].map((value) => ({
+                  value,
+                  label: t('settings.seconds', { value }),
+                }))}
+                onChange={(value) => void updateSetting({ clearClipboardSeconds: value })}
+              />
+            </Form.Item>
+            <Form.Item label={t('settings.theme')}>
+              <Segmented<AppTheme>
+                value={ui.theme}
+                options={[
+                  { value: 'light', label: t('settings.themeLight') },
+                  { value: 'dark', label: t('settings.themeDark') },
+                  { value: 'auto', label: t('settings.themeAuto') },
+                ]}
+                onChange={(value) => void updateUiSetting({ theme: value })}
+              />
+            </Form.Item>
+            <Form.Item label={t('settings.accent')}>
+              <div className="accent-swatches">
+                {ACCENT_IDS.map((id) => {
+                  const label = t(`accent.${id}` as MessageKey);
+                  return (
+                    <Tooltip key={id} title={label}>
+                      <button
+                        type="button"
+                        aria-label={label}
+                        title={label}
+                        className={`accent-swatch${ui.accent === id ? ' is-active' : ''}`}
+                        style={{ background: ACCENT_PRESETS[id].light.accent }}
+                        onClick={() => void updateUiSetting({ accent: id })}
+                      />
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </Form.Item>
+            <Form.Item label={t('settings.layout')}>
+              <Segmented<GeneratorPosition>
+                block
+                value={ui.generatorPosition}
+                options={[
+                  { value: 'top', label: t('settings.positionTop') },
+                  { value: 'left', label: t('settings.positionLeft') },
+                  { value: 'right', label: t('settings.positionRight') },
+                ]}
+                onChange={(value) => void updateUiSetting({ generatorPosition: value })}
+              />
+            </Form.Item>
+            <Form.Item label={t('settings.language')}>
+              <Select
+                value={ui.language}
+                options={[
+                  { value: 'zh-CN', label: t('settings.languageZhCN') },
+                  { value: 'en', label: t('settings.languageEn') },
+                ]}
+                onChange={(value) => void updateUiSetting({ language: value })}
+              />
+            </Form.Item>
+          </Form>
+        </Card>
+
+        <Card
+          title={t('settings.changeMaster')}
+          size="small"
+          className="settings-section"
+        >
+          <p>{t('settings.changeMasterHelp')}</p>
+          <Form form={passwordForm} layout="vertical" onFinish={changePassword}>
+            <Form.Item
+              name="currentPassword"
+              label={t('settings.currentMaster')}
+              rules={[{ required: true, message: t('settings.currentMasterRequired') }]}
+            >
+              <Input.Password autoComplete="current-password" />
+            </Form.Item>
+            <Form.Item
+              name="newPassword"
+              label={t('settings.newMaster')}
+              rules={[{ required: true, message: t('settings.newMasterRequired') }]}
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+            <Form.Item
+              name="confirmPassword"
+              label={t('settings.confirmMaster')}
+              rules={[{ required: true, message: t('settings.confirmMasterRequired') }]}
+            >
+              <Input.Password autoComplete="new-password" />
+            </Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SaveOutlined />}
+              loading={busy}
+              disabled={!unlocked}
+            >
+              {t('settings.changeMasterSubmit')}
+            </Button>
+          </Form>
+        </Card>
+
+        <Card
+          title={t('settings.backup')}
+          size="small"
+          className="settings-section settings-span-2"
+        >
+          <p>{t('settings.backupHelp')}</p>
+          <div className="settings-actions">
+            <Button
+              icon={<ExportOutlined />}
+              loading={backupBusy}
+              disabled={!unlocked}
+              onClick={() => void exportBackup()}
+            >
+              {t('settings.export')}
+            </Button>
+            <Input.Password
+              value={restorePassword}
+              placeholder={t('settings.restorePasswordPlaceholder')}
+              onChange={(event) => setRestorePassword(event.target.value)}
+            />
+            <Button
+              danger
+              icon={<ImportOutlined />}
+              loading={backupBusy}
+              disabled={!unlocked}
+              onClick={() => void restoreBackup()}
+            >
+              {t('settings.restore')}
+            </Button>
+          </div>
+          <div className="auth-help">{t('settings.restoreHelp')}</div>
+        </Card>
       </div>
 
       <div className="settings-footer">

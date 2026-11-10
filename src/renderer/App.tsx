@@ -66,6 +66,12 @@ function buildThemeConfig(resolved: ResolvedTheme, accent: AccentColors): ThemeC
         cellPaddingInline: 12,
       },
       Button: { primaryShadow: 'none', defaultShadow: 'none' },
+      Slider: {
+        railSize: 6,
+        handleSize: 18,
+        handleSizeHover: 20,
+        handleLineWidth: 2,
+      },
       Segmented: {
         itemSelectedBg: accent.soft,
         itemSelectedColor: accent.accent,

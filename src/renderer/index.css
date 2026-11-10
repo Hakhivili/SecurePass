@@ -286,7 +286,7 @@ body {
   line-height: 1.65;
 }
 
-/* 设置页：左右两栏不等宽（左 1.25 : 右 1），窄窗口退化为单列 */
+/* 设置页：左右两栏不等宽（左 1.25 : 右 1），备份占满整行 */
 .settings-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
@@ -294,11 +294,8 @@ body {
   align-items: start;
 }
 
-.settings-col {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
+.settings-span-2 {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 1000px) {
@@ -388,6 +385,27 @@ body {
   grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
 }
 
+/* Grid 按 DOM 顺序落位，所以「右侧」必须显式交换两列 */
+.workbench--left .workbench-generator {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.workbench--left .workbench-vault {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.workbench--right .workbench-generator {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.workbench--right .workbench-vault {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 /* 侧栏模式下生成器变成窄高的竖条：内部滚动、结果行换行 */
 .workbench--left .workbench-generator,
 .workbench--right .workbench-generator {
@@ -406,6 +424,26 @@ body {
 .workbench--left .generator-result,
 .workbench--right .generator-result {
   flex-wrap: wrap;
+}
+
+.workbench--left .generator-controls,
+.workbench--right .generator-controls {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.workbench--left .generator-control,
+.workbench--right .generator-control {
+  width: 100%;
+}
+
+.workbench--left .generator-slider,
+.workbench--right .generator-slider {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  min-width: 0;
 }
 
 .workbench-generator {
@@ -451,8 +489,15 @@ body {
 }
 
 .generator-slider {
-  width: 168px;
+  width: 300px;
   margin: 0;
+}
+
+/* 加粗滑轨，便于点选 */
+.generator-slider .ant-slider-rail,
+.generator-slider .ant-slider-track {
+  height: 6px;
+  border-radius: 999px;
 }
 
 .generator-length-input {
