@@ -4,25 +4,25 @@
    数值需与 src/shared/constants.ts 的 THEME_CHROME 保持一致
    ============================================================ */
 :root {
-  /* 暖中性（stone）色阶：卡片用暖白而非纯白，减轻浅色模式的刺眼感 */
-  --sp-bg: #f2f0ed;
-  --sp-surface: #fbfaf8;
-  --sp-surface-2: #f0ede8;
-  --sp-border: #e5e1da;
-  --sp-border-strong: #d6d0c8;
-  --sp-text: #221f1c;
-  --sp-text-2: #5c564f;
-  --sp-text-3: #8c867d;
-  --sp-accent: #4a63e7;
-  --sp-accent-strong: #3b51c9;
-  --sp-accent-soft: rgba(74, 99, 231, 0.1);
-  --sp-success: #2f8f46;
-  --sp-warning: #d97b06;
-  --sp-danger: #cf3232;
-  --sp-danger-soft: rgba(207, 50, 50, 0.08);
-  --sp-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
-  --sp-shadow-md: 0 8px 24px -14px rgba(28, 25, 23, 0.22);
-  --sp-ring: 0 0 0 3px rgba(74, 99, 231, 0.16);
+  /* 暖中性（stone）色阶：低亮度暖白 + 去饱和强调色，长时间看不刺眼 */
+  --sp-bg: #f0eeea;
+  --sp-surface: #f8f6f2;
+  --sp-surface-2: #ece9e3;
+  --sp-border: #e6e2db;
+  --sp-border-strong: #d8d3ca;
+  --sp-text: #2a2622;
+  --sp-text-2: #625b53;
+  --sp-text-3: #928b82;
+  --sp-accent: #5468d8;
+  --sp-accent-strong: #4356bd;
+  --sp-accent-soft: rgba(84, 104, 216, 0.1);
+  --sp-success: #388e4a;
+  --sp-warning: #cf7d0a;
+  --sp-danger: #c94141;
+  --sp-danger-soft: rgba(201, 65, 65, 0.08);
+  --sp-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.05);
+  --sp-shadow-md: 0 10px 24px -16px rgba(28, 25, 23, 0.2);
+  --sp-ring: 0 0 0 3px rgba(84, 104, 216, 0.18);
   --sp-mono:
     ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, 'Liberation Mono', monospace;
   color: var(--sp-text);
@@ -144,11 +144,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  height: 40px;
-  margin-left: -2px;
-  padding: 0 11px;
+  height: 44px;
+  margin-left: -4px;
+  padding: 0 12px;
   border: none;
-  border-radius: 9px;
+  border-radius: 12px;
   background: transparent;
   color: var(--sp-text-2);
   font-size: 13px;
@@ -166,8 +166,14 @@ body {
   color: var(--sp-text);
 }
 
+/* 图标用描边加粗：antd 图标是填充路径，加同色描边即可变粗且拐角变圆 */
 .titlebar-action-icon {
-  font-size: 20px;
+  font-size: 22px;
+  stroke: currentColor;
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  paint-order: stroke;
 }
 
 .titlebar-action-label {
@@ -181,8 +187,12 @@ body {
 }
 
 .titlebar-action:hover .titlebar-action-label {
-  max-width: 110px;
+  max-width: 116px;
   opacity: 1;
+}
+
+.titlebar-action-label {
+  font-size: 13.5px;
 }
 
 /* ============================================================
