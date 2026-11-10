@@ -28,6 +28,8 @@ export const IPC = {
   uiPreferencesUpdate: 'ui-preferences:update',
   windowSyncTitleBar: 'window:sync-title-bar',
   clipboardCopySecret: 'clipboard:copy-secret',
+  appInfo: 'app:info',
+  appOpenDataDir: 'app:open-data-dir',
   eventLocked: 'event:locked',
 } as const;
 
@@ -71,6 +73,17 @@ export interface TitleBarOverlayOptions {
   height?: number;
 }
 
+/** 关于信息：版本号与运行环境，用于「关于」区块与问题反馈。 */
+export interface AppInfo {
+  name: string;
+  version: string;
+  electron: string;
+  chrome: string;
+  node: string;
+  dataDir: string;
+  platform: string;
+}
+
 export interface SecurePassApi {
   vault: {
     exists(): Promise<boolean>;
@@ -109,6 +122,12 @@ export interface SecurePassApi {
   titleBar: {
     /** 主题变化时同步系统窗口按钮区域（overlay）的底色与符号颜色。 */
     sync(options: TitleBarOverlayOptions): Promise<void>;
+  };
+  app: {
+    /** 版本号、运行环境与数据目录（关于/反馈信息）。 */
+    info(): Promise<AppInfo>;
+    /** 在系统文件管理器中打开数据目录。 */
+    openDataDir(): Promise<void>;
   };
   events: {
     onLocked(callback: () => void): () => void;

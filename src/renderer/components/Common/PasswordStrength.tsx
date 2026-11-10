@@ -19,7 +19,18 @@ export default function PasswordStrength({
 
   return (
     <div className="strength-meter">
-      <div className="strength-track" aria-hidden>
+      <div
+        className="strength-track"
+        role="progressbar"
+        aria-label={t('strength.label')}
+        aria-valuemin={1}
+        aria-valuemax={5}
+        aria-valuenow={strength.score + 1}
+        aria-valuetext={`${t(`strength.${strength.score}` as MessageKey)}，${t(
+          'strength.entropy',
+          { bits: strength.entropyBits },
+        )}`}
+      >
         <div
           className={`strength-fill level-${strength.score}`}
           style={{ width: `${((strength.score + 1) / 5) * 100}%` }}

@@ -1,6 +1,7 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import type {
+  AppInfo,
   AppSettings,
   PasswordConfig,
   TitleBarOverlayOptions,
@@ -107,6 +108,25 @@ export function registerIpcHandlers(
       settings.clearClipboardSeconds,
     );
   });
+  handle(IPC.appInfo, (): AppInfo => appInfo(context));
+  handle(IPC.appOpenDataDir, async () => {
+    const errorMessage = await shell.openPath(context.paths.baseDir);
+    if (errorMessage) {
+      throw new Error(`无法打开数据目录：${errorMessage}`);
+    }
+  });
+}
+
+export function appInfo(context: AppContext): AppInfo {
+  return {
+    name: app.getName(),
+    version: app.getVersion(),
+    electron: process.versions.electron ?? '',
+    chrome: process.versions.chrome ?? '',
+    node: process.versions.node ?? '',
+    dataDir: context.paths.baseDir,
+    platform: process.platform,
+  };
 }
 
 async function readSettings(context: AppContext): Promise<AppSettings> {

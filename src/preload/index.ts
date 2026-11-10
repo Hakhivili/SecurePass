@@ -48,6 +48,10 @@ const api: SecurePassApi = {
   titleBar: {
     sync: (options) => invoke(IPC.windowSyncTitleBar, options),
   },
+  app: {
+    info: () => invoke(IPC.appInfo),
+    openDataDir: () => invoke(IPC.appOpenDataDir),
+  },
   events: {
     onLocked: (callback) => {
       const listener = () => callback();

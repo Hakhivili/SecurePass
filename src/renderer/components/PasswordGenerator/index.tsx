@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { App, Form, Input, Modal, Select, Switch } from 'antd';
 import {
   DEFAULT_PASSWORD_CONFIG,
@@ -43,25 +43,35 @@ export default function PasswordGenerator(): JSX.Element {
   const [saveOpen, setSaveOpen] = useState(false);
   const createItem = useVaultStore((state) => state.createItem);
   const confirmIfDuplicate = useDuplicateGuard();
+  /** 生成是异步的：只接受最后一次请求的结果，避免慢响应覆盖新密码。 */
+  const latestRequest = useRef(0);
 
   const generate = useCallback(async () => {
+    const requestId = latestRequest.current + 1;
+    latestRequest.current = requestId;
     setBusy(true);
     setError(null);
     try {
       const generated = await getApi().generator.generate(config);
+      if (requestId !== latestRequest.current) return;
       setResult(generated);
-      setStrength(await getApi().password.strength(generated.password));
+      const nextStrength = await getApi().password.strength(generated.password);
+      if (requestId !== latestRequest.current) return;
+      setStrength(nextStrength);
     } catch (generationError) {
+      if (requestId !== latestRequest.current) return;
       setError(getErrorMessage(generationError, t));
       setResult(null);
       setStrength(null);
     } finally {
-      setBusy(false);
+      if (requestId === latestRequest.current) setBusy(false);
     }
   }, [config, t]);
 
+  // 配置变化后防抖重新生成：拖动滑条时不会每一格都发一轮 IPC。
   useEffect(() => {
-    void generate();
+    const timer = window.setTimeout(() => void generate(), 220);
+    return () => window.clearTimeout(timer);
   }, [generate]);
 
   /** 保存前先确保密码库已解锁（未解锁时弹出主密码对话框）。 */

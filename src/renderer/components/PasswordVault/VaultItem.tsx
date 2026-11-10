@@ -60,6 +60,8 @@ export default function VaultItem({
                   type="link"
                   size="small"
                   icon={<CopyOutlined />}
+                  aria-label={t('vault.actionCopyUsername')}
+                  title={t('vault.actionCopyUsername')}
                   onClick={() => void copy(item.username, 'vault.usernameCopied')}
                 />
               )}
@@ -72,6 +74,8 @@ export default function VaultItem({
                 <Input.Password readOnly value={item.password} />
                 <Button
                   icon={<CopyOutlined />}
+                  aria-label={t('vault.actionCopyPassword')}
+                  title={t('vault.actionCopyPassword')}
                   onClick={() => void copy(item.password, 'vault.passwordCopied')}
                 />
               </Space.Compact>

@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
-import { ExportOutlined, ImportOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+  ExportOutlined,
+  FolderOpenOutlined,
+  ImportOutlined,
+  SaveOutlined,
+} from '@ant-design/icons';
 import { Alert, App, Button, Card, Form, Input, Segmented, Select, Tooltip } from 'antd';
 import { ACCENT_PRESETS, VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { DEFAULT_SETTINGS } from '@shared/types';
 import type {
   AccentId,
+  AppInfo,
   AppSettings,
   AppTheme,
   GeneratorPosition,
@@ -35,6 +41,7 @@ export default function Settings(): JSX.Element {
   const update = useSettingsStore((state) => state.update);
   const updateUi = useSettingsStore((state) => state.updateUi);
   const [restorePassword, setRestorePassword] = useState('');
+  const [info, setInfo] = useState<AppInfo | null>(null);
   const [busy, setBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const lock = useAuthStore((state) => state.lock);
@@ -43,6 +50,28 @@ export default function Settings(): JSX.Element {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // 版本号与数据目录：反馈问题、备份迁移时都需要
+  useEffect(() => {
+    let cancelled = false;
+    void getApi()
+      .app.info()
+      .then((value) => {
+        if (!cancelled) setInfo(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const openDataDir = async () => {
+    try {
+      await getApi().app.openDataDir();
+    } catch (error) {
+      message.error(getErrorMessage(error, t));
+    }
+  };
 
   /** 同 key 的提示：连续调整时替换上一条，不会堆成一摞。 */
   const notifySaved = () => {
@@ -167,7 +196,8 @@ export default function Settings(): JSX.Element {
             <Form.Item label={t('settings.autoLock')}>
               <Select
                 disabled={!unlocked}
-                value={settings.autoLockTimeoutMinutes}
+                value={unlocked ? settings.autoLockTimeoutMinutes : undefined}
+                placeholder={t('settings.lockedValue')}
                 options={[1, 5, 10, 15, 30, 60].map((value) => ({
                   value,
                   label: t('settings.minutes', { value }),
@@ -180,7 +210,8 @@ export default function Settings(): JSX.Element {
             <Form.Item label={t('settings.clipboard')}>
               <Select
                 disabled={!unlocked}
-                value={settings.clearClipboardSeconds}
+                value={unlocked ? settings.clearClipboardSeconds : undefined}
+                placeholder={t('settings.lockedValue')}
                 options={[5, 15, 30, 60, 120].map((value) => ({
                   value,
                   label: t('settings.seconds', { value }),
@@ -314,6 +345,43 @@ export default function Settings(): JSX.Element {
             </Button>
           </div>
           <div className="auth-help">{t('settings.restoreHelp')}</div>
+        </Card>
+
+        <Card
+          title={t('settings.about')}
+          size="small"
+          className="settings-section settings-span-2"
+        >
+          <div className="settings-about">
+            <div className="settings-about-row">
+              <span className="settings-about-label">{t('settings.version')}</span>
+              <span className="settings-about-value">
+                {info ? `${info.name} v${info.version}` : '-'}
+              </span>
+            </div>
+            <div className="settings-about-row">
+              <span className="settings-about-label">{t('settings.runtime')}</span>
+              <span className="settings-about-value">
+                {info
+                  ? `Electron ${info.electron} · Chromium ${info.chrome} · Node ${info.node}`
+                  : '-'}
+              </span>
+            </div>
+            <div className="settings-about-row">
+              <span className="settings-about-label">{t('settings.dataDir')}</span>
+              <span className="settings-about-value settings-about-path">
+                {info?.dataDir ?? '-'}
+              </span>
+              <Button
+                size="small"
+                icon={<FolderOpenOutlined />}
+                onClick={() => void openDataDir()}
+              >
+                {t('settings.openDataDir')}
+              </Button>
+            </div>
+            <p className="auth-help">{t('settings.aboutHelp')}</p>
+          </div>
         </Card>
       </div>
 

@@ -42,9 +42,9 @@ export function translate(
   return rendered;
 }
 
-/** 当前界面语言：来自设置（未解锁时回退到上次使用的本地缓存）。 */
+/** 当前界面语言：界面偏好是唯一真源（settings.language 只是历史镜像）。 */
 export function useLanguage(): AppLanguage {
-  return useSettingsStore((state) => state.settings.language);
+  return useSettingsStore((state) => state.ui.language);
 }
 
 export function useI18n(): { t: Translate; language: AppLanguage } {

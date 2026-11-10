@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Form, Input, Modal, Select, Switch } from 'antd';
+import { App, Form, Input, Modal, Select, Switch } from 'antd';
 import type { VaultItem, VaultItemDraft } from '@shared/types';
 import { useI18n } from '../../i18n';
 
@@ -31,6 +31,7 @@ export default function VaultEditor({
   onSubmit,
 }: VaultEditorProps): JSX.Element {
   const [form] = Form.useForm<VaultForm>();
+  const { modal } = App.useApp();
   const { t } = useI18n();
 
   useEffect(() => {
@@ -62,11 +63,27 @@ export default function VaultEditor({
     if (saved) form.resetFields();
   };
 
+  /** 关闭前确认：已修改但未保存的内容不应该被静默丢掉。 */
+  const requestClose = (): void => {
+    if (!form.isFieldsTouched()) {
+      onCancel();
+      return;
+    }
+    modal.confirm({
+      title: t('editor.discardTitle'),
+      content: t('editor.discardBody'),
+      okText: t('editor.discardOk'),
+      okButtonProps: { danger: true },
+      cancelText: t('editor.discardKeep'),
+      onOk: onCancel,
+    });
+  };
+
   return (
     <Modal
       title={item ? t('vault.editorEdit') : t('vault.editorCreate')}
       open={open}
-      onCancel={onCancel}
+      onCancel={requestClose}
       onOk={() => form.submit()}
       okText={t('common.save')}
       cancelText={t('common.cancel')}

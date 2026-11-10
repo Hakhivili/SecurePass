@@ -52,7 +52,12 @@ export default function VaultList({
           dataIndex: 'title',
           render: (title: string, record) => (
             <Space size={6}>
-              {record.isFavorite && <StarFilled style={{ color: '#f59e0b' }} />}
+              {record.isFavorite && (
+                <StarFilled
+                  style={{ color: 'var(--sp-warning)' }}
+                  aria-label={t('vault.favorite')}
+                />
+              )}
               <Button
                 type="link"
                 style={{ padding: 0 }}
@@ -97,6 +102,7 @@ export default function VaultList({
                 <Button
                   type="text"
                   icon={<EyeOutlined />}
+                  aria-label={t('vault.actionView')}
                   onClick={() => onView(record.id)}
                 />
               </Tooltip>
@@ -104,6 +110,7 @@ export default function VaultList({
                 <Button
                   type="text"
                   icon={<CopyOutlined />}
+                  aria-label={t('vault.actionCopyUsername')}
                   disabled={!record.username}
                   onClick={() => onCopyUsername(record.username)}
                 />
@@ -112,6 +119,7 @@ export default function VaultList({
                 <Button
                   type="text"
                   icon={<CopyOutlined />}
+                  aria-label={t('vault.actionCopyPassword')}
                   onClick={() => onCopyPassword(record.id)}
                 />
               </Tooltip>
@@ -119,6 +127,7 @@ export default function VaultList({
                 <Button
                   type="text"
                   icon={<EditOutlined />}
+                  aria-label={t('vault.actionEdit')}
                   onClick={() => onEdit(record.id)}
                 />
               </Tooltip>
@@ -131,7 +140,12 @@ export default function VaultList({
                 onConfirm={() => onDelete(record.id)}
               >
                 <Tooltip title={t('vault.actionDelete')}>
-                  <Button type="text" danger icon={<DeleteOutlined />} />
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    aria-label={t('vault.actionDelete')}
+                  />
                 </Tooltip>
               </Popconfirm>
             </Space>

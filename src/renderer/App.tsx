@@ -4,7 +4,12 @@ import { App as AntApp, ConfigProvider, Spin, theme as antdTheme } from 'antd';
 import type { ThemeConfig } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
-import { ACCENT_PRESETS, THEME_CHROME, TITLE_BAR_HEIGHT } from '@shared/constants';
+import {
+  ACCENT_PRESETS,
+  APP_NAME,
+  THEME_CHROME,
+  TITLE_BAR_HEIGHT,
+} from '@shared/constants';
 import type { AccentColors } from '@shared/constants';
 import type { AccentId } from '@shared/types';
 import MainLayout from './components/Common/Layout';
@@ -133,6 +138,12 @@ export default function App(): JSX.Element {
   useEffect(() => {
     void loadSettings();
   }, [unlocked, loadSettings]);
+
+  // 文档语言要跟随界面语言：屏幕阅读器与拼写检查依赖它。
+  useEffect(() => {
+    document.documentElement.lang = ui.language === 'en' ? 'en' : 'zh-CN';
+    document.title = APP_NAME;
+  }, [ui.language]);
 
   return (
     <ConfigProvider

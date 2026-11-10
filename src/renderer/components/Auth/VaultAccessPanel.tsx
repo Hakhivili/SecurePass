@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LockOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { Alert, Button, Form, Input } from 'antd';
+import { Alert, App, Button, Form, Input } from 'antd';
 import { APP_NAME, VAULT_PASSWORD_MIN_LENGTH } from '@shared/constants';
 import { useAuthStore } from '../../store/auth.store';
 import { masterPasswordErrorKey } from '../../utils/validation';
@@ -23,6 +23,7 @@ interface AccessForm {
  */
 export default function VaultAccessPanel({ onDone }: VaultAccessPanelProps): JSX.Element {
   const [form] = Form.useForm<AccessForm>();
+  const { modal } = App.useApp();
   const [localError, setLocalError] = useState<string | null>(null);
   const initialized = useAuthStore((state) => state.initialized);
   const busy = useAuthStore((state) => state.busy);
@@ -45,6 +46,7 @@ export default function VaultAccessPanel({ onDone }: VaultAccessPanelProps): JSX
         setLocalError(t('setup.mismatch'));
         return;
       }
+      if (!(await confirmCreate())) return;
       if (await createVault(values.masterPassword)) onDone?.();
       return;
     }
@@ -52,15 +54,30 @@ export default function VaultAccessPanel({ onDone }: VaultAccessPanelProps): JSX
     if (await unlock(values.masterPassword)) onDone?.();
   };
 
+  /** 主密码没有找回渠道，创建前必须显式确认一次。 */
+  const confirmCreate = (): Promise<boolean> =>
+    new Promise((resolve) => {
+      modal.confirm({
+        title: t('setup.confirmTitle'),
+        content: t('setup.confirmBody'),
+        okText: t('setup.confirmOk'),
+        cancelText: t('common.cancel'),
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+
   const alertMessage = error ? getErrorMessage(error, t) : localError ? localError : null;
 
   return (
     <div className="vault-access">
       <div className="auth-brand vault-access-brand">
         {initialized ? (
-          <LockOutlined style={{ fontSize: 20, color: '#2563eb' }} />
+          <LockOutlined style={{ fontSize: 20, color: 'var(--sp-accent)' }} />
         ) : (
-          <SafetyCertificateOutlined style={{ fontSize: 20, color: '#2563eb' }} />
+          <SafetyCertificateOutlined
+            style={{ fontSize: 20, color: 'var(--sp-accent)' }}
+          />
         )}
         <h3>
           {initialized

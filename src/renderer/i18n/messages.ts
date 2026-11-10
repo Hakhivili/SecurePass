@@ -229,6 +229,39 @@ const zhCN = {
     '可以重新加载界面继续使用；若反复出现，请复制下方详情并反馈。密码库文件本身不受影响。',
   'error.boundaryReload': '重新加载',
   'error.boundaryRetry': '尝试恢复',
+  'error.retry': '重试',
+
+  // 无副作用/可恢复的界面提示
+  'vault.undo': '撤销',
+  'vault.undoDone': '记录已恢复',
+  'vault.favorite': '收藏',
+  'vault.allCategories': '全部分类',
+  'vault.autoLockIn': '{minutes} 分钟后自动锁定',
+  'vault.autoLockHint': '没有任何操作时，密码库会自动锁定',
+
+  // 编辑未保存时关闭
+  'editor.discardTitle': '放弃未保存的修改？',
+  'editor.discardBody': '关闭后本次填写的内容会丢失，已保存的记录不受影响。',
+  'editor.discardOk': '放弃修改',
+  'editor.discardKeep': '继续编辑',
+
+  // 创建密码库前的确认
+  'setup.confirmTitle': '确认创建密码库？',
+  'setup.confirmBody':
+    '主密码用于派生加密密钥，无法找回也无法重置。请确认已经把它记录在安全的地方。',
+  'setup.confirmOk': '我已记住主密码，创建',
+
+  // 设置页
+  'settings.lockedValue': '解锁后可查看',
+  'settings.about': '关于',
+  'settings.version': '版本',
+  'settings.runtime': '运行环境',
+  'settings.dataDir': '数据目录',
+  'settings.openDataDir': '打开目录',
+  'settings.aboutHelp':
+    '所有记录都保存在上面的目录里（密文文件）。反馈问题时请附上版本号与运行环境。',
+
+  'strength.label': '密码强度',
 } as const;
 
 const en: Record<keyof typeof zhCN, string> = {
@@ -451,6 +484,36 @@ const en: Record<keyof typeof zhCN, string> = {
     'Reload the interface to continue. If it keeps happening, copy the details below and report it. The vault file itself is not affected.',
   'error.boundaryReload': 'Reload',
   'error.boundaryRetry': 'Try to recover',
+  'error.retry': 'Retry',
+
+  'vault.undo': 'Undo',
+  'vault.undoDone': 'Record restored',
+  'vault.favorite': 'Favorite',
+  'vault.allCategories': 'All categories',
+  'vault.autoLockIn': 'Auto-lock in {minutes} min',
+  'vault.autoLockHint': 'The vault locks itself when there is no activity',
+
+  'editor.discardTitle': 'Discard unsaved changes?',
+  'editor.discardBody':
+    'What you typed will be lost when the editor closes. Saved records are not affected.',
+  'editor.discardOk': 'Discard',
+  'editor.discardKeep': 'Keep editing',
+
+  'setup.confirmTitle': 'Create the vault?',
+  'setup.confirmBody':
+    'The master password derives the encryption key and cannot be recovered or reset. Make sure it is stored somewhere safe.',
+  'setup.confirmOk': 'I have saved it, create',
+
+  'settings.lockedValue': 'Unlock to view',
+  'settings.about': 'About',
+  'settings.version': 'Version',
+  'settings.runtime': 'Runtime',
+  'settings.dataDir': 'Data directory',
+  'settings.openDataDir': 'Open folder',
+  'settings.aboutHelp':
+    'All records live in the folder above as an encrypted file. Include the version and runtime when reporting a problem.',
+
+  'strength.label': 'Password strength',
 };
 
 export type MessageKey = keyof typeof zhCN;
