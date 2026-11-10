@@ -29,10 +29,11 @@ export function createMainWindow(
   chrome: WindowChromeOptions = DEFAULT_CHROME,
 ): BrowserWindow {
   const window = new BrowserWindow({
-    width: 1180,
-    height: 780,
-    minWidth: 940,
-    minHeight: 640,
+    // 默认按接近 5:3 的长方形开窗（1320 × 792 ≈ 1.667）
+    width: 1320,
+    height: 792,
+    minWidth: 1000,
+    minHeight: 600,
     show: false,
     title: APP_NAME,
     backgroundColor: chrome.backgroundColor,

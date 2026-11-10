@@ -11,18 +11,18 @@ export const TITLE_BAR_HEIGHT = 48;
  */
 export const THEME_CHROME = {
   light: {
-    bg: '#f7f8fa',
+    bg: '#eef1f6',
     surface: '#ffffff',
-    text: '#1a1d21',
-    textSecondary: '#5a6472',
-    textTertiary: '#8b95a3',
-    border: '#e8ebef',
+    text: '#171a1f',
+    textSecondary: '#525c6b',
+    textTertiary: '#848e9d',
+    border: '#e2e6ed',
     accent: '#4c6ef5',
     accentSoft: 'rgba(76, 110, 245, 0.10)',
     success: '#2f9e44',
     warning: '#f08c00',
     danger: '#e03131',
-    shadow: '0 6px 24px -12px rgba(16, 24, 40, 0.18)',
+    shadow: '0 8px 24px -12px rgba(16, 24, 40, 0.2)',
   },
   dark: {
     bg: '#15171b',
