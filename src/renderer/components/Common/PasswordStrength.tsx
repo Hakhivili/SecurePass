@@ -6,6 +6,7 @@ interface PasswordStrengthProps {
   strength: PasswordStrengthResult | null;
 }
 
+/** 强度计：一条细进度条 + 等级文字 + 估算熵值 + 改进建议。 */
 export default function PasswordStrength({
   strength,
 }: PasswordStrengthProps): JSX.Element | null {
@@ -18,18 +19,16 @@ export default function PasswordStrength({
 
   return (
     <div className="strength-meter">
-      <div className="strength-bar" aria-hidden>
-        {[1, 2, 3, 4].map((level) => (
-          <span
-            key={level}
-            className={`strength-segment ${
-              level <= strength.score ? `level-${strength.score}` : ''
-            }`}
-          />
-        ))}
+      <div className="strength-track" aria-hidden>
+        <div
+          className={`strength-fill level-${strength.score}`}
+          style={{ width: `${((strength.score + 1) / 5) * 100}%` }}
+        />
       </div>
-      <span>{t(`strength.${strength.score}` as MessageKey)}</span>
-      <span className="detail-meta">
+      <span className="strength-label">
+        {t(`strength.${strength.score}` as MessageKey)}
+      </span>
+      <span className="strength-entropy">
         {t('strength.entropy', { bits: strength.entropyBits })}
       </span>
       {advice && <span className="strength-advice">{advice}</span>}

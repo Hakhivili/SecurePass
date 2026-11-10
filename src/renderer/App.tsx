@@ -1,30 +1,78 @@
 import { useEffect } from 'react';
 import { HashRouter } from 'react-router-dom';
 import { App as AntApp, ConfigProvider, Spin, theme as antdTheme } from 'antd';
+import type { ThemeConfig } from 'antd';
 import enUS from 'antd/locale/en_US';
 import zhCN from 'antd/locale/zh_CN';
-import { TITLE_BAR_HEIGHT } from '@shared/constants';
+import { THEME_CHROME, TITLE_BAR_HEIGHT } from '@shared/constants';
 import MainLayout from './components/Common/Layout';
 import { useAuthStore } from './store/auth.store';
 import { useVaultStore } from './store/vault.store';
 import { useSettingsStore } from './store/settings.store';
 import { applyResolvedTheme, resolveTheme, useSystemTheme } from './utils/theme';
+import type { ResolvedTheme } from './utils/theme';
+
+const FONT_STACK =
+  '"Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif';
 
 /**
- * 自绘标题栏的配色：必须与 CSS 变量 --sp-bg 保持一致，
- * 这样系统窗口按钮（titleBarOverlay）区域的底色与页面无缝衔接。
+ * antd 主题：从共享的配色令牌生成，保证组件库与自绘样式同源。
  */
-const TITLE_BAR_COLORS = {
-  light: { color: '#f4f5f7', symbolColor: '#1f2937' },
-  dark: { color: '#141414', symbolColor: '#e5e7eb' },
-} as const;
+function buildThemeConfig(resolved: ResolvedTheme): ThemeConfig {
+  const dark = resolved === 'dark';
+  const chrome = dark ? THEME_CHROME.dark : THEME_CHROME.light;
+
+  return {
+    algorithm: dark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+    token: {
+      colorPrimary: chrome.accent,
+      colorInfo: chrome.accent,
+      colorSuccess: chrome.success,
+      colorWarning: chrome.warning,
+      colorError: chrome.danger,
+      colorBgBase: chrome.bg,
+      colorBgLayout: chrome.bg,
+      colorBgContainer: chrome.surface,
+      colorBgElevated: chrome.surface,
+      colorText: chrome.text,
+      colorTextSecondary: chrome.textSecondary,
+      colorTextTertiary: chrome.textTertiary,
+      colorBorder: chrome.border,
+      colorBorderSecondary: chrome.border,
+      borderRadius: 8,
+      borderRadiusLG: 12,
+      controlHeight: 36,
+      fontSize: 14,
+      fontFamily: FONT_STACK,
+      boxShadowSecondary: chrome.shadow,
+    },
+    components: {
+      Card: { paddingLG: 18 },
+      Table: {
+        headerBg: 'transparent',
+        headerColor: chrome.textTertiary,
+        rowHoverBg: chrome.accentSoft,
+        borderColor: chrome.border,
+        headerSplitColor: 'transparent',
+        cellPaddingBlock: 12,
+        cellPaddingInline: 12,
+      },
+      Button: { primaryShadow: 'none', defaultShadow: 'none' },
+      Segmented: {
+        itemSelectedBg: chrome.accentSoft,
+        itemSelectedColor: chrome.accent,
+        trackBg: chrome.surface,
+      },
+      Modal: { contentBg: chrome.surface, headerBg: chrome.surface },
+    },
+  };
+}
 
 /**
  * 应用根组件。
  *
  * 鉴权模型：启动即进入工作台（密码生成器可直接使用），
- * 只有涉及密码库的操作才按需解锁 —— 因此这里不再有「创建/解锁」全屏门禁，
- * 解锁界面由密码库区块与按需解锁对话框承载。
+ * 只有涉及密码库的操作才按需解锁。
  */
 export default function App(): JSX.Element {
   const unlocked = useAuthStore((state) => state.unlocked);
@@ -42,8 +90,9 @@ export default function App(): JSX.Element {
   useEffect(() => {
     applyResolvedTheme(resolvedTheme);
     // 让系统窗口按钮区域跟随主题，避免出现一条颜色不一致的标题栏
+    const chrome = resolvedTheme === 'dark' ? THEME_CHROME.dark : THEME_CHROME.light;
     void window.securepass.titleBar
-      .sync({ ...TITLE_BAR_COLORS[resolvedTheme], height: TITLE_BAR_HEIGHT })
+      .sync({ color: chrome.bg, symbolColor: chrome.text, height: TITLE_BAR_HEIGHT })
       .catch(() => undefined);
   }, [resolvedTheme]);
 
@@ -66,16 +115,7 @@ export default function App(): JSX.Element {
   return (
     <ConfigProvider
       locale={language === 'en' ? enUS : zhCN}
-      theme={{
-        algorithm:
-          resolvedTheme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#2563eb',
-          borderRadius: 8,
-          fontFamily:
-            '"Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif',
-        },
-      }}
+      theme={buildThemeConfig(resolvedTheme)}
     >
       <AntApp>
         {loading ? (

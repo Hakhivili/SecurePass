@@ -106,7 +106,7 @@ export default function Settings(): JSX.Element {
   };
 
   return (
-    <div className="page">
+    <div className="page page-scroll">
       {!unlocked && (
         <Alert
           type="info"

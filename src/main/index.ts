@@ -3,6 +3,7 @@ import { createAppContext } from './app-context';
 import { registerIpcHandlers } from './ipc';
 import { applyGlobalSecurityPolicies, applySecurityPolicies } from './security';
 import { createMainWindow } from './window';
+import { THEME_CHROME } from '@shared/constants';
 import { IPC } from '@shared/types';
 
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -36,9 +37,8 @@ if (!gotSingleInstanceLock) {
     const dark =
       preferences.theme === 'dark' ||
       (preferences.theme === 'auto' && nativeTheme.shouldUseDarkColors);
-    return dark
-      ? { backgroundColor: '#141414', symbolColor: '#e5e7eb' }
-      : { backgroundColor: '#f4f5f7', symbolColor: '#1f2937' };
+    const chrome = dark ? THEME_CHROME.dark : THEME_CHROME.light;
+    return { backgroundColor: chrome.bg, symbolColor: chrome.text };
   };
 
   void app.whenReady().then(async () => {

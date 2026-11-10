@@ -5,7 +5,7 @@ import {
   EyeOutlined,
   StarFilled,
 } from '@ant-design/icons';
-import { Button, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Empty, Popconfirm, Space, Table, Tag, Tooltip } from 'antd';
 import type { VaultSummary } from '@shared/types';
 import { formatDateTime } from '../../utils/format';
 import { useI18n } from '../../i18n';
@@ -37,7 +37,15 @@ export default function VaultList({
       loading={loading}
       dataSource={items}
       pagination={{ pageSize: 12, hideOnSinglePage: true }}
-      locale={{ emptyText: t('vault.empty') }}
+      locale={{
+        emptyText: (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t('vault.empty')}
+            style={{ padding: '24px 0' }}
+          />
+        ),
+      }}
       columns={[
         {
           title: t('vault.columnTitle'),

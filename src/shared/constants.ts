@@ -4,6 +4,44 @@ export const APP_ID = 'com.securepass.desktop';
 /** 自绘标题栏（应用顶栏）高度，同时用于 Electron titleBarOverlay 的高度。 */
 export const TITLE_BAR_HEIGHT = 48;
 
+/**
+ * 界面配色令牌（唯一来源）。
+ * CSS 变量（src/renderer/index.css）与 antd 主题、窗口标题栏都从这里取值，
+ * 避免三处颜色不一致。数值需与 index.css 中的 `--sp-*` 保持一致。
+ */
+export const THEME_CHROME = {
+  light: {
+    bg: '#f7f8fa',
+    surface: '#ffffff',
+    text: '#1a1d21',
+    textSecondary: '#5a6472',
+    textTertiary: '#8b95a3',
+    border: '#e8ebef',
+    accent: '#4c6ef5',
+    accentSoft: 'rgba(76, 110, 245, 0.10)',
+    success: '#2f9e44',
+    warning: '#f08c00',
+    danger: '#e03131',
+    shadow: '0 6px 24px -12px rgba(16, 24, 40, 0.18)',
+  },
+  dark: {
+    bg: '#15171b',
+    surface: '#1c1f24',
+    text: '#e6e9ee',
+    textSecondary: '#a2abb8',
+    textTertiary: '#6e7784',
+    border: '#2b3037',
+    accent: '#6b8afd',
+    accentSoft: 'rgba(107, 138, 253, 0.16)',
+    success: '#51cf66',
+    warning: '#ffa94d',
+    danger: '#ff6b6b',
+    shadow: '0 8px 28px -14px rgba(0, 0, 0, 0.7)',
+  },
+} as const;
+
+export type ThemeChrome = (typeof THEME_CHROME)['light'];
+
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 20;
 export const VAULT_PASSWORD_MIN_LENGTH = 15;

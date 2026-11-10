@@ -1,29 +1,60 @@
+/* ============================================================
+   SecurePass · 设计令牌
+   浅色：石板灰中性色 + 靛蓝强调色；深色：同色相压暗，不用纯黑
+   数值需与 src/shared/constants.ts 的 THEME_CHROME 保持一致
+   ============================================================ */
 :root {
-  --sp-text: #1f2937;
-  --sp-bg: #f4f5f7;
+  --sp-bg: #f7f8fa;
   --sp-surface: #ffffff;
-  --sp-border: #e5e7eb;
-  --sp-border-soft: #f0f0f0;
-  --sp-muted: #6b7280;
-  --sp-danger: #cf1322;
-  --sp-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  --sp-surface-2: #f2f4f7;
+  --sp-border: #e8ebef;
+  --sp-border-strong: #d8dde4;
+  --sp-text: #1a1d21;
+  --sp-text-2: #5a6472;
+  --sp-text-3: #8b95a3;
+  --sp-accent: #4c6ef5;
+  --sp-accent-strong: #3b5bdb;
+  --sp-accent-soft: rgba(76, 110, 245, 0.1);
+  --sp-success: #2f9e44;
+  --sp-warning: #f08c00;
+  --sp-danger: #e03131;
+  --sp-danger-soft: rgba(224, 49, 49, 0.08);
+  --sp-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --sp-shadow-md: 0 6px 24px -12px rgba(16, 24, 40, 0.18);
+  --sp-ring: 0 0 0 3px rgba(76, 110, 245, 0.16);
+  --sp-mono:
+    ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, 'Liberation Mono', monospace;
   color: var(--sp-text);
   background: var(--sp-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 :root[data-theme='dark'] {
-  --sp-text: #e5e7eb;
-  --sp-bg: #141414;
-  --sp-surface: #1f1f1f;
-  --sp-border: #303030;
-  --sp-border-soft: #2a2a2a;
-  --sp-muted: #9ca3af;
-  --sp-danger: #ff7875;
-  --sp-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --sp-bg: #15171b;
+  --sp-surface: #1c1f24;
+  --sp-surface-2: #23272e;
+  --sp-border: #2b3037;
+  --sp-border-strong: #3a4048;
+  --sp-text: #e6e9ee;
+  --sp-text-2: #a2abb8;
+  --sp-text-3: #6e7784;
+  --sp-accent: #6b8afd;
+  --sp-accent-strong: #8aa2ff;
+  --sp-accent-soft: rgba(107, 138, 253, 0.16);
+  --sp-success: #51cf66;
+  --sp-warning: #ffa94d;
+  --sp-danger: #ff6b6b;
+  --sp-danger-soft: rgba(255, 107, 107, 0.14);
+  --sp-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sp-shadow-md: 0 8px 28px -14px rgba(0, 0, 0, 0.7);
+  --sp-ring: 0 0 0 3px rgba(107, 138, 253, 0.22);
 }
 
+/* ============================================================
+   基础
+   ============================================================ */
 * {
   box-sizing: border-box;
 }
@@ -39,69 +70,65 @@ body,
 body {
   min-width: 320px;
   overflow: hidden;
+  font-size: 14px;
+  line-height: 1.6;
+  font-family:
+    'Segoe UI',
+    'PingFang SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
-.app-loading,
-.auth-shell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 24px;
+::selection {
+  background: var(--sp-accent-soft);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--sp-border-strong);
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--sp-text-3);
+  background-clip: content-box;
+}
+
+/* ============================================================
+   应用外壳 + 自绘标题栏
+   ============================================================ */
+.app-shell {
+  height: 100vh;
   background: var(--sp-bg);
 }
 
-.auth-panel {
-  width: 100%;
-  max-width: 460px;
-  border: 1px solid var(--sp-border);
-  border-radius: 8px;
-  background: var(--sp-surface);
-  padding: 28px;
-  box-shadow: var(--sp-shadow);
-}
-
-.auth-brand {
+.app-loading {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
+  height: 100%;
 }
 
-.auth-brand h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.auth-help {
-  margin-top: 16px;
-  color: var(--sp-muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.app-shell {
-  height: 100vh;
-}
-
-/* 顶栏与页面内容共用同一个容器，保证两者宽度、左右边距完全一致 */
-.app-container {
-  width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
-/* 应用顶栏 = 自绘标题栏（系统标题栏已隐藏）：整条可拖动，右侧让出系统窗口按钮 */
 .app-titlebar {
   display: flex;
   flex: none;
   align-items: center;
   gap: 8px;
   height: 48px;
-  /* 右侧留白给最小化/最大化/关闭按钮（titleBarOverlay 区域） */
-  padding: 0 150px 0 10px;
+  /* 右侧让出系统的最小化/最大化/关闭按钮 */
+  padding: 0 150px 0 12px;
   background: var(--sp-bg);
   user-select: none;
   -webkit-app-region: drag;
@@ -109,191 +136,166 @@ body {
 
 .app-titlebar-action {
   -webkit-app-region: no-drag;
+  color: var(--sp-text-2);
+}
+
+.app-titlebar-action:hover {
+  color: var(--sp-text);
+}
+
+/* ============================================================
+   内容容器：填满窗口，页面内部滚动
+   ============================================================ */
+.app-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 4px 24px 20px;
+  overflow: hidden;
+  background: var(--sp-bg);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1280px;
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-height: 0;
+}
+
+.page.page-scroll {
+  gap: 0;
+  padding-right: 2px;
+  overflow-y: auto;
+}
+
+/* ============================================================
+   卡片（工作台两个区块 / 设置卡片）
+   ============================================================ */
+.workbench-block.ant-card,
+.settings-section.ant-card {
+  border: 1px solid var(--sp-border);
+  border-radius: 14px;
+  background: var(--sp-surface);
+  box-shadow: var(--sp-shadow-sm);
+}
+
+:root[data-theme='dark'] .workbench-block.ant-card,
+:root[data-theme='dark'] .settings-section.ant-card {
+  box-shadow: none;
+}
+
+.workbench-block .ant-card-head,
+.settings-section .ant-card-head {
+  min-height: 46px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--sp-border);
+  background: transparent;
+}
+
+.workbench-block .ant-card-head-title,
+.settings-section .ant-card-head-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.workbench-block .ant-card-body,
+.settings-section .ant-card-body {
+  padding: 16px 18px;
+}
+
+.workbench-hint {
+  color: var(--sp-text-3);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.settings-section {
+  margin-bottom: 16px;
+}
+
+.settings-section p {
+  margin: 0 0 14px;
+  color: var(--sp-text-2);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.settings-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 2px 24px;
+}
+
+.settings-defaults {
+  color: var(--sp-text-3);
+  font-size: 12.5px;
 }
 
 /* 左下角「设置」入口 */
 .settings-entry {
   position: fixed;
-  left: 16px;
-  bottom: 16px;
+  left: 18px;
+  bottom: 18px;
   z-index: 20;
-  box-shadow: var(--sp-shadow);
+  border-radius: 10px;
+  border: 1px solid var(--sp-border);
+  background: var(--sp-surface);
+  color: var(--sp-text-2);
+  box-shadow: var(--sp-shadow-sm);
 }
 
-.app-content {
-  padding: 12px 24px 72px;
-  overflow: auto;
-  background: var(--sp-bg);
+.settings-entry:hover {
+  color: var(--sp-text);
+  border-color: var(--sp-border-strong);
 }
 
-.page {
-  width: 100%;
-}
-
-.generator-result {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.generator-result .ant-input-password {
-  flex: 1;
-}
-
-.vault-toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.vault-toolbar .ant-input-affix-wrapper {
-  max-width: 360px;
-}
-
-.vault-error {
-  color: var(--sp-danger);
-  margin-bottom: 12px;
-}
-
-.detail-row {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--sp-border-soft);
-}
-
-.detail-row:last-child {
-  border-bottom: none;
-}
-
-.detail-label {
-  color: var(--sp-muted);
-}
-
-.detail-value {
-  overflow-wrap: anywhere;
-}
-
-.detail-meta {
-  color: var(--sp-muted);
-  font-size: 12px;
-}
-
-.settings-section {
-  margin-bottom: 20px;
-}
-
-.settings-section h3 {
-  margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.settings-section p {
-  margin: 0 0 16px;
-  color: var(--sp-muted);
-  font-size: 13px;
-}
-
-.settings-footer {
-  margin-top: 12px;
-}
-
-.settings-defaults {
-  margin-left: 12px;
-  color: var(--sp-muted);
-  font-size: 13px;
-}
-
-.duplicate-list {
-  margin: 8px 0 0;
-  padding-left: 18px;
-  color: var(--sp-muted);
-  font-size: 13px;
-}
-
-.strength-meter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.strength-advice {
-  flex-basis: 100%;
-  color: var(--sp-muted);
-  font-size: 12px;
-}
-
-.strength-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 24px);
-  gap: 4px;
-}
-
-.strength-segment {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--sp-border);
-}
-
-.strength-segment.level-1 {
-  background: #ef4444;
-}
-
-.strength-segment.level-2 {
-  background: #f59e0b;
-}
-
-.strength-segment.level-3 {
-  background: #84cc16;
-}
-
-.strength-segment.level-4 {
-  background: #16a34a;
-}
-
-@media (max-width: 760px) {
-  .app-content {
-    padding: 16px 16px 64px;
-  }
-
-  .vault-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .vault-toolbar .ant-input-affix-wrapper {
-    max-width: none;
-  }
-}
-
-/* ===== 工作台：生成器（横向长方形）+ 密码库 ===== */
+/* ============================================================
+   工作台布局：生成器在上（固定高度），密码库占满剩余高度
+   ============================================================ */
 .workbench {
-  display: flex;
-  flex-direction: column;
   gap: 16px;
 }
 
-.workbench-block .ant-card-head-title {
-  font-weight: 600;
+.workbench-generator {
+  flex: none;
 }
 
-.workbench-hint {
-  color: var(--sp-muted);
-  font-size: 12px;
-  font-weight: 400;
+.workbench-vault {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
+.workbench-vault > .ant-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   密码生成器
+   ============================================================ */
 .generator-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 20px;
+  gap: 12px 22px;
 }
 
 .generator-control {
@@ -303,64 +305,198 @@ body {
 }
 
 .generator-label {
-  color: var(--sp-muted);
-  font-size: 13px;
+  color: var(--sp-text-3);
+  font-size: 12px;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
 .generator-slider {
-  width: 176px;
+  width: 168px;
+  margin: 0;
 }
 
 .generator-length-input {
-  width: 64px;
+  width: 62px;
 }
 
 .generator-classes {
-  gap: 12px;
+  gap: 14px;
 }
 
-/* 生成器区块加高：结果行更高、行间距更松 */
-.workbench-generator .ant-card-body {
-  padding: 20px 24px 22px;
+.generator-classes .ant-checkbox-wrapper {
+  font-size: 13px;
 }
 
-.workbench-generator .generator-result {
-  margin-top: 0;
+.generator-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
 }
 
-.workbench-generator .generator-result .ant-input-affix-wrapper,
-.workbench-generator .generator-result .ant-input {
-  height: 44px;
+.generator-result .ant-input-affix-wrapper,
+.generator-result .ant-input {
+  height: 46px;
+  border-radius: 10px;
+  background: var(--sp-surface-2);
+  font-family: var(--sp-mono);
   font-size: 15px;
+  letter-spacing: 1.2px;
 }
 
-.workbench-generator .generator-result .ant-btn {
-  height: 44px;
+.generator-result .ant-input-affix-wrapper > input.ant-input {
+  background: transparent;
+  font-family: inherit;
+  letter-spacing: inherit;
 }
 
-.workbench-generator .generator-controls {
-  margin-bottom: 18px;
+.generator-result .ant-btn {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 10px;
 }
 
-.workbench-generator .strength-meter {
+/* 强度计：细进度条 + 文字 */
+.strength-meter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   margin-top: 14px;
 }
 
-/* ===== 密码库锁定态 ===== */
+.strength-track {
+  flex: 0 0 96px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--sp-surface-2);
+}
+
+.strength-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition:
+    width 0.2s ease,
+    background 0.2s ease;
+}
+
+.strength-fill.level-0 {
+  background: var(--sp-danger);
+}
+
+.strength-fill.level-1 {
+  background: #f03e3e;
+}
+
+.strength-fill.level-2 {
+  background: var(--sp-warning);
+}
+
+.strength-fill.level-3 {
+  background: #74b816;
+}
+
+.strength-fill.level-4 {
+  background: var(--sp-success);
+}
+
+.strength-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.strength-entropy {
+  color: var(--sp-text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strength-advice {
+  flex-basis: 100%;
+  color: var(--sp-text-3);
+  font-size: 12px;
+}
+
+/* ============================================================
+   密码库
+   ============================================================ */
+.vault-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sp-border);
+}
+
+.vault-toolbar .ant-input-affix-wrapper {
+  max-width: 380px;
+  border-radius: 10px;
+  background: var(--sp-surface-2);
+}
+
+.vault-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.vault-error {
+  margin: 12px 18px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--sp-danger-soft);
+  color: var(--sp-danger);
+  font-size: 13px;
+}
+
+.workbench-vault .ant-table-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.workbench-vault .ant-table {
+  background: transparent;
+}
+
+.workbench-vault .ant-table-thead > tr > th {
+  background: transparent;
+  color: var(--sp-text-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.workbench-vault .ant-table-thead > tr > th::before {
+  display: none;
+}
+
+.workbench-vault .ant-table-tbody > tr > td {
+  font-size: 13.5px;
+}
+
+/* 锁定态：解锁表单居中 */
 .vault-locked {
   display: flex;
+  flex: 1 1 auto;
+  align-items: center;
   justify-content: center;
-  padding: 8px 0;
+  padding: 24px;
+  margin: auto;
 }
 
 .vault-access {
   width: 100%;
-  max-width: 380px;
+  max-width: 340px;
 }
 
 .vault-access-brand {
-  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .vault-access-brand h3 {
@@ -370,13 +506,82 @@ body {
 }
 
 .vault-access-hint {
-  margin: 0 0 14px;
-  color: var(--sp-muted);
+  margin: 0 0 16px;
+  color: var(--sp-text-2);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-.vault-toolbar-actions {
+.auth-brand {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-help {
+  margin-top: 16px;
+  color: var(--sp-text-3);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+/* 记录详情 */
+.detail-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--sp-border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  padding-top: 1px;
+  color: var(--sp-text-3);
+  font-size: 12.5px;
+}
+
+.detail-value {
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+}
+
+.detail-meta {
+  color: var(--sp-text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 重复提醒候选列表 */
+.duplicate-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--sp-text-2);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ============================================================
+   窄窗口适配
+   ============================================================ */
+@media (max-width: 900px) {
+  .app-content {
+    padding: 4px 16px 16px;
+  }
+
+  .vault-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vault-toolbar .ant-input-affix-wrapper {
+    max-width: none;
+  }
+
+  .generator-result {
+    flex-wrap: wrap;
+  }
 }
