@@ -9,8 +9,10 @@ interface GeneratorConfigProps {
 }
 
 /**
- * 生成规则区：横向紧凑排布（长度 / 字符类型 / 排除易混淆），
- * 配合「长方形」的生成器区块，避免占用过多纵向空间。
+ * 生成规则区布局：
+ * - 左侧整块留给「长度」——标签 + 长滑条 + 数字输入，滑条吃掉剩余宽度；
+ * - 右侧靠近卡片边缘放字符类型与「排除易混淆」开关。
+ * 窄栏（生成器放左/右）时整体改为纵向排列。
  */
 export default function GeneratorConfig({
   config,
@@ -21,8 +23,10 @@ export default function GeneratorConfig({
 
   return (
     <div className="generator-controls">
-      <div className="generator-control">
-        <span className="generator-label">{t('generator.lengthShort')}</span>
+      <div className="generator-control generator-control-length">
+        <span className="generator-label generator-label-lg">
+          {t('generator.lengthShort')}
+        </span>
         <Slider
           className="generator-slider"
           min={PASSWORD_MIN_LENGTH}
@@ -31,7 +35,6 @@ export default function GeneratorConfig({
           onChange={(length) => patch({ length })}
         />
         <InputNumber
-          size="small"
           className="generator-length-input"
           min={PASSWORD_MIN_LENGTH}
           max={PASSWORD_MAX_LENGTH}
@@ -42,42 +45,46 @@ export default function GeneratorConfig({
         />
       </div>
 
-      <div className="generator-control generator-classes">
-        <Checkbox
-          checked={config.includeUppercase}
-          onChange={(event) => patch({ includeUppercase: event.target.checked })}
-        >
-          {t('generator.uppercase')}
-        </Checkbox>
-        <Checkbox
-          checked={config.includeLowercase}
-          onChange={(event) => patch({ includeLowercase: event.target.checked })}
-        >
-          {t('generator.lowercase')}
-        </Checkbox>
-        <Checkbox
-          checked={config.includeNumbers}
-          onChange={(event) => patch({ includeNumbers: event.target.checked })}
-        >
-          {t('generator.numbers')}
-        </Checkbox>
-        <Checkbox
-          checked={config.includeSymbols}
-          onChange={(event) => patch({ includeSymbols: event.target.checked })}
-        >
-          {t('generator.symbols')}
-        </Checkbox>
-      </div>
+      <div className="generator-options">
+        <div className="generator-control generator-classes">
+          <Checkbox
+            checked={config.includeUppercase}
+            onChange={(event) => patch({ includeUppercase: event.target.checked })}
+          >
+            {t('generator.uppercase')}
+          </Checkbox>
+          <Checkbox
+            checked={config.includeLowercase}
+            onChange={(event) => patch({ includeLowercase: event.target.checked })}
+          >
+            {t('generator.lowercase')}
+          </Checkbox>
+          <Checkbox
+            checked={config.includeNumbers}
+            onChange={(event) => patch({ includeNumbers: event.target.checked })}
+          >
+            {t('generator.numbers')}
+          </Checkbox>
+          <Checkbox
+            checked={config.includeSymbols}
+            onChange={(event) => patch({ includeSymbols: event.target.checked })}
+          >
+            {t('generator.symbols')}
+          </Checkbox>
+        </div>
 
-      <div className="generator-control">
-        <Tooltip title={t('generator.excludeAmbiguous')}>
-          <span className="generator-label">{t('generator.excludeAmbiguousShort')}</span>
-        </Tooltip>
-        <Switch
-          size="small"
-          checked={config.excludeAmbiguous}
-          onChange={(excludeAmbiguous) => patch({ excludeAmbiguous })}
-        />
+        <div className="generator-control generator-ambiguous">
+          <Tooltip title={t('generator.excludeAmbiguous')}>
+            <span className="generator-label">
+              {t('generator.excludeAmbiguousShort')}
+            </span>
+          </Tooltip>
+          <Switch
+            size="small"
+            checked={config.excludeAmbiguous}
+            onChange={(excludeAmbiguous) => patch({ excludeAmbiguous })}
+          />
+        </div>
       </div>
     </div>
   );

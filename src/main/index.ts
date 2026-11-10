@@ -17,12 +17,6 @@ if (!gotSingleInstanceLock) {
 
   applyGlobalSecurityPolicies();
 
-  app.on('second-instance', () => {
-    if (!mainWindow) return;
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  });
-
   context.vault.onLocked(() => {
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(IPC.eventLocked);
@@ -41,9 +35,25 @@ if (!gotSingleInstanceLock) {
     return { backgroundColor: chrome.bg, symbolColor: chrome.text };
   };
 
-  void app.whenReady().then(async () => {
+  const openMainWindow = async (): Promise<void> => {
     mainWindow = createMainWindow(await resolveWindowChrome(), context.windowState);
     applySecurityPolicies(mainWindow);
+  };
+
+  // 再次双击图标/重复启动时：有窗口就前置，没有任何窗口就重新开一个。
+  // 旧逻辑在 mainWindow 为空时直接 return，用户看到的是「点了没反应」。
+  app.on('second-instance', () => {
+    if (!app.isReady()) return;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+      return;
+    }
+    void openMainWindow();
+  });
+
+  void app.whenReady().then(async () => {
+    await openMainWindow();
     registerIpcHandlers(context, () => mainWindow);
 
     powerMonitor.on('lock-screen', () => context.vault.lock());
@@ -55,10 +65,7 @@ if (!gotSingleInstanceLock) {
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        void resolveWindowChrome().then((chrome) => {
-          mainWindow = createMainWindow(chrome, context.windowState);
-          applySecurityPolicies(mainWindow);
-        });
+        void openMainWindow();
       }
     });
   });

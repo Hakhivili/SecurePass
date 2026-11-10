@@ -438,6 +438,27 @@ body {
   width: 100%;
 }
 
+.workbench--left .generator-control-length,
+.workbench--right .generator-control-length {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+}
+
+.workbench--left .generator-options,
+.workbench--right .generator-options {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  margin-left: 0;
+}
+
+.workbench--left .generator-classes,
+.workbench--right .generator-classes {
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
 .workbench--left .generator-slider,
 .workbench--right .generator-slider {
   flex: 1 1 auto;
@@ -468,17 +489,24 @@ body {
 /* ============================================================
    密码生成器
    ============================================================ */
+/* 规则行：左边「长度 + 长滑条」吃掉剩余宽度，右侧选项贴卡片右边 */
 .generator-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 22px;
+  gap: 12px 24px;
 }
 
 .generator-control {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.generator-control-length {
+  flex: 1 1 360px;
+  min-width: 260px;
+  gap: 14px;
 }
 
 .generator-label {
@@ -488,24 +516,46 @@ body {
   white-space: nowrap;
 }
 
+/* 「长度」与滑条粗细相称 */
+.generator-label-lg {
+  color: var(--sp-text-2);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
 .generator-slider {
-  width: 300px;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 140px;
   margin: 0;
 }
 
-/* 加粗滑轨，便于点选 */
+/* 滑轨加粗，与长滑条整体比例协调 */
 .generator-slider .ant-slider-rail,
 .generator-slider .ant-slider-track {
-  height: 6px;
+  height: 8px;
   border-radius: 999px;
 }
 
 .generator-length-input {
-  width: 62px;
+  width: 68px;
+}
+
+/* 右侧选项组：靠右对齐 */
+.generator-options {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: auto;
 }
 
 .generator-classes {
   gap: 14px;
+}
+
+.generator-ambiguous {
+  gap: 10px;
 }
 
 .generator-classes .ant-checkbox-wrapper {

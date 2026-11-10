@@ -67,9 +67,9 @@ function buildThemeConfig(resolved: ResolvedTheme, accent: AccentColors): ThemeC
       },
       Button: { primaryShadow: 'none', defaultShadow: 'none' },
       Slider: {
-        railSize: 6,
-        handleSize: 18,
-        handleSizeHover: 20,
+        railSize: 8,
+        handleSize: 20,
+        handleSizeHover: 22,
         handleLineWidth: 2,
       },
       Segmented: {
