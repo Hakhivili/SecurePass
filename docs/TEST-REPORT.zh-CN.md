@@ -14,8 +14,8 @@
 
 | 检查项              | 命令                    | 结果                                                         |
 | ------------------- | ----------------------- | ------------------------------------------------------------ |
-| 单元 / 集成测试     | `npm test`              | ✅ **21 个文件、107 个用例全部通过**（约 3.5 s）             |
-| 覆盖率              | `npm run test:coverage` | ✅ 语句 47.99%、分支 79.88%、函数 68.58%（阈值 45/70/60/45） |
+| 单元 / 集成测试     | `npm test`              | ✅ **27 个文件、132 个用例全部通过**（约 4.6 s）             |
+| 覆盖率              | `npm run test:coverage` | ✅ 语句 50.95%、分支 82.48%、函数 75.12%（阈值 50/80/72/50） |
 | 类型检查            | `npm run typecheck`     | ✅ 0 错误（`strict` + `noUnusedLocals`）                     |
 | 代码规范            | `npm run lint`          | ✅ 0 错误、0 警告                                            |
 | 格式检查            | `npm run format:check`  | ✅ 全仓库符合 Prettier 配置                                  |
@@ -48,6 +48,12 @@
 | `tests/unit/security.test.ts`                    | 6      | CSP、权限拒绝、导航白名单                            |
 | `tests/unit/ipc-handlers.test.ts`                | 6      | IPC 来源校验、错误码透传、标题栏通道守卫             |
 | `tests/unit/log.service.test.ts`                 | 4      | 日志格式、脱敏、轮转                                 |
+| `tests/unit/renderer/ipc-errors.test.ts`         | 5      | 错误码识别、本地化回退、桥接缺失                     |
+| `tests/unit/renderer/ui-preferences.test.ts`     | 6      | 偏好规范化、localStorage 缓存容错                    |
+| `tests/unit/renderer/hotkeys.test.tsx`           | 5      | 快捷键触发、输入框让位、卸载解绑                     |
+| `tests/unit/renderer/theme.test.ts`              | 2      | 主题解析与 `<html>` 属性写入                         |
+| `tests/unit/renderer/vault-gate.store.test.ts`   | 4      | 按需解锁门控的 Promise 决议                          |
+| `tests/unit/renderer/format-validation.test.ts`  | 3      | 时间格式化、主密码长度校验（按码点计数）             |
 
 ---
 

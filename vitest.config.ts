@@ -32,12 +32,12 @@ export default defineConfig({
         'src/preload/**',
         'src/shared/types/**',
       ],
-      // 阈值按当前实测值（47.99% / 79.8% / 68.58%）留出余量，防止覆盖率悄悄回退。
+      // 阈值按当前实测值（50.95% / 82.48% / 75.12%）留出余量，防止覆盖率悄悄回退。
       thresholds: {
-        statements: 45,
-        branches: 70,
-        functions: 60,
-        lines: 45,
+        statements: 50,
+        branches: 80,
+        functions: 72,
+        lines: 50,
       },
     },
   },

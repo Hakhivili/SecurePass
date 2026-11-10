@@ -20,6 +20,8 @@ All notable changes to this project are documented in this file.
   restricted to the dev origin, and permission checks are denied outright.
 - File logging in `userData/logs/main.log` with 512 KB rotation and redaction of secret fields.
 - Coverage reporting (`@vitest/coverage-v8`) with thresholds, and CI now runs `test:coverage`.
+- Renderer unit tests for IPC error mapping, UI preference caching, hotkeys, theme application and
+  the unlock gate store.
 - Root `SECURITY.md`, `THIRD-PARTY-NOTICES.md` and `docs/USER-GUIDE.zh-CN.md`.
 - Application icon, NSIS installer metadata and a `package-smoke` CI job.
 
