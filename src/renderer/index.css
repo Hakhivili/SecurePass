@@ -93,58 +93,25 @@ body {
   margin: 0 auto;
 }
 
-.app-header {
-  display: flex;
-  height: 52px;
-  padding: 0 24px;
-  background: var(--sp-surface);
-  border-bottom: 1px solid var(--sp-border);
+/* 固定定位的导航按钮（不随内容滚动）：工作台右上「设置」/ 设置页左上「返回工作台」 */
+.top-action {
+  position: fixed;
+  top: 10px;
+  z-index: 20;
+  box-shadow: var(--sp-shadow);
 }
 
-.app-header-inner {
-  display: flex;
-  align-items: stretch;
-  gap: 24px;
+.top-action-left {
+  left: 16px;
 }
 
-.app-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.app-tabs {
-  display: flex;
-  align-items: stretch;
-}
-
-.app-tab {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 12px;
-  border-bottom: 2px solid transparent;
-  color: var(--sp-muted);
-  font-size: 14px;
-  text-decoration: none;
-  transition:
-    color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.app-tab:hover {
-  color: var(--sp-text);
-}
-
-.app-tab.is-active {
-  color: var(--sp-text);
-  font-weight: 600;
-  border-bottom-color: #2563eb;
+.top-action-right {
+  right: 16px;
 }
 
 .app-content {
-  padding: 20px 24px 24px;
+  /* 顶部留白：让出固定导航按钮的位置 */
+  padding: 54px 24px 24px;
   overflow: auto;
   background: var(--sp-bg);
 }
