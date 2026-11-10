@@ -1,13 +1,22 @@
 export type AppTheme = 'light' | 'dark' | 'auto';
 export type AppLanguage = 'en' | 'zh-CN';
 
+/** 生成器区块相对密码库的位置。 */
+export type GeneratorPosition = 'top' | 'left' | 'right';
+
+/** 强调色预设（每种都提供浅色/深色两套，保证两种主题下都够清晰）。 */
+export type AccentId = 'indigo' | 'blue' | 'emerald' | 'violet' | 'amber' | 'rose';
+
 /**
- * 界面偏好：主题与语言不是机密数据，且必须在**未解锁**时也能读写，
+ * 界面偏好：主题、语言、强调色与布局。
+ * 这些不是机密数据，且必须在**未解锁**时也能读写，
  * 因此单独存放在明文 `ui-preferences.json` 中，不放进加密的密码库负载。
  */
 export interface UiPreferences {
   theme: AppTheme;
   language: AppLanguage;
+  accent: AccentId;
+  generatorPosition: GeneratorPosition;
 }
 
 /**
@@ -33,4 +42,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export const DEFAULT_UI_PREFERENCES: UiPreferences = {
   theme: 'auto',
   language: 'zh-CN',
+  accent: 'indigo',
+  generatorPosition: 'top',
 };

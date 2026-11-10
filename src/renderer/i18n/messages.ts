@@ -132,6 +132,12 @@ const zhCN = {
   'settings.clipboard': '复制后清理剪贴板',
   'settings.seconds': '{value} 秒',
   'settings.theme': '主题',
+  'settings.accent': '强调色',
+  'settings.layout': '界面布局',
+  'settings.layoutHelp': '选择密码生成器的位置，切换后立即生效。',
+  'settings.positionTop': '上方',
+  'settings.positionLeft': '左侧',
+  'settings.positionRight': '右侧',
   'settings.themeLight': '浅色',
   'settings.themeDark': '深色',
   'settings.themeAuto': '跟随系统',
@@ -183,6 +189,14 @@ const zhCN = {
   'warning.short-length': '长度较短，建议 12 位以上',
   'warning.low-entropy': '字符空间有限，不建议用于高价值账户',
   'warning.letters-only': '仅使用字母时更容易被猜解',
+
+  // 强调色名称
+  'accent.indigo': '靛蓝',
+  'accent.blue': '蓝色',
+  'accent.emerald': '翡翠绿',
+  'accent.violet': '紫罗兰',
+  'accent.amber': '琥珀',
+  'accent.rose': '玫瑰',
 
   // 表单校验
   'validation.masterTooShort': '主密码至少需要 {min} 个字符',
@@ -332,6 +346,12 @@ const en: Record<keyof typeof zhCN, string> = {
   'settings.clipboard': 'Clear clipboard after copying',
   'settings.seconds': '{value} s',
   'settings.theme': 'Theme',
+  'settings.accent': 'Accent color',
+  'settings.layout': 'Layout',
+  'settings.layoutHelp': 'Choose where the password generator sits; applied immediately.',
+  'settings.positionTop': 'Top',
+  'settings.positionLeft': 'Left',
+  'settings.positionRight': 'Right',
   'settings.themeLight': 'Light',
   'settings.themeDark': 'Dark',
   'settings.themeAuto': 'Follow system',
@@ -384,6 +404,13 @@ const en: Record<keyof typeof zhCN, string> = {
   'warning.short-length': 'Quite short — 12 characters or more is recommended',
   'warning.low-entropy': 'Limited character space, not ideal for high-value accounts',
   'warning.letters-only': 'Letters only are easier to guess',
+
+  'accent.indigo': 'Indigo',
+  'accent.blue': 'Blue',
+  'accent.emerald': 'Emerald',
+  'accent.violet': 'Violet',
+  'accent.amber': 'Amber',
+  'accent.rose': 'Rose',
 
   'validation.masterTooShort': 'The master password needs at least {min} characters',
 

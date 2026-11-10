@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_UI_PREFERENCES } from '@shared/types';
 import {
   PreferencesService,
+  normalizeAccent,
+  normalizeGeneratorPosition,
   normalizeLanguage,
   normalizeTheme,
 } from '@main/services/preferences.service';
@@ -33,30 +35,35 @@ describe('PreferencesService', () => {
   });
 
   it('更新后立即持久化，并可再次读回', async () => {
-    await expect(service.update({ theme: 'dark' })).resolves.toEqual({
+    const expected = {
       theme: 'dark',
       language: DEFAULT_UI_PREFERENCES.language,
-    });
+      accent: DEFAULT_UI_PREFERENCES.accent,
+      generatorPosition: DEFAULT_UI_PREFERENCES.generatorPosition,
+    };
+    await expect(service.update({ theme: 'dark' })).resolves.toEqual(expected);
 
     const raw = await fs.readFile(filePath, 'utf8');
-    expect(JSON.parse(raw)).toEqual({
-      theme: 'dark',
-      language: DEFAULT_UI_PREFERENCES.language,
-    });
+    expect(JSON.parse(raw)).toEqual(expected);
 
     const fresh = new PreferencesService(filePath);
-    await expect(fresh.read()).resolves.toEqual({
-      theme: 'dark',
-      language: DEFAULT_UI_PREFERENCES.language,
-    });
+    await expect(fresh.read()).resolves.toEqual(expected);
   });
 
-  it('局部更新不会覆盖另一项', async () => {
-    await service.update({ theme: 'light', language: 'zh-CN' });
+  it('局部更新不会覆盖其它项', async () => {
+    await service.update({ theme: 'light', language: 'zh-CN', accent: 'rose' });
     await expect(service.update({ language: 'en' })).resolves.toEqual({
       theme: 'light',
       language: 'en',
+      accent: 'rose',
+      generatorPosition: DEFAULT_UI_PREFERENCES.generatorPosition,
     });
+  });
+
+  it('强调色与生成器位置可以单独设置', async () => {
+    await expect(
+      service.update({ accent: 'emerald', generatorPosition: 'left' }),
+    ).resolves.toMatchObject({ accent: 'emerald', generatorPosition: 'left' });
   });
 
   it('非法值被规范化为默认值', async () => {
@@ -76,5 +83,11 @@ describe('PreferencesService', () => {
     expect(normalizeTheme(undefined)).toBe(DEFAULT_UI_PREFERENCES.theme);
     expect(normalizeLanguage('en')).toBe('en');
     expect(normalizeLanguage('de')).toBe(DEFAULT_UI_PREFERENCES.language);
+    expect(normalizeAccent('violet')).toBe('violet');
+    expect(normalizeAccent('pink')).toBe(DEFAULT_UI_PREFERENCES.accent);
+    expect(normalizeGeneratorPosition('right')).toBe('right');
+    expect(normalizeGeneratorPosition('bottom')).toBe(
+      DEFAULT_UI_PREFERENCES.generatorPosition,
+    );
   });
 });

@@ -1,3 +1,5 @@
+import type { AccentId } from './types/settings.types';
+
 export const APP_NAME = 'SecurePass';
 export const APP_ID = 'com.securepass.desktop';
 
@@ -41,6 +43,109 @@ export const THEME_CHROME = {
 } as const;
 
 export type ThemeChrome = (typeof THEME_CHROME)['light'];
+
+/** 一套强调色（浅色与深色各一套）。 */
+export interface AccentColors {
+  readonly accent: string;
+  readonly strong: string;
+  readonly soft: string;
+  readonly ring: string;
+}
+
+/**
+ * 强调色预设。每种颜色给出浅色/深色两套：
+ * 浅色主题用较深、低饱和的色值；深色主题用较亮、低饱和的色值，
+ * 保证在各自背景上都够清晰且不刺眼。
+ */
+export const ACCENT_PRESETS: Record<
+  AccentId,
+  { light: AccentColors; dark: AccentColors }
+> = {
+  indigo: {
+    light: {
+      accent: '#5468d8',
+      strong: '#4356bd',
+      soft: 'rgba(84, 104, 216, 0.10)',
+      ring: 'rgba(84, 104, 216, 0.18)',
+    },
+    dark: {
+      accent: '#7b8cf0',
+      strong: '#93a1f5',
+      soft: 'rgba(123, 140, 240, 0.16)',
+      ring: 'rgba(123, 140, 240, 0.22)',
+    },
+  },
+  blue: {
+    light: {
+      accent: '#3b7ef0',
+      strong: '#2c66d4',
+      soft: 'rgba(59, 126, 240, 0.10)',
+      ring: 'rgba(59, 126, 240, 0.18)',
+    },
+    dark: {
+      accent: '#6aa5f8',
+      strong: '#8bb9fa',
+      soft: 'rgba(106, 165, 248, 0.16)',
+      ring: 'rgba(106, 165, 248, 0.22)',
+    },
+  },
+  emerald: {
+    light: {
+      accent: '#2f9e6e',
+      strong: '#248a5f',
+      soft: 'rgba(47, 158, 110, 0.10)',
+      ring: 'rgba(47, 158, 110, 0.18)',
+    },
+    dark: {
+      accent: '#4bbd8b',
+      strong: '#6bcfa2',
+      soft: 'rgba(75, 189, 139, 0.16)',
+      ring: 'rgba(75, 189, 139, 0.22)',
+    },
+  },
+  violet: {
+    light: {
+      accent: '#8661e0',
+      strong: '#7350cb',
+      soft: 'rgba(134, 97, 224, 0.10)',
+      ring: 'rgba(134, 97, 224, 0.18)',
+    },
+    dark: {
+      accent: '#a78bfa',
+      strong: '#c0a8fc',
+      soft: 'rgba(167, 139, 250, 0.16)',
+      ring: 'rgba(167, 139, 250, 0.22)',
+    },
+  },
+  amber: {
+    light: {
+      accent: '#c07a12',
+      strong: '#a4630a',
+      soft: 'rgba(192, 122, 18, 0.10)',
+      ring: 'rgba(192, 122, 18, 0.18)',
+    },
+    dark: {
+      accent: '#e0a13a',
+      strong: '#eeb75f',
+      soft: 'rgba(224, 161, 58, 0.16)',
+      ring: 'rgba(224, 161, 58, 0.22)',
+    },
+  },
+  rose: {
+    light: {
+      accent: '#cf4a7c',
+      strong: '#b73b69',
+      soft: 'rgba(207, 74, 124, 0.10)',
+      ring: 'rgba(207, 74, 124, 0.18)',
+    },
+    dark: {
+      accent: '#ec7ba3',
+      strong: '#f29cba',
+      soft: 'rgba(236, 123, 163, 0.16)',
+      ring: 'rgba(236, 123, 163, 0.22)',
+    },
+  },
+} as const;
 
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 20;

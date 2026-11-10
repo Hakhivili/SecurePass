@@ -286,6 +286,69 @@ body {
   line-height: 1.65;
 }
 
+/* 设置页：左右两栏不等宽（左 1.25 : 右 1），窄窗口退化为单列 */
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.settings-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (max-width: 1000px) {
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 强调色色板 */
+.accent-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.accent-swatch {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.accent-swatch:hover {
+  transform: scale(1.08);
+}
+
+.accent-swatch.is-active {
+  box-shadow:
+    0 0 0 2px var(--sp-surface),
+    0 0 0 3px var(--sp-text-3);
+}
+
+/* 备份操作区 */
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-actions .ant-input-affix-wrapper {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
 /* 设置页内容较短时，把底部操作条压到页面下沿，避免出现一大片空白 */
 .settings-footer {
   display: flex;
@@ -304,8 +367,45 @@ body {
 /* ============================================================
    工作台布局：生成器在上（固定高度），密码库占满剩余高度
    ============================================================ */
+/* 生成器位置：上 / 左 / 右（CSS Grid 切换，无需重排 DOM） */
 .workbench {
+  display: grid;
   gap: 16px;
+  min-height: 0;
+}
+
+.workbench--top {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.workbench--left {
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+}
+
+.workbench--right {
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+}
+
+/* 侧栏模式下生成器变成窄高的竖条：内部滚动、结果行换行 */
+.workbench--left .workbench-generator,
+.workbench--right .workbench-generator {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.workbench--left .workbench-generator > .ant-card-body,
+.workbench--right .workbench-generator > .ant-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.workbench--left .generator-result,
+.workbench--right .generator-result {
+  flex-wrap: wrap;
 }
 
 .workbench-generator {
