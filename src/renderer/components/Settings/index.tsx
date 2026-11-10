@@ -36,7 +36,13 @@ export default function Settings(): JSX.Element {
   const updateSetting = async (patch: Partial<AppSettings>) => {
     try {
       await update(patch);
-      message.success(t('settings.saved'));
+      // 固定 key：连续调整时替换上一条提示，避免弹出一摞"设置已保存"
+      message.open({
+        key: 'settings-saved',
+        type: 'success',
+        content: t('settings.saved'),
+        duration: 1.2,
+      });
     } catch (error) {
       message.error(getErrorMessage(error, t));
     }
