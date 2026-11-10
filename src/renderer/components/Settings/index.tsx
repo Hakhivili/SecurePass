@@ -111,11 +111,26 @@ export default function Settings(): JSX.Element {
     }
   };
 
+  /** 恢复会整库覆盖，必须显式二次确认。 */
+  const confirmRestore = (): Promise<boolean> =>
+    new Promise((resolve) => {
+      modal.confirm({
+        title: t('settings.restoreConfirmTitle'),
+        content: t('settings.restoreConfirmBody'),
+        okText: t('settings.restoreConfirmOk'),
+        okButtonProps: { danger: true },
+        cancelText: t('common.cancel'),
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+
   const restoreBackup = async () => {
     if (!restorePassword) {
       message.error(t('settings.restorePasswordRequired'));
       return;
     }
+    if (!(await confirmRestore())) return;
     setBackupBusy(true);
     try {
       const result = await getApi().vault.restoreBackup({ password: restorePassword });

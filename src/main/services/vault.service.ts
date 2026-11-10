@@ -31,6 +31,23 @@ const MAX_NOTES_LENGTH = 5000;
 const MAX_TAG_LENGTH = 50;
 const MAX_TAG_COUNT = 20;
 
+/** 自动锁定的采样间隔：每 5 秒评估一次「用户离开了多久」。 */
+const AUTO_LOCK_POLL_INTERVAL_MS = 5_000;
+
+/**
+ * 系统级活动来源。
+ *
+ * 自动锁定不能只看「有没有 IPC 调用」：用户可能一直在生成器里操作、
+ * 只在编辑器里打字，这些都不产生密码库 IPC。商业级做法是看
+ * 系统空闲时间 + 窗口是否在前台，两者取较大值。
+ */
+export interface VaultActivitySource {
+  /** 距上一次系统级鼠标/键盘输入的秒数（Electron: powerMonitor.getSystemIdleTime）。 */
+  idleSeconds(): number;
+  /** 应用窗口是否处于前台。 */
+  isWindowFocused(): boolean;
+}
+
 export interface VaultServiceOptions {
   now?: () => number;
 }
@@ -41,6 +58,9 @@ export class VaultService {
   private dataKey: Buffer | null = null;
   private autoLockTimer: NodeJS.Timeout | null = null;
   private autoLockAt: number | null = null;
+  private lastActivityAt: number | null = null;
+  private unfocusedSince: number | null = null;
+  private activitySource: VaultActivitySource | null = null;
   private readonly lockListeners = new Set<() => void>();
   private readonly now: () => number;
 
@@ -56,6 +76,15 @@ export class VaultService {
   onLocked(listener: () => void): () => void {
     this.lockListeners.add(listener);
     return () => this.lockListeners.delete(listener);
+  }
+
+  /**
+   * 注入系统活动来源（Electron 层提供）。未注入时退化为
+   * 「从最后一次密码库操作开始计时」，便于单元测试。
+   */
+  setActivitySource(source: VaultActivitySource | null): void {
+    this.activitySource = source;
+    if (this.payload) this.evaluateAutoLock();
   }
 
   async exists(): Promise<boolean> {
@@ -87,7 +116,7 @@ export class VaultService {
       const vaultFile = await this.crypto.createVaultFile(payload, masterPassword);
       await this.storage.writeVaultFile(vaultFile);
       const opened = await this.crypto.openVaultFile(vaultFile, masterPassword);
-      this.setSession(opened.vaultFile, opened.payload, opened.dataKey);
+      await this.applyOpened(opened);
     } catch (error) {
       await this.storage.releaseLock();
       throw error;
@@ -107,7 +136,7 @@ export class VaultService {
     try {
       const vaultFile = await this.storage.readVaultFile();
       const opened = await this.crypto.openVaultFile(vaultFile, masterPassword);
-      this.setSession(opened.vaultFile, opened.payload, opened.dataKey);
+      await this.applyOpened(opened);
     } catch (error) {
       if (!alreadyLocked) {
         await this.storage.releaseLock();
@@ -124,6 +153,8 @@ export class VaultService {
     this.vaultFile = null;
     this.clearAutoLockTimer();
     this.autoLockAt = null;
+    this.lastActivityAt = null;
+    this.unfocusedSince = null;
     for (const listener of this.lockListeners) {
       listener();
     }
@@ -248,6 +279,8 @@ export class VaultService {
     validateSettings(next);
     payload.settings = next;
     await this.persist();
+    // 「无操作多久后锁定」可能刚被改短，立即按新值重新评估
+    this.evaluateAutoLock();
     return { ...next };
   }
 
@@ -277,18 +310,42 @@ export class VaultService {
     );
     await this.storage.writeVaultFile(nextVaultFile);
     const reopened = await this.crypto.openVaultFile(nextVaultFile, masterPassword);
-    this.setSession(reopened.vaultFile, reopened.payload, reopened.dataKey);
+    await this.applyOpened(reopened);
     return backupOfPreviousPath;
   }
 
-  private setSession(vaultFile: VaultFile, payload: VaultPayload, dataKey: Buffer): void {
-    validatePayload(payload);
+  /**
+   * 应用已解开的会话；若负载结构被修补过（缺失 id / 时间戳），
+   * 立刻写回磁盘，避免每次解锁都重新生成 id。
+   */
+  private async applyOpened(opened: {
+    vaultFile: VaultFile;
+    payload: VaultPayload;
+    dataKey: Buffer;
+  }): Promise<void> {
+    const repaired = this.setSession(opened.vaultFile, opened.payload, opened.dataKey);
+    if (!repaired) return;
+    try {
+      await this.persist();
+    } catch {
+      // 写回失败不阻塞解锁：内存中的结构已经修好，下一次写入会一并落盘。
+    }
+  }
+
+  private setSession(
+    vaultFile: VaultFile,
+    payload: VaultPayload,
+    dataKey: Buffer,
+  ): boolean {
+    const repaired = validatePayload(payload);
     this.dataKey?.fill(0);
-    this.clearAutoLockTimer();
     this.vaultFile = vaultFile;
     this.payload = payload;
     this.dataKey = dataKey;
-    this.scheduleAutoLock();
+    this.lastActivityAt = this.now();
+    this.unfocusedSince = null;
+    this.startAutoLockWatch();
+    return repaired;
   }
 
   private async persist(): Promise<void> {
@@ -325,16 +382,67 @@ export class VaultService {
 
   private touch(): void {
     if (!this.payload) return;
-    this.scheduleAutoLock();
+    this.lastActivityAt = this.now();
+    this.evaluateAutoLock();
   }
 
-  private scheduleAutoLock(): void {
+  private startAutoLockWatch(): void {
     this.clearAutoLockTimer();
+    this.evaluateAutoLock();
+    if (!this.payload) return;
+    const timer = setInterval(() => this.evaluateAutoLock(), AUTO_LOCK_POLL_INTERVAL_MS);
+    timer.unref?.();
+    this.autoLockTimer = timer;
+  }
+
+  /**
+   * 评估「用户离开多久了」，刷新 `autoLockAt`，到点立即锁定。
+   *
+   * 离开时长 = max(系统空闲时间, 窗口失焦时长)。前者覆盖「人不在电脑前」，
+   * 后者覆盖「人还在用电脑，但切到别的应用里打字」。如果没有注入活动来源
+   * （单元测试、纯服务端构造），退化为「距离最后一次密码库操作」。
+   */
+  private evaluateAutoLock(): void {
+    const payload = this.payload;
+    if (!payload) {
+      this.clearAutoLockTimer();
+      this.autoLockAt = null;
+      return;
+    }
+
     const minutes =
-      this.payload?.settings.autoLockTimeoutMinutes ??
-      DEFAULT_SETTINGS.autoLockTimeoutMinutes;
-    this.autoLockAt = this.now() + minutes * 60_000;
-    this.autoLockTimer = setTimeout(() => this.lock(), minutes * 60_000);
+      payload.settings.autoLockTimeoutMinutes ?? DEFAULT_SETTINGS.autoLockTimeoutMinutes;
+    const timeoutMs = minutes * 60_000;
+    if (timeoutMs <= 0) {
+      this.autoLockAt = null;
+      return;
+    }
+
+    const awayMs = this.resolveAwayMs();
+    this.autoLockAt = this.now() + Math.max(0, timeoutMs - awayMs);
+    if (awayMs >= timeoutMs) {
+      this.lock();
+    }
+  }
+
+  private resolveAwayMs(): number {
+    const now = this.now();
+    const source = this.activitySource;
+    if (!source) {
+      const since = this.lastActivityAt ?? now;
+      return Math.max(0, now - since);
+    }
+
+    if (source.isWindowFocused()) {
+      this.unfocusedSince = null;
+    } else if (this.unfocusedSince === null) {
+      this.unfocusedSince = now;
+    }
+
+    const idleMs = Math.max(0, source.idleSeconds() * 1_000);
+    const unfocusedMs =
+      this.unfocusedSince === null ? 0 : Math.max(0, now - this.unfocusedSince);
+    return Math.max(idleMs, unfocusedMs);
   }
 
   private clearAutoLockTimer(): void {
@@ -361,7 +469,15 @@ export function validateNewMasterPassword(masterPassword: string): void {
   }
 }
 
-export function validatePayload(payload: VaultPayload): void {
+/**
+ * 校验并修补负载结构。
+ *
+ * 返回 `true` 表示修补过（缺 id 或时间戳被补齐），调用方应把修补结果落盘。
+ * 之前的实现只调用 `normalizeDraft` 来「探测」是否合法却丢弃返回值，
+ * 于是 `id`/`createdAt`/`updatedAt` 从未被验证：排序会得到 NaN、
+ * 缺失 id 的记录无法被 get/delete 精确定位。
+ */
+export function validatePayload(payload: VaultPayload): boolean {
   if (
     !payload ||
     payload.schemaVersion !== PAYLOAD_SCHEMA_VERSION ||
@@ -369,10 +485,48 @@ export function validatePayload(payload: VaultPayload): void {
   ) {
     throw new AppError(ErrorCode.CorruptedVault, '密码库数据结构版本不受支持');
   }
-  for (const item of payload.items) {
-    normalizeDraft(item);
-  }
+
+  const repaired = repairItems(payload);
   validateSettings(payload.settings);
+  return repaired;
+}
+
+/** 逐条校验记录，并补齐缺失/重复的 id 与非法时间戳。 */
+function repairItems(payload: VaultPayload): boolean {
+  const now = Date.now();
+  const seenIds = new Set<string>();
+  const items: VaultItem[] = [];
+  let repaired = false;
+
+  for (const raw of payload.items as unknown[]) {
+    const draft = normalizeDraft(raw as VaultItemDraft);
+    const source = (raw ?? {}) as Partial<VaultItem>;
+
+    const sourceId = typeof source.id === 'string' ? source.id : null;
+    const id =
+      sourceId && sourceId.length > 0 && !seenIds.has(sourceId) ? sourceId : randomUUID();
+    if (id !== sourceId) repaired = true;
+    seenIds.add(id);
+
+    const createdAt =
+      typeof source.createdAt === 'number' && Number.isFinite(source.createdAt)
+        ? source.createdAt
+        : now;
+    const updatedAt =
+      typeof source.updatedAt === 'number' && Number.isFinite(source.updatedAt)
+        ? source.updatedAt
+        : createdAt;
+    if (createdAt !== source.createdAt || updatedAt !== source.updatedAt) {
+      repaired = true;
+    }
+
+    items.push({ ...draft, id, createdAt, updatedAt });
+  }
+
+  if (repaired) {
+    payload.items = items;
+  }
+  return repaired;
 }
 
 function normalizeDraft(draft: VaultItemDraft): VaultItemDraft {

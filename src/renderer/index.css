@@ -819,3 +819,32 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* ============================================================
+   顶层错误边界：替换整棵组件树，需要自己铺满窗口
+   ============================================================ */
+.app-error {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: var(--sp-bg);
+  color: var(--sp-text);
+}
+
+.app-error-detail {
+  max-width: 560px;
+  max-height: 168px;
+  overflow: auto;
+  font-family: 'Cascadia Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.app-error-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

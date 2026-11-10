@@ -15,6 +15,22 @@ if (!gotSingleInstanceLock) {
   let mainWindow: BrowserWindow | null = null;
   let quitting = false;
 
+  // 主进程兜底日志：任何未捕获异常都先记录，避免静默退出。
+  process.on('uncaughtException', (error) => {
+    console.error('[main] 未捕获异常', error);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('[main] 未处理的 Promise 拒绝', reason);
+  });
+
+  // 自动锁定依据「系统空闲 + 窗口失焦」，而不是只看密码库 IPC 调用：
+  // 用户在生成器里操作、在编辑器里打字时也必须续期。
+  context.vault.setActivitySource({
+    idleSeconds: () => powerMonitor.getSystemIdleTime(),
+    isWindowFocused: () =>
+      Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isFocused()),
+  });
+
   applyGlobalSecurityPolicies();
 
   context.vault.onLocked(() => {

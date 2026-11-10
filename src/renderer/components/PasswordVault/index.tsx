@@ -43,6 +43,15 @@ export default function PasswordVault(): JSX.Element {
     if (unlocked) void load();
   }, [unlocked, load]);
 
+  // 锁定时必须立刻关闭编辑器与详情：否则明文密码还会留在内存和 DOM 里。
+  useEffect(() => {
+    if (unlocked) return;
+    setEditorOpen(false);
+    setDetailOpen(false);
+    setEditing(null);
+    setDetail(null);
+  }, [unlocked]);
+
   if (!unlocked) {
     return (
       <div className="vault-locked">
@@ -57,16 +66,26 @@ export default function PasswordVault(): JSX.Element {
   };
 
   const openEdit = async (id: string) => {
-    const item = await getApi().vault.get(id);
-    setEditing(item);
-    setDetailOpen(false);
-    setEditorOpen(true);
+    try {
+      const item = await getApi().vault.get(id);
+      if (!item) return;
+      setEditing(item);
+      setDetailOpen(false);
+      setEditorOpen(true);
+    } catch (openError) {
+      message.error(getErrorMessage(openError, t));
+    }
   };
 
   const openDetail = async (id: string) => {
-    const item = await getApi().vault.get(id);
-    setDetail(item);
-    setDetailOpen(true);
+    try {
+      const item = await getApi().vault.get(id);
+      if (!item) return;
+      setDetail(item);
+      setDetailOpen(true);
+    } catch (openError) {
+      message.error(getErrorMessage(openError, t));
+    }
   };
 
   const submit = async (draft: VaultItemDraft): Promise<boolean> => {

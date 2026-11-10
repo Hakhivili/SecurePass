@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BrowserWindow, screen, shell } from 'electron';
+import { BrowserWindow, dialog, screen, shell } from 'electron';
 import { APP_NAME, TITLE_BAR_HEIGHT } from '@shared/constants';
 import {
   DEV_LOAD_MAX_RETRIES,
@@ -151,6 +151,25 @@ export function createMainWindow(
       void shell.openExternal(url);
     }
     return { action: 'deny' };
+  });
+
+  // 渲染进程崩溃/被杀：自动重载一次，避免用户面对一个空白窗口；
+  // 连续失败则弹窗告知，而不是无限重载。
+  let rendererRecoveries = 0;
+  window.webContents.on('render-process-gone', (_event, details) => {
+    console.error(
+      `[renderer] 渲染进程异常退出：${details.reason}（exitCode=${details.exitCode}）`,
+    );
+    if (details.reason === 'clean-exit' || window.isDestroyed()) return;
+    if (rendererRecoveries >= 2) {
+      dialog.showErrorBox(
+        APP_NAME,
+        '界面进程多次异常退出，请重启应用。若反复出现，请备份密码库文件后反馈该问题。',
+      );
+      return;
+    }
+    rendererRecoveries += 1;
+    window.reload();
   });
 
   const target = resolveRendererTarget();

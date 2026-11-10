@@ -5,7 +5,10 @@ import type { VaultFile } from '@shared/types';
 import { parseVaultFile } from './crypto.service';
 import type { VaultPaths } from './paths';
 
-const LOCK_STALE_AFTER_MS = 30_000;
+/** 持有锁期间定期刷新锁文件的 mtime，作为「持有者仍然活着」的心跳。 */
+const LOCK_HEARTBEAT_INTERVAL_MS = 15_000;
+/** 心跳超过这个时长没更新，才认为持有者已卡死（进程在但不再调度）。 */
+const LOCK_STALE_AFTER_MS = 60_000;
 
 interface LockFileContent {
   pid: number;
@@ -14,6 +17,7 @@ interface LockFileContent {
 
 export class StorageService {
   private lockHandle: fs.FileHandle | null = null;
+  private lockHeartbeat: NodeJS.Timeout | null = null;
 
   constructor(private readonly paths: VaultPaths) {}
 
@@ -90,6 +94,7 @@ export class StorageService {
         this.lockHandle = await fs.open(this.paths.lockFilePath, 'wx', 0o600);
         const content: LockFileContent = { pid: process.pid, createdAt: Date.now() };
         await this.lockHandle.writeFile(JSON.stringify(content), 'utf8');
+        this.startLockHeartbeat();
         return;
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
@@ -108,6 +113,7 @@ export class StorageService {
 
   async releaseLock(): Promise<void> {
     if (!this.lockHandle) return;
+    this.stopLockHeartbeat();
     try {
       await this.lockHandle.close();
     } finally {
@@ -116,25 +122,62 @@ export class StorageService {
     }
   }
 
+  /**
+   * 判断磁盘上的锁是否已经失效。
+   *
+   * 关键点：**持锁进程还活着时，锁永远是有效的**，与持有多久无关
+   * （解锁后整个会话都会持锁，几小时是正常状态）。
+   * 只有下面两种情况才允许回收：
+   * 1. 持有者进程已退出（pid 不再存在，或 pid 被系统复用给了别的进程）；
+   * 2. 进程还在，但心跳已经停摆超过 60 秒（卡死 / 被调试器挂起）。
+   */
   private async isLockStale(): Promise<boolean> {
     let content: LockFileContent;
+    let heartbeatAt: number;
     try {
       content = JSON.parse(
         await fs.readFile(this.paths.lockFilePath, 'utf8'),
       ) as LockFileContent;
+      heartbeatAt = (await fs.stat(this.paths.lockFilePath)).mtimeMs;
     } catch {
       return true;
     }
 
-    if (
-      typeof content.pid !== 'number' ||
-      typeof content.createdAt !== 'number' ||
-      Date.now() - content.createdAt > LOCK_STALE_AFTER_MS
-    ) {
+    if (typeof content.pid !== 'number' || !Number.isFinite(content.pid)) {
       return true;
     }
 
-    return !isProcessAlive(content.pid);
+    if (!isProcessAlive(content.pid)) {
+      return true;
+    }
+
+    return Date.now() - heartbeatAt > LOCK_STALE_AFTER_MS;
+  }
+
+  private startLockHeartbeat(): void {
+    this.stopLockHeartbeat();
+    const timer = setInterval(() => {
+      void this.beatLock();
+    }, LOCK_HEARTBEAT_INTERVAL_MS);
+    // 心跳不能阻止进程退出
+    timer.unref?.();
+    this.lockHeartbeat = timer;
+  }
+
+  private stopLockHeartbeat(): void {
+    if (!this.lockHeartbeat) return;
+    clearInterval(this.lockHeartbeat);
+    this.lockHeartbeat = null;
+  }
+
+  private async beatLock(): Promise<void> {
+    if (!this.lockHandle) return;
+    const now = new Date();
+    try {
+      await fs.utimes(this.paths.lockFilePath, now, now);
+    } catch {
+      // 心跳失败不致命：下一次会重试；最坏情况是别的进程误判为陈旧锁。
+    }
   }
 }
 

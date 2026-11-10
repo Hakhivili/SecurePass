@@ -166,6 +166,10 @@ const zhCN = {
   'settings.restore': '选择备份并恢复',
   'settings.restoreHelp':
     '恢复前会验证主密码与文件完整性；密码错误、文件损坏或版本不兼容时不会覆盖当前数据。',
+  'settings.restoreConfirmTitle': '确认用备份覆盖当前密码库？',
+  'settings.restoreConfirmBody':
+    '恢复会整库替换：当前库中不在备份里的记录将不再出现在列表中。替换前会自动保留一份加密副本，但仍建议先导出当前库备份。',
+  'settings.restoreConfirmOk': '覆盖并恢复',
   'settings.restoreDone': '恢复完成',
   'settings.restoreDoneSimple': '密码库已从备份恢复。',
   'settings.restoreDoneWithBackup': '当前密码库已替换，替换前的加密备份保存在：{path}',
@@ -218,6 +222,13 @@ const zhCN = {
   'error.STORAGE_FAILURE': '写入磁盘失败，原文件未被修改',
   'error.INTERNAL_ERROR': '发生未知错误',
   'error.UNKNOWN': '操作失败，请重试',
+
+  // 顶层错误边界
+  'error.boundaryTitle': '界面出现了异常',
+  'error.boundaryHelp':
+    '可以重新加载界面继续使用；若反复出现，请复制下方详情并反馈。密码库文件本身不受影响。',
+  'error.boundaryReload': '重新加载',
+  'error.boundaryRetry': '尝试恢复',
 } as const;
 
 const en: Record<keyof typeof zhCN, string> = {
@@ -379,6 +390,10 @@ const en: Record<keyof typeof zhCN, string> = {
   'settings.restore': 'Choose a backup and restore',
   'settings.restoreHelp':
     'The master password and file integrity are verified first. A wrong password, a corrupted file or an unsupported version will never overwrite your current data.',
+  'settings.restoreConfirmTitle': 'Overwrite the current vault with this backup?',
+  'settings.restoreConfirmBody':
+    'Restoring replaces the whole vault: records that are not in the backup will disappear from the list. An encrypted copy of the current vault is kept, but exporting the current vault first is still recommended.',
+  'settings.restoreConfirmOk': 'Overwrite and restore',
   'settings.restoreDone': 'Restore complete',
   'settings.restoreDoneSimple': 'The vault was restored from the backup.',
   'settings.restoreDoneWithBackup':
@@ -430,6 +445,12 @@ const en: Record<keyof typeof zhCN, string> = {
   'error.STORAGE_FAILURE': 'Writing to disk failed; the original file was not modified',
   'error.INTERNAL_ERROR': 'An unknown error occurred',
   'error.UNKNOWN': 'Operation failed, please try again',
+
+  'error.boundaryTitle': 'The interface hit an unexpected error',
+  'error.boundaryHelp':
+    'Reload the interface to continue. If it keeps happening, copy the details below and report it. The vault file itself is not affected.',
+  'error.boundaryReload': 'Reload',
+  'error.boundaryRetry': 'Try to recover',
 };
 
 export type MessageKey = keyof typeof zhCN;
