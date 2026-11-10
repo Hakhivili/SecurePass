@@ -6,6 +6,7 @@ import { PreferencesService } from './services/preferences.service';
 import { createVaultPaths, type VaultPaths } from './services/paths';
 import { StorageService } from './services/storage.service';
 import { VaultService } from './services/vault.service';
+import { WindowStateService } from './services/window-state.service';
 
 export interface AppContext {
   paths: VaultPaths;
@@ -16,6 +17,7 @@ export interface AppContext {
   backup: BackupService;
   clipboard: ClipboardService;
   preferences: PreferencesService;
+  windowState: WindowStateService;
 }
 
 export function createAppContext(userDataDir: string): AppContext {
@@ -27,6 +29,17 @@ export function createAppContext(userDataDir: string): AppContext {
   const backup = new BackupService(vault, storage);
   const clipboard = new ClipboardService();
   const preferences = new PreferencesService(paths.uiPreferencesFilePath);
+  const windowState = new WindowStateService(paths.windowStateFilePath);
 
-  return { paths, storage, crypto, password, vault, backup, clipboard, preferences };
+  return {
+    paths,
+    storage,
+    crypto,
+    password,
+    vault,
+    backup,
+    clipboard,
+    preferences,
+    windowState,
+  };
 }

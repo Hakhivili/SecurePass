@@ -123,7 +123,7 @@ export default function Settings(): JSX.Element {
       )}
 
       <Row gutter={20}>
-        <Col xs={24} xl={12}>
+        <Col xs={24} lg={12}>
           <Card title={t('settings.general')} size="small" className="settings-section">
             <Form layout="vertical">
               <Form.Item label={t('settings.autoLock')}>
@@ -177,7 +177,7 @@ export default function Settings(): JSX.Element {
           </Card>
         </Col>
 
-        <Col xs={24} xl={12}>
+        <Col xs={24} lg={12}>
           <Card
             title={t('settings.changeMaster')}
             size="small"

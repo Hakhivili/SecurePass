@@ -3,6 +3,7 @@ import {
   UI_PREFERENCES_FILE_NAME,
   VAULT_FILE_NAME,
   VAULT_LOCK_FILE_NAME,
+  WINDOW_STATE_FILE_NAME,
 } from '@shared/constants';
 
 export interface VaultPaths {
@@ -12,6 +13,8 @@ export interface VaultPaths {
   lockFilePath: string;
   /** 明文界面偏好（主题 / 语言），未解锁时也可读写。 */
   uiPreferencesFilePath: string;
+  /** 窗口大小/位置记忆。 */
+  windowStateFilePath: string;
 }
 
 export function createVaultPaths(baseDir: string): VaultPaths {
@@ -21,5 +24,6 @@ export function createVaultPaths(baseDir: string): VaultPaths {
     vaultBackupPath: path.join(baseDir, `${VAULT_FILE_NAME}.bak`),
     lockFilePath: path.join(baseDir, VAULT_LOCK_FILE_NAME),
     uiPreferencesFilePath: path.join(baseDir, UI_PREFERENCES_FILE_NAME),
+    windowStateFilePath: path.join(baseDir, WINDOW_STATE_FILE_NAME),
   };
 }

@@ -211,7 +211,8 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1280px;
+  /* 卡片随窗口一起变宽；只给超宽屏留一个上限，避免行长失控 */
+  max-width: 1760px;
   min-height: 0;
   margin: 0 auto;
 }
@@ -285,11 +286,14 @@ body {
   line-height: 1.65;
 }
 
+/* 设置页内容较短时，把底部操作条压到页面下沿，避免出现一大片空白 */
 .settings-footer {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 4px 2px 24px;
+  margin-top: auto;
+  padding: 14px 2px 4px;
+  border-top: 1px solid var(--sp-border);
 }
 
 .settings-defaults {

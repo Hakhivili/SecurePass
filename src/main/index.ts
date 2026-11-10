@@ -42,7 +42,7 @@ if (!gotSingleInstanceLock) {
   };
 
   void app.whenReady().then(async () => {
-    mainWindow = createMainWindow(await resolveWindowChrome());
+    mainWindow = createMainWindow(await resolveWindowChrome(), context.windowState);
     applySecurityPolicies(mainWindow);
     registerIpcHandlers(context, () => mainWindow);
 
@@ -56,7 +56,7 @@ if (!gotSingleInstanceLock) {
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
         void resolveWindowChrome().then((chrome) => {
-          mainWindow = createMainWindow(chrome);
+          mainWindow = createMainWindow(chrome, context.windowState);
           applySecurityPolicies(mainWindow);
         });
       }

@@ -57,6 +57,8 @@ export const VAULT_BACKUP_SUFFIX = '.bak';
 export const VAULT_LOCK_FILE_NAME = 'vault.lock';
 /** 明文界面偏好（主题 / 语言）：未解锁时也必须可读，因此不在加密负载内。 */
 export const UI_PREFERENCES_FILE_NAME = 'ui-preferences.json';
+/** 记住上次的窗口大小与位置。 */
+export const WINDOW_STATE_FILE_NAME = 'window-state.json';
 export const MAX_SEARCH_RESULTS = 1000;
 
 export const ARGON2ID_DEFAULTS = {
