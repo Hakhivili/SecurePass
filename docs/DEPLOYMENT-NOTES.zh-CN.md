@@ -76,6 +76,21 @@ npm run package      # 安装包：release\SecurePass-<version>-win-x64.exe（NS
 - 打包前请关闭正在运行的 SecurePass，否则会因文件占用报 `remove ...: Access is denied`。
 - 版本号取自 `package.json`；发布工作流 `.github/workflows/release.yml` 会用 `npm pkg set version=…` 覆盖后再打包，并生成 `SHA256SUMS.txt`。
 
+### 4.1 发布前的真实界面冒烟
+
+`tools/e2e-smoke.mjs` 通过 DevTools 协议操作**打包后的可执行文件**，覆盖创建密码库、新增记录、重复提醒、
+删除与撤销、锁定与解锁等 12 项断言（细节见 `docs/TEST-REPORT.zh-CN.md` §5）：
+
+```powershell
+# 1) 用临时数据目录启动打包产物，并打开调试端口
+release\win-unpacked\SecurePass.exe --user-data-dir=$env:TEMP\sp-e2e --remote-debugging-port=9223
+# 2) 另开终端
+node tools/e2e-smoke.mjs --port 9223 --password "你的测试主密码"
+```
+
+脚本以退出码 0/1 表示通过或失败，可直接放进发布检查清单。注意它只用于**临时数据目录**，
+不要指向真实密码库。
+
 ---
 
 ## 5. 镜像与缓存（网络受限时）
