@@ -139,7 +139,7 @@ export default function PasswordGenerator(): JSX.Element {
         onOk={() => saveForm.submit()}
         okText={t('common.save')}
         cancelText={t('common.cancel')}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={saveForm} layout="vertical" onFinish={save} preserve={false}>
           <Form.Item

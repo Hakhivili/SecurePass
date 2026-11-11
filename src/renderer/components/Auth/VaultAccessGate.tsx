@@ -18,7 +18,7 @@ export default function VaultAccessGate(): JSX.Element {
       title={t('vault.unlockRequired')}
       footer={null}
       onCancel={() => settle(false)}
-      destroyOnClose
+      destroyOnHidden
       width={420}
     >
       <VaultAccessPanel onDone={() => settle(true)} />

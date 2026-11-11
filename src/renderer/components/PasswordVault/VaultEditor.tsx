@@ -94,7 +94,7 @@ export default function VaultEditor({
       okText={t('common.save')}
       cancelText={t('common.cancel')}
       confirmLoading={busy}
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form

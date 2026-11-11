@@ -50,6 +50,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // 把体积最大的两个运行时拆成独立 chunk：内容变化少，可长期缓存，
+        // 同时让首屏主 chunk 回到可读的规模（antd 与 React 各自约 0.4-0.6 MB）。
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          antd: ['antd', '@ant-design/icons'],
+        },
+      },
+    },
   },
   server: {
     // 显式绑定 IPv4：Windows + Node 17+ 下 localhost 会优先解析为 ::1，

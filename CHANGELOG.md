@@ -27,12 +27,17 @@ All notable changes to this project are documented in this file.
   and workbench. Coverage thresholds raised to 78/85/78/78 (statements/branches/functions/lines).
 - Root `SECURITY.md`, `THIRD-PARTY-NOTICES.md` and `docs/USER-GUIDE.zh-CN.md`.
 - Application icon, NSIS installer metadata and a `package-smoke` CI job.
+- `docs/DEPLOYMENT-NOTES.zh-CN.md` rewritten as a generic development/build guide (no machine-specific
+  paths), plus `docs/RELEASING.zh-CN.md`, a pull-request template and `tools/set-repo.mjs`.
+- `tools/e2e-smoke.mjs`: end-to-end smoke run against the packaged executable over the DevTools
+  protocol (create vault, add record, duplicate warning, delete/undo, lock and unlock).
 
 ### Fixed
 
 - The vault lock reported a live session as stale after 30 seconds; it now relies on a 15-second
   heartbeat and a 60-second staleness window, and is only reclaimed when the owner process is gone.
-- Auto locking now follows system idle time and window focus instead of vault IPC calls only.
+- Auto locking now follows system idle time and window focus instead of vault IPC calls only, and
+  idle time measured before unlocking can no longer lock a freshly opened session.
 - Vault payloads with missing or duplicated record ids and invalid timestamps are repaired on load.
 - Closing the editor discards unsaved input; it now asks for confirmation first, and opening an
   existing record no longer counts as an unsaved change.
@@ -54,6 +59,8 @@ All notable changes to this project are documented in this file.
   Electron's defaults); the workaround config `electron-builder.portable.yml` was removed.
 - Releases are published to GitHub Releases with `SHA256SUMS.txt` instead of loose artifacts.
 - Unused exports (`satisfiesConfig`, `MAX_SEARCH_RESULTS`) were removed.
+- `react-router-dom` upgraded to 7.18.5, which clears two moderate audit advisories in the 6.x line.
+- Deprecated antd `destroyOnClose` replaced with `destroyOnHidden`.
 
 ## [0.1.0] - 2026-10-05
 

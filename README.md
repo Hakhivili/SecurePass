@@ -1,7 +1,24 @@
 # SecurePass
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+[![Coverage](https://img.shields.io/badge/coverage-84%25-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+
 SecurePass is an offline, cross-platform desktop password generator and encrypted local vault.
 It is built with Electron, React, TypeScript and Vite.
+
+## Download
+
+Prebuilt installers are attached to every [release](__REPO_URL__/releases) (`v0.1.0` and later):
+
+| Platform | Artifact                                        |
+| -------- | ----------------------------------------------- |
+| Windows  | `SecurePass-<version>-win-x64.exe` (NSIS)       |
+| macOS    | `SecurePass-<version>-<arch>.dmg` / `.zip`      |
+| Linux    | `SecurePass-<version>-<arch>.AppImage` / `.deb` |
+
+Builds are unsigned, so Windows SmartScreen / macOS Gatekeeper will ask for confirmation on first
+launch. Each release ships a `SHA256SUMS.txt`; please verify your download against it.
 
 ## Features
 
@@ -53,7 +70,9 @@ Quality checks:
 ```bash
 npm run typecheck
 npm run lint
-npm test
+npm run format:check
+npm test              # 35 files / 182 tests
+npm run test:coverage # thresholds: 78 / 85 / 78 / 78
 npm run build
 ```
 
@@ -81,13 +100,16 @@ tools/         Icon and third-party notice generators
 
 ## Documentation
 
-| Document                                             | Content                                                        |
-| ---------------------------------------------------- | -------------------------------------------------------------- |
-| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md) | 用户手册：安装、首次使用、备份、常见问题                       |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)         | Process model, auth lifecycle, extension points                |
-| [docs/API.md](docs/API.md)                           | IPC surface                                                    |
-| [SECURITY.md](SECURITY.md)                           | Threat model, crypto parameters, how to report a vulnerability |
-| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)     | Licenses of bundled dependencies                               |
+| Document                                                         | Content                                                        |
+| ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md)             | 用户手册：安装、首次使用、备份、常见问题                       |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | Process model, auth lifecycle, extension points                |
+| [docs/API.md](docs/API.md)                                       | IPC surface                                                    |
+| [docs/DEPLOYMENT-NOTES.zh-CN.md](docs/DEPLOYMENT-NOTES.zh-CN.md) | 开发环境、常用命令、打包与排障                                 |
+| [docs/RELEASING.zh-CN.md](docs/RELEASING.zh-CN.md)               | 版本号、变更日志与发布流程                                     |
+| [docs/TEST-REPORT.zh-CN.md](docs/TEST-REPORT.zh-CN.md)           | 验收项、测试与覆盖率情况                                       |
+| [SECURITY.md](SECURITY.md)                                       | Threat model, crypto parameters, how to report a vulnerability |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)                 | Licenses of bundled dependencies                               |
 
 ## Vault Location
 

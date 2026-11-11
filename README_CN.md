@@ -1,7 +1,24 @@
 # SecurePass
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+[![Coverage](https://img.shields.io/badge/coverage-84%25-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+
 SecurePass 是一款离线、跨平台的桌面密码生成与管理工具，技术栈为 Electron + React +
 TypeScript + Vite。
+
+## 下载
+
+每个 [Release](__REPO_URL__/releases) 都附带各平台安装包（`v0.1.0` 起）：
+
+| 平台    | 产物                                            |
+| ------- | ----------------------------------------------- |
+| Windows | `SecurePass-<version>-win-x64.exe`（NSIS）      |
+| macOS   | `SecurePass-<version>-<arch>.dmg` / `.zip`      |
+| Linux   | `SecurePass-<version>-<arch>.AppImage` / `.deb` |
+
+构建产物未做代码签名，首次运行时 Windows SmartScreen / macOS Gatekeeper 会要求确认；
+每个 Release 附带 `SHA256SUMS.txt`，请对照校验下载文件。
 
 ## 已实现能力
 
@@ -47,7 +64,9 @@ npm run dev
 ```bash
 npm run typecheck
 npm run lint
-npm test
+npm run format:check
+npm test              # 35 个文件 / 182 个用例
+npm run test:coverage # 阈值 78 / 85 / 78 / 78
 npm run build
 ```
 
@@ -74,13 +93,16 @@ tools/         应用图标与第三方许可清单的生成脚本
 
 ## 文档
 
-| 文档                                                 | 内容                                     |
-| ---------------------------------------------------- | ---------------------------------------- |
-| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md) | 用户手册：安装、首次使用、备份、常见问题 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)         | 进程模型、鉴权生命周期、扩展点           |
-| [docs/API.md](docs/API.md)                           | IPC 接口清单                             |
-| [SECURITY.md](SECURITY.md)                           | 威胁模型、加密参数、漏洞上报方式         |
-| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)     | 随包发布的第三方组件许可                 |
+| 文档                                                             | 内容                                     |
+| ---------------------------------------------------------------- | ---------------------------------------- |
+| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md)             | 用户手册：安装、首次使用、备份、常见问题 |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | 进程模型、鉴权生命周期、扩展点           |
+| [docs/API.md](docs/API.md)                                       | IPC 接口清单                             |
+| [docs/DEPLOYMENT-NOTES.zh-CN.md](docs/DEPLOYMENT-NOTES.zh-CN.md) | 开发环境、常用命令、打包与排障           |
+| [docs/RELEASING.zh-CN.md](docs/RELEASING.zh-CN.md)               | 版本号、变更日志与发布流程               |
+| [docs/TEST-REPORT.zh-CN.md](docs/TEST-REPORT.zh-CN.md)           | 验收项、测试与覆盖率情况                 |
+| [SECURITY.md](SECURITY.md)                                       | 威胁模型、加密参数、漏洞上报方式         |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)                 | 随包发布的第三方组件许可                 |
 
 ## 密码库位置
 

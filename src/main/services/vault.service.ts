@@ -401,6 +401,10 @@ export class VaultService {
    * 离开时长 = max(系统空闲时间, 窗口失焦时长)。前者覆盖「人不在电脑前」，
    * 后者覆盖「人还在用电脑，但切到别的应用里打字」。如果没有注入活动来源
    * （单元测试、纯服务端构造），退化为「距离最后一次密码库操作」。
+   *
+   * 结果再被「本次解锁会话已持续多久」封顶：系统空闲时间可能早于解锁动作
+   * （解锁前用户就离开过电脑），直接用它会让人刚解锁就被锁回去。真正可计量的
+   * 离开时长不可能超过会话本身的时长。
    */
   private evaluateAutoLock(): void {
     const payload = this.payload;
@@ -427,10 +431,11 @@ export class VaultService {
 
   private resolveAwayMs(): number {
     const now = this.now();
+    const sessionSince = this.lastActivityAt ?? now;
+    const sessionMs = Math.max(0, now - sessionSince);
     const source = this.activitySource;
     if (!source) {
-      const since = this.lastActivityAt ?? now;
-      return Math.max(0, now - since);
+      return sessionMs;
     }
 
     if (source.isWindowFocused()) {
@@ -442,7 +447,7 @@ export class VaultService {
     const idleMs = Math.max(0, source.idleSeconds() * 1_000);
     const unfocusedMs =
       this.unfocusedSince === null ? 0 : Math.max(0, now - this.unfocusedSince);
-    return Math.max(idleMs, unfocusedMs);
+    return Math.min(Math.max(idleMs, unfocusedMs), sessionMs);
   }
 
   private clearAutoLockTimer(): void {

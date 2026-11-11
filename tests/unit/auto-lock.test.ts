@@ -45,17 +45,38 @@ describe('自动锁定', () => {
     const fixture = await createVaultFixture();
     try {
       await fixture.vault.create(MASTER_PASSWORD);
-      // 用户已经离开：系统空闲时间已经达到阈值
+      // 用户离开电脑：系统空闲时间随会话一起增长到阈值以上
       fixture.vault.setActivitySource(
         activitySource(
           () => FIVE_MINUTES / 1000,
-          () => false,
+          () => true,
         ),
       );
 
-      await vi.advanceTimersByTimeAsync(POLL_INTERVAL);
+      await vi.advanceTimersByTimeAsync(FIVE_MINUTES + POLL_INTERVAL);
 
       await expect(fixture.vault.status()).resolves.toMatchObject({ unlocked: false });
+    } finally {
+      await fixture.dispose();
+    }
+  });
+
+  it('解锁前的系统空闲时间不会让人刚解锁就被锁回去', async () => {
+    vi.useFakeTimers();
+    const fixture = await createVaultFixture();
+    try {
+      await fixture.vault.create(MASTER_PASSWORD);
+      // 系统空闲已经远超阈值（解锁前用户就离开过电脑），但会话刚刚开始
+      fixture.vault.setActivitySource(
+        activitySource(
+          () => (FIVE_MINUTES * 2) / 1000,
+          () => true,
+        ),
+      );
+
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL * 3);
+
+      await expect(fixture.vault.status()).resolves.toMatchObject({ unlocked: true });
     } finally {
       await fixture.dispose();
     }

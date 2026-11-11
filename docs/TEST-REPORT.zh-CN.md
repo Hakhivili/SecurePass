@@ -152,18 +152,48 @@
 
 ---
 
-## 5. 未覆盖范围（已知盲区）
+## 5. 端到端冒烟（真实打包产物）
 
-| 盲区                                       | 原因 / 后续计划                                                      |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| Electron 端到端（真实窗口 + IPC + 对话框） | 需要 GUI 环境与 Electron 运行时；建议引入 Playwright/WebdriverIO E2E |
-| `BackupService` 的文件对话框               | 依赖 Electron `dialog`，需要注入抽象后测试                           |
-| 组件渲染的动画/布局效果                    | jsdom 不做真实布局与绘制，视觉回归需靠人工或截图对比                 |
-| macOS / Linux 真机验证                     | 当前仅在 Windows 上执行；CI 已配置三平台构建                         |
+`tools/e2e-smoke.mjs` 通过 Chromium DevTools 协议操作**已打包的** `SecurePass.exe`，覆盖 jsdom 无法触及的部分
+（真实 IPC、真实加密成本、antd 弹窗层叠）：
+
+```powershell
+# 1) 用临时 user-data-dir 启动打包产物并打开调试端口
+release\win-unpacked\SecurePass.exe --user-data-dir=%TEMP%\sp-e2e --remote-debugging-port=9223
+# 2) 另开终端执行
+node tools/e2e-smoke.mjs --port 9223 --password "correct horse battery staple"
+```
+
+2026-11-11 在 Windows 11 + `SecurePass-0.1.0-win-x64` 上实测 12/12 通过：
+
+| 流程       | 断言                                                              |
+| ---------- | ----------------------------------------------------------------- |
+| 创建密码库 | 创建前弹出「确认创建密码库？」二次确认，确认后进入已解锁状态      |
+| 新增记录   | 填写名称/账号/密码并保存后，列表增加一条记录                      |
+| 重复提醒   | 相同名称+账号再次保存时弹出「发现可能重复的记录」，选返回修改不变 |
+| 编辑器关闭 | 未保存时关闭需确认，关闭后无残留弹窗                              |
+| 删除与撤销 | 删除有 Popconfirm，删除后列表减少，点「撤销」后记录恢复           |
+| 锁定与解锁 | 锁定后回到解锁表单；错误主密码提示「密码错误」；正确密码可解锁    |
+
+同时人工核对落盘文件（`vault.securepass`，1090 B）：JSON 只含 `magic` / `formatVersion` / `vaultId` /
+`kdf` / `wrappedDataKey` / `payload` / `createdAt` / `updatedAt`，标题、账号、密码与主密码的明文与
+base64 形态均**不存在**；`logs/main.log` 只记录 `[ipc] vault:unlock failed: INVALID_MASTER_PASSWORD`，不含任何秘密。
+
+---
+
+## 6. 未覆盖范围（已知盲区）
+
+| 盲区                         | 原因 / 后续计划                                                       |
+| ---------------------------- | --------------------------------------------------------------------- |
+| CI 内的 Electron 端到端      | 已有手动 E2E 冒烟脚本；自动化到 CI 需 xvfb / Playwright Electron 支持 |
+| `BackupService` 的文件对话框 | 依赖 Electron `dialog`，需要注入抽象后测试                            |
+| 组件渲染的动画/布局效果      | jsdom 不做真实布局与绘制，视觉回归需靠人工或截图对比                  |
+| macOS / Linux 真机验证       | 当前仅在 Windows 上执行；CI 已配置三平台构建                          |
 
 > 已补齐（2026-11-11）：`src/main/ipc/index.ts` 的参数校验与错误序列化（`tests/unit/ipc-handlers.test.ts`）、
 > React 组件渲染与交互（`tests/unit/renderer/components/*`，8 个文件 50 个用例）、覆盖率门槛
-> （`@vitest/coverage-v8` + 阈值 78/85/78/78，CI 使用 `npm run test:coverage`）。
+> （`@vitest/coverage-v8` + 阈值 78/85/78/78，CI 使用 `npm run test:coverage`）、真实产物 E2E 冒烟
+> （`tools/e2e-smoke.mjs`）。
 
 ---
 
