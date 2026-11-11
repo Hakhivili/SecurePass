@@ -3,7 +3,7 @@
 > 交付物对应任务书 §9「功能、异常和安全测试报告」。本报告覆盖任务书 §8 的 12 项验收标准，
 > 并给出可复现命令与实测数值。
 >
-> - 测试日期：2026-10-05（初版）／2026-11-11（第 4 批质量加固后更新）
+> - 测试日期：2026-10-05（初版）／2026-11-11（第 4 批质量加固 + 组件渲染测试后更新）
 > - 被测版本：securepass@0.1.0（分支 `master`）
 > - 环境：Windows 10/11 x64、Node.js v24.9.0、npm 11.12.1、Vitest 2.1.9、jsdom 25.0.1
 > - 复现命令：`npm test`（单测）、`npm run test:coverage`（覆盖率，含阈值校验）
@@ -12,48 +12,56 @@
 
 ## 1. 结果汇总
 
-| 检查项              | 命令                    | 结果                                                         |
-| ------------------- | ----------------------- | ------------------------------------------------------------ |
-| 单元 / 集成测试     | `npm test`              | ✅ **27 个文件、132 个用例全部通过**（约 4.6 s）             |
-| 覆盖率              | `npm run test:coverage` | ✅ 语句 50.95%、分支 82.48%、函数 75.12%（阈值 50/80/72/50） |
-| 类型检查            | `npm run typecheck`     | ✅ 0 错误（`strict` + `noUnusedLocals`）                     |
-| 代码规范            | `npm run lint`          | ✅ 0 错误、0 警告                                            |
-| 格式检查            | `npm run format:check`  | ✅ 全仓库符合 Prettier 配置                                  |
-| 生产构建            | `npm run build`         | ✅ `dist/` + `dist-electron/` 产出成功                       |
-| 密文落盘扫描        | 见 §3.7                 | ✅ 正式文件、`.bak`、锁文件中均无业务明文                    |
-| 性能基准（1000 条） | 见 §4                   | ✅ 搜索 0.45–2.05 ms、摘要列表 0.27 ms（预算 300 ms）        |
+| 检查项                 | 命令                    | 结果                                                               |
+| ---------------------- | ----------------------- | ------------------------------------------------------------------ |
+| 单元 / 集成 / 组件测试 | `npm test`              | ✅ **35 个文件、182 个用例全部通过**（约 36 s，含 jsdom 组件渲染） |
+| 覆盖率                 | `npm run test:coverage` | ✅ 语句 84.05%、分支 87.36%、函数 82.10%（阈值 78/85/78/78）       |
+| 类型检查               | `npm run typecheck`     | ✅ 0 错误（`strict` + `noUnusedLocals`）                           |
+| 代码规范               | `npm run lint`          | ✅ 0 错误、0 警告                                                  |
+| 格式检查               | `npm run format:check`  | ✅ 全仓库符合 Prettier 配置                                        |
+| 生产构建               | `npm run build`         | ✅ `dist/` + `dist-electron/` 产出成功                             |
+| 密文落盘扫描           | 见 §3.7                 | ✅ 正式文件、`.bak`、锁文件中均无业务明文                          |
+| 性能基准（1000 条）    | 见 §4                   | ✅ 搜索 0.45–2.05 ms、摘要列表 0.27 ms（预算 300 ms）              |
 
 测试文件与用例数：
 
-| 测试文件                                         | 用例数 | 覆盖内容                                             |
-| ------------------------------------------------ | ------ | ---------------------------------------------------- |
-| `tests/unit/crypto.service.test.ts`              | 6      | KDF、加解密往返、错误密码、篡改检测、IV/标签长度校验 |
-| `tests/unit/vault.service.test.ts`               | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置 |
-| `tests/unit/storage.service.test.ts`             | 5      | 原子写入、单写者锁、心跳与陈旧锁回收                 |
-| `tests/unit/password.service.test.ts`            | 10     | 生成规则、无偏抽样、排除规则、强度与提示码           |
-| `tests/unit/plaintext-on-disk.test.ts`           | 2      | 落盘明文扫描（验收 7）                               |
-| `tests/unit/restore-fresh-environment.test.ts`   | 3      | 全新环境恢复、错误备份不覆盖（验收 9）               |
-| `tests/unit/storage-interruption.test.ts`        | 3      | 写入中断、备份失败、`.bak` 语义（验收 10）           |
-| `tests/unit/clipboard.service.test.ts`           | 6      | 剪贴板定时清理与误清保护（验收 11）                  |
-| `tests/unit/vault-performance.test.ts`           | 4      | 1000 条记录的性能基准（验收 12）                     |
-| `tests/unit/renderer/search-performance.test.ts` | 3      | 渲染层搜索性能基准（验收 12）                        |
-| `tests/unit/renderer/duplicates.test.ts`         | 8      | 重复录入判定与排序                                   |
-| `tests/unit/renderer/vault-filter.test.ts`       | 2      | 搜索过滤语义                                         |
-| `tests/unit/auto-lock.test.ts`                   | 4      | 系统空闲/窗口失焦驱动的自动锁定                      |
-| `tests/unit/payload-integrity.test.ts`           | 5      | 负载结构修补、遗留 settings 字段迁移                 |
-| `tests/unit/preferences.service.test.ts`         | —      | 界面偏好规范化与写入                                 |
-| `tests/unit/window-state.service.test.ts`        | —      | 窗口大小/位置记忆                                    |
-| `tests/unit/i18n-placeholders.test.ts`           | 4      | 翻译占位符与双语键集合一致性                         |
-| `tests/unit/renderer-target.test.ts`             | —      | dev server 地址规范化与重试                          |
-| `tests/unit/security.test.ts`                    | 6      | CSP、权限拒绝、导航白名单                            |
-| `tests/unit/ipc-handlers.test.ts`                | 6      | IPC 来源校验、错误码透传、标题栏通道守卫             |
-| `tests/unit/log.service.test.ts`                 | 4      | 日志格式、脱敏、轮转                                 |
-| `tests/unit/renderer/ipc-errors.test.ts`         | 5      | 错误码识别、本地化回退、桥接缺失                     |
-| `tests/unit/renderer/ui-preferences.test.ts`     | 6      | 偏好规范化、localStorage 缓存容错                    |
-| `tests/unit/renderer/hotkeys.test.tsx`           | 5      | 快捷键触发、输入框让位、卸载解绑                     |
-| `tests/unit/renderer/theme.test.ts`              | 2      | 主题解析与 `<html>` 属性写入                         |
-| `tests/unit/renderer/vault-gate.store.test.ts`   | 4      | 按需解锁门控的 Promise 决议                          |
-| `tests/unit/renderer/format-validation.test.ts`  | 3      | 时间格式化、主密码长度校验（按码点计数）             |
+| 测试文件                                                     | 用例数 | 覆盖内容                                                                                        |
+| ------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------- |
+| `tests/unit/crypto.service.test.ts`                          | 6      | KDF、加解密往返、错误密码、篡改检测、IV/标签长度校验                                            |
+| `tests/unit/vault.service.test.ts`                           | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置                                            |
+| `tests/unit/storage.service.test.ts`                         | 5      | 原子写入、单写者锁、心跳与陈旧锁回收                                                            |
+| `tests/unit/password.service.test.ts`                        | 10     | 生成规则、无偏抽样、排除规则、强度与提示码                                                      |
+| `tests/unit/plaintext-on-disk.test.ts`                       | 2      | 落盘明文扫描（验收 7）                                                                          |
+| `tests/unit/restore-fresh-environment.test.ts`               | 3      | 全新环境恢复、错误备份不覆盖（验收 9）                                                          |
+| `tests/unit/storage-interruption.test.ts`                    | 3      | 写入中断、备份失败、`.bak` 语义（验收 10）                                                      |
+| `tests/unit/clipboard.service.test.ts`                       | 6      | 剪贴板定时清理与误清保护（验收 11）                                                             |
+| `tests/unit/vault-performance.test.ts`                       | 4      | 1000 条记录的性能基准（验收 12）                                                                |
+| `tests/unit/renderer/search-performance.test.ts`             | 3      | 渲染层搜索性能基准（验收 12）                                                                   |
+| `tests/unit/renderer/duplicates.test.ts`                     | 8      | 重复录入判定与排序                                                                              |
+| `tests/unit/renderer/vault-filter.test.ts`                   | 2      | 搜索过滤语义                                                                                    |
+| `tests/unit/auto-lock.test.ts`                               | 4      | 系统空闲/窗口失焦驱动的自动锁定                                                                 |
+| `tests/unit/payload-integrity.test.ts`                       | 5      | 负载结构修补、遗留 settings 字段迁移                                                            |
+| `tests/unit/preferences.service.test.ts`                     | —      | 界面偏好规范化与写入                                                                            |
+| `tests/unit/window-state.service.test.ts`                    | —      | 窗口大小/位置记忆                                                                               |
+| `tests/unit/i18n-placeholders.test.ts`                       | 4      | 翻译占位符与双语键集合一致性                                                                    |
+| `tests/unit/renderer-target.test.ts`                         | —      | dev server 地址规范化与重试                                                                     |
+| `tests/unit/security.test.ts`                                | 6      | CSP、权限拒绝、导航白名单                                                                       |
+| `tests/unit/ipc-handlers.test.ts`                            | 6      | IPC 来源校验、错误码透传、标题栏通道守卫                                                        |
+| `tests/unit/log.service.test.ts`                             | 4      | 日志格式、脱敏、轮转                                                                            |
+| `tests/unit/renderer/ipc-errors.test.ts`                     | 5      | 错误码识别、本地化回退、桥接缺失                                                                |
+| `tests/unit/renderer/ui-preferences.test.ts`                 | 6      | 偏好规范化、localStorage 缓存容错                                                               |
+| `tests/unit/renderer/hotkeys.test.tsx`                       | 5      | 快捷键触发、输入框让位、卸载解绑                                                                |
+| `tests/unit/renderer/theme.test.ts`                          | 2      | 主题解析与 `<html>` 属性写入                                                                    |
+| `tests/unit/renderer/vault-gate.store.test.ts`               | 4      | 按需解锁门控的 Promise 决议                                                                     |
+| `tests/unit/renderer/format-validation.test.ts`              | 3      | 时间格式化、主密码长度校验（按码点计数）                                                        |
+| `tests/unit/renderer/components/password-generator.test.tsx` | 7      | 自动生成、强度条语义、复制、字符类型重算、生成失败、保存经门控/写库                             |
+| `tests/unit/renderer/components/vault-panel.test.tsx`        | 8      | 锁定态解锁、列表与倒计时、搜索、分类筛选、删除确认+撤销、错误重试、Ctrl+N、手动锁定             |
+| `tests/unit/renderer/components/vault-editor.test.tsx`       | 5      | 字段预填、提交成功清空、失败保留、未修改不打扰、修改后关闭需确认                                |
+| `tests/unit/renderer/components/vault-item.test.tsx`         | 5      | 详情字段/标签/时间戳、密码遮罩、复制账号与密码、复制失败提示、空字段占位                        |
+| `tests/unit/renderer/components/vault-access-panel.test.tsx` | 5      | 创建长度/一致性校验、创建前确认、取消不创建、解锁错误码文案、成功回调                           |
+| `tests/unit/renderer/components/settings.test.tsx`           | 7      | 锁定禁用与提示、关于区块/打开目录、主题与强调色、自动锁定修改、改主密码校验、导出、恢复二次确认 |
+| `tests/unit/renderer/components/common.test.tsx`             | 7      | 强度计语义、错误边界与兜底按钮、标题栏导航、工作台布局、按需解锁对话框                          |
+| `tests/unit/renderer/components/duplicate-guard.test.tsx`    | 6      | 无重复放行、确认保留/返回修改、未加载先拉取、excludeId、剪贴板工具                              |
 
 ---
 
@@ -146,14 +154,16 @@
 
 ## 5. 未覆盖范围（已知盲区）
 
-| 盲区                                         | 原因 / 后续计划                                                      |
-| -------------------------------------------- | -------------------------------------------------------------------- |
-| Electron 端到端（真实窗口 + IPC + 对话框）   | 需要 GUI 环境与 Electron 运行时；建议引入 Playwright/WebdriverIO E2E |
-| `src/main/ipc/index.ts` 参数校验与错误序列化 | 需要 mock `ipcMain`；后续补 IPC 层单测                               |
-| `BackupService` 的文件对话框                 | 依赖 Electron `dialog`，需要注入抽象后测试                           |
-| React 组件渲染与交互                         | 目前仅有纯函数测试；`@testing-library/react` 已就绪，待补组件测试    |
-| 覆盖率门槛                                   | 需安装 `@vitest/coverage-v8` 并设定阈值（草案建议 >80%）             |
-| macOS / Linux 真机验证                       | 当前仅在 Windows 上执行；CI 已配置三平台构建                         |
+| 盲区                                       | 原因 / 后续计划                                                      |
+| ------------------------------------------ | -------------------------------------------------------------------- |
+| Electron 端到端（真实窗口 + IPC + 对话框） | 需要 GUI 环境与 Electron 运行时；建议引入 Playwright/WebdriverIO E2E |
+| `BackupService` 的文件对话框               | 依赖 Electron `dialog`，需要注入抽象后测试                           |
+| 组件渲染的动画/布局效果                    | jsdom 不做真实布局与绘制，视觉回归需靠人工或截图对比                 |
+| macOS / Linux 真机验证                     | 当前仅在 Windows 上执行；CI 已配置三平台构建                         |
+
+> 已补齐（2026-11-11）：`src/main/ipc/index.ts` 的参数校验与错误序列化（`tests/unit/ipc-handlers.test.ts`）、
+> React 组件渲染与交互（`tests/unit/renderer/components/*`，8 个文件 50 个用例）、覆盖率门槛
+> （`@vitest/coverage-v8` + 阈值 78/85/78/78，CI 使用 `npm run test:coverage`）。
 
 ---
 

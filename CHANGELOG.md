@@ -22,6 +22,9 @@ All notable changes to this project are documented in this file.
 - Coverage reporting (`@vitest/coverage-v8`) with thresholds, and CI now runs `test:coverage`.
 - Renderer unit tests for IPC error mapping, UI preference caching, hotkeys, theme application and
   the unlock gate store.
+- Component rendering tests (`tests/unit/renderer/components/`, 50 cases): generator, vault panel,
+  editor, record detail, create/unlock panel, settings, duplicate guard, error boundary, title bar
+  and workbench. Coverage thresholds raised to 78/85/78/78 (statements/branches/functions/lines).
 - Root `SECURITY.md`, `THIRD-PARTY-NOTICES.md` and `docs/USER-GUIDE.zh-CN.md`.
 - Application icon, NSIS installer metadata and a `package-smoke` CI job.
 
@@ -31,7 +34,8 @@ All notable changes to this project are documented in this file.
   heartbeat and a 60-second staleness window, and is only reclaimed when the owner process is gone.
 - Auto locking now follows system idle time and window focus instead of vault IPC calls only.
 - Vault payloads with missing or duplicated record ids and invalid timestamps are repaired on load.
-- Closing the editor discards unsaved input; it now asks for confirmation first.
+- Closing the editor discards unsaved input; it now asks for confirmation first, and opening an
+  existing record no longer counts as an unsaved change.
 - Restoring a backup overwrote the vault without confirmation; it now asks and keeps a
   `pre-restore` copy.
 - Edits no longer clear `lastUsed`, a failed save no longer wipes the editor, and the generated

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { App, Form, Input, Modal, Select, Switch } from 'antd';
 import type { VaultItem, VaultItemDraft } from '@shared/types';
 import { useI18n } from '../../i18n';
@@ -33,9 +33,12 @@ export default function VaultEditor({
   const [form] = Form.useForm<VaultForm>();
   const { modal } = App.useApp();
   const { t } = useI18n();
+  /** 是否有用户改动：预填值不算改动（antd 的 isFieldsTouched 会把 setFieldsValue 也算作 touched）。 */
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    setDirty(false);
     form.setFieldsValue({
       title: item?.title ?? '',
       username: item?.username ?? '',
@@ -60,12 +63,15 @@ export default function VaultEditor({
       isFavorite: Boolean(values.isFavorite),
     });
     // 保存失败或用户在重复提醒中选择「返回修改」时，保留已填写的内容
-    if (saved) form.resetFields();
+    if (saved) {
+      form.resetFields();
+      setDirty(false);
+    }
   };
 
   /** 关闭前确认：已修改但未保存的内容不应该被静默丢掉。 */
   const requestClose = (): void => {
-    if (!form.isFieldsTouched()) {
+    if (!dirty) {
       onCancel();
       return;
     }
@@ -91,7 +97,13 @@ export default function VaultEditor({
       destroyOnClose
       width={560}
     >
-      <Form form={form} layout="vertical" onFinish={submit} preserve={false}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={submit}
+        onValuesChange={() => setDirty(true)}
+        preserve={false}
+      >
         <Form.Item
           name="title"
           label={t('form.title')}
