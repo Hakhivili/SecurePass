@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { BrowserWindow, dialog, screen, shell } from 'electron';
+import { app, BrowserWindow, dialog, screen, shell } from 'electron';
 import { APP_NAME, THEME_CHROME, TITLE_BAR_HEIGHT } from '@shared/constants';
 import {
   DEV_LOAD_MAX_RETRIES,
@@ -86,6 +86,9 @@ export function createMainWindow(
     show: false,
     title: APP_NAME,
     backgroundColor: chrome.backgroundColor,
+    // 打包后任务栏/窗口图标来自 exe 内嵌资源（build 目录不进 asar）；
+    // 开发模式跑的是 Electron 本体，这里显式指一下，否则任务栏显示 Electron 默认图标。
+    ...(app.isPackaged ? {} : { icon: path.join(app.getAppPath(), 'build', 'icon.png') }),
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
