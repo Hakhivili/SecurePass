@@ -32,6 +32,9 @@ All notable changes to this project are documented in this file.
 - `tools/e2e-smoke.mjs`: end-to-end smoke run against the packaged executable over the DevTools
   protocol (create vault, add record, duplicate warning, delete/undo, lock and unlock). It only acts
   on visible antd layers, so a closed-but-retained modal can no longer swallow the input.
+- `docs/SIGNING.zh-CN.md` plus signing-ready build configuration: `win.signtoolOptions` with an
+  RFC3161 timestamp server, macOS hardened runtime, and a `release.yml` step that signs and verifies
+  the artifacts as soon as the certificate secrets are configured (unsigned builds are unchanged).
 - Key-derivation parameters read from a vault file are validated against supported ranges before
   Argon2id runs, so a crafted file cannot request gigabytes of memory (`UNSUPPORTED_FORMAT`).
 - Backup restore refuses empty files and files above 32 MB before reading them into memory.

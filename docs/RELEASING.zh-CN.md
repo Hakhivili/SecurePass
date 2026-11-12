@@ -35,17 +35,33 @@ git push origin main --follow-tags
 
 1. 在 `ubuntu-latest` / `windows-latest` / `macos-latest` 上分别执行
    `npm ci` → `npm pkg set version=<tag 去掉 v>` → `npm run package`；
-2. 删除 `*-unpacked` 目录与 `.blockmap`，把安装包上传为构建产物；
+2. 删除 `*-unpacked` 目录、`.app` 与 `.blockmap`，把安装包上传为构建产物；
 3. 合并三平台产物，生成 `SHA256SUMS.txt`；
 4. 用 `gh release create` 创建 Release 并上传全部文件。
 
 也可在 Actions 页面手动触发（`workflow_dispatch`），输入版本号。
 
+### 3.1 签名（可选）
+
+工作流里已内置「Prepare signing material」与「Verify signature」两步：只要配置了对应 secrets
+就会自动签名并校验，没配置则自动跳过、产物与未签名构建完全一致。完整方案（自签名、OV/EV、
+Azure Trusted Signing、macOS 公证）见 **`docs/SIGNING.zh-CN.md`**。
+
+| Secret                                                       | 平台    | 用途              |
+| ------------------------------------------------------------ | ------- | ----------------- |
+| `WINDOWS_CERT_PFX_BASE64` / `WINDOWS_CERT_PASSWORD`          | Windows | Authenticode 签名 |
+| `MAC_CERT_PFX_BASE64` / `MAC_CERT_PASSWORD`                  | macOS   | Developer ID 签名 |
+| `APPLE_ID` / `APPLE_APP_SPECIFIC_PASSWORD` / `APPLE_TEAM_ID` | macOS   | 公证（notarize）  |
+
+证书文件本身也在 `.gitignore` 里（`*.pfx`、`*.p12`、`*.base64`），不要提交。
+
 ## 4. 发布后核对
 
 - [ ] Release 页面包含三平台安装包与 `SHA256SUMS.txt`；
 - [ ] 在 Windows 上实际安装一次，确认窗口、图标、版本信息（`属性 → 详细信息`）正确；
-- [ ] Release 说明中写明「构建未签名」与「macOS / Linux 未经真机实测」（若确实未实测）；
+- [ ] 已签名时确认签名有效：
+      `Get-AuthenticodeSignature .\SecurePass-0.1.0-win-x64.exe`（`Status` 应为 `Valid`）；
+- [ ] Release 说明中写明「构建未签名 / 已签名（主体名）」与「macOS / Linux 未经真机实测」（若确实未实测）；
 - [ ] 本地下载后核对哈希：
 
   ```powershell

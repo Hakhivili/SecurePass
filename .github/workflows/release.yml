@@ -24,6 +24,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
+    # 签名材料全部来自 secrets；没有配置时下面的步骤自动跳过，产物与未签名构建一致。
+    # 说明见 docs/SIGNING.zh-CN.md。
+    env:
+      WINDOWS_CERT: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
+      WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+      MAC_CERT: ${{ secrets.MAC_CERT_PFX_BASE64 }}
+      MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,14 +51,50 @@ jobs:
         shell: bash
         run: npm pkg set version="${VERSION#v}"
 
+      - name: Prepare signing material (Windows)
+        if: matrix.os == 'windows-latest' && env.WINDOWS_CERT != ''
+        shell: bash
+        run: |
+          echo "$WINDOWS_CERT" | base64 --decode > "$RUNNER_TEMP/securepass-win.pfx"
+          echo "CSC_LINK=$RUNNER_TEMP/securepass-win.pfx" >> "$GITHUB_ENV"
+          echo "CSC_KEY_PASSWORD=$WINDOWS_CERT_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Prepare signing material (macOS)
+        if: matrix.os == 'macos-latest' && env.MAC_CERT != ''
+        shell: bash
+        run: |
+          echo "$MAC_CERT" | base64 --decode > "$RUNNER_TEMP/securepass-mac.p12"
+          echo "CSC_LINK=$RUNNER_TEMP/securepass-mac.p12" >> "$GITHUB_ENV"
+          echo "CSC_KEY_PASSWORD=$MAC_CERT_PASSWORD" >> "$GITHUB_ENV"
+          # 有证书时同时打开公证
+          echo "NOTARIZE_FLAG=--config.mac.notarize=true" >> "$GITHUB_ENV"
+
       - name: Package
-        run: npm run package
+        shell: bash
+        run: npm run package -- $NOTARIZE_FLAG
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # 没有导入证书时不要自动发现系统里的陌生签名身份
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ env.MAC_CERT != '' || env.WINDOWS_CERT != '' }}
+
+      - name: Verify signature (Windows)
+        if: matrix.os == 'windows-latest' && env.WINDOWS_CERT != ''
+        shell: pwsh
+        run: |
+          $file = Get-ChildItem release/*.exe | Select-Object -First 1
+          $sig = Get-AuthenticodeSignature $file.FullName
+          $sig | Format-List Status, StatusMessage, SignerCertificate
+          if ($sig.Status -ne 'Valid') { throw "Signature is not valid: $($sig.Status)" }
+
+      - name: Verify signature (macOS)
+        if: matrix.os == 'macos-latest' && env.MAC_CERT != ''
+        shell: bash
+        run: |
+          app=$(find release -maxdepth 3 -name 'SecurePass.app' -print -quit)
+          codesign --verify --deep --strict --verbose=2 "$app"
 
       - name: Strip unpacked directory
         shell: bash
-        run: rm -rf release/*-unpacked release/*.blockmap
+        run: rm -rf release/*-unpacked release/*.blockmap release/*.app
 
       - uses: actions/upload-artifact@v4
         with:

@@ -27,6 +27,13 @@ win:
   target:
     - nsis
   artifactName: ${productName}-${version}-win-${arch}.${ext}
+  # 签名材料只通过环境变量传入（CSC_LINK / CSC_KEY_PASSWORD，或 Azure 凭据）；
+  # 未配置时 electron-builder 会自动跳过签名，产物与配置前一致。见 docs/SIGNING.zh-CN.md。
+  signtoolOptions:
+    signingHashAlgorithms:
+      - sha256
+    publisherName: SecurePass Contributors
+    rfc3161TimeStampServer: http://timestamp.digicert.com
 mac:
   icon: build/icon.png
   target:
@@ -34,6 +41,11 @@ mac:
     - zip
   category: public.app-category.utilities
   artifactName: ${productName}-${version}-mac-${arch}.${ext}
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  # 公证（notarize）需要在 CI 里显式打开：npm run package -- --config.mac.notarize=true
+  # 并配置 APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID（见 docs/SIGNING.zh-CN.md）。
+  # 这里不写死 true，否则没有凭据的构建会直接失败。
 linux:
   icon: build/icon.png
   target:
