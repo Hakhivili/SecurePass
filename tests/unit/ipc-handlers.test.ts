@@ -48,8 +48,10 @@ function createContext(overrides: Partial<ContextStub['vault']> = {}) {
   return { context, vault };
 }
 
-const sender = { id: 42 };
+const mainFrame = { url: 'file:///app/index.html', parent: null };
+const sender = { id: 42, mainFrame };
 const mainWindow = { isDestroyed: () => false, webContents: sender };
+const trustedEvent = { sender, senderFrame: mainFrame };
 
 function invoke(channel: string, event: unknown, ...args: unknown[]) {
   const handler = electronStub.handlers.get(channel);
@@ -66,16 +68,37 @@ beforeEach(() => {
 });
 
 describe('isTrustedSender', () => {
-  it('accepts only the main window webContents', () => {
-    expect(isTrustedSender(mainWindow as never, sender as never)).toBe(true);
-    expect(isTrustedSender(mainWindow as never, { id: 7 } as never)).toBe(false);
-    expect(isTrustedSender(null, sender as never)).toBe(false);
+  it('accepts only the main frame of the main window', () => {
+    expect(
+      isTrustedSender(mainWindow as never, sender as never, mainFrame as never),
+    ).toBe(true);
+    expect(
+      isTrustedSender(mainWindow as never, { id: 7 } as never, mainFrame as never),
+    ).toBe(false);
+    expect(isTrustedSender(null, sender as never, mainFrame as never)).toBe(false);
     expect(
       isTrustedSender(
         { isDestroyed: () => true, webContents: sender } as never,
         sender as never,
+        mainFrame as never,
       ),
     ).toBe(false);
+  });
+
+  it('rejects sub frames and callers without a frame', () => {
+    // 被注入的 iframe 即便共享同一个 webContents，也不是主框架
+    expect(
+      isTrustedSender(
+        mainWindow as never,
+        sender as never,
+        {
+          url: 'file:///app/index.html',
+          parent: mainFrame,
+        } as never,
+      ),
+    ).toBe(false);
+    expect(isTrustedSender(mainWindow as never, sender as never, null)).toBe(false);
+    expect(isTrustedSender(mainWindow as never, sender as never)).toBe(false);
   });
 });
 
@@ -84,7 +107,10 @@ describe('registerIpcHandlers', () => {
     const { context, vault } = createContext();
     registerIpcHandlers(context, () => mainWindow as never);
 
-    const result = await invoke(IPC.vaultExists, { sender: { id: 7 } });
+    const result = await invoke(IPC.vaultExists, {
+      sender: { id: 7 },
+      senderFrame: mainFrame,
+    });
 
     expect(result).toEqual({
       ok: false,
@@ -93,11 +119,27 @@ describe('registerIpcHandlers', () => {
     expect(vault.exists).not.toHaveBeenCalled();
   });
 
+  it('rejects calls coming from a sub frame of the main window', async () => {
+    const { context, vault } = createContext();
+    registerIpcHandlers(context, () => mainWindow as never);
+
+    const result = await invoke(IPC.vaultExists, {
+      sender,
+      senderFrame: { url: 'about:blank', parent: mainFrame },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: ErrorCode.UntrustedSender },
+    });
+    expect(vault.exists).not.toHaveBeenCalled();
+  });
+
   it('wraps successful handler results', async () => {
     const { context, vault } = createContext();
     registerIpcHandlers(context, () => mainWindow as never);
 
-    await expect(invoke(IPC.vaultExists, { sender })).resolves.toEqual({
+    await expect(invoke(IPC.vaultExists, trustedEvent)).resolves.toEqual({
       ok: true,
       data: true,
     });
@@ -112,7 +154,7 @@ describe('registerIpcHandlers', () => {
     });
     registerIpcHandlers(context, () => mainWindow as never);
 
-    const result = (await invoke(IPC.vaultList, { sender })) as {
+    const result = (await invoke(IPC.vaultList, trustedEvent)) as {
       ok: boolean;
       error: { code: string };
     };
@@ -124,14 +166,14 @@ describe('registerIpcHandlers', () => {
     const { context } = createContext();
     registerIpcHandlers(context, () => mainWindow as never);
 
-    const invalid = (await invoke(IPC.vaultGet, { sender }, 42)) as {
+    const invalid = (await invoke(IPC.vaultGet, trustedEvent, 42)) as {
       ok: boolean;
       error: { code: string };
     };
     expect(invalid.error.code).toBe(ErrorCode.InvalidInput);
 
     electronStub.openPath.mockResolvedValue('Access is denied');
-    const opened = (await invoke(IPC.appOpenDataDir, { sender })) as {
+    const opened = (await invoke(IPC.appOpenDataDir, trustedEvent)) as {
       ok: boolean;
       error: { code: string; message: string };
     };
@@ -147,11 +189,11 @@ describe('registerIpcHandlers', () => {
     await invoke(IPC.windowSyncTitleBar, { sender: { id: 7 } }, { color: '#000' });
     expect(electronStub.setTitleBarOverlay).not.toHaveBeenCalled();
 
-    await invoke(
-      IPC.windowSyncTitleBar,
-      { sender },
-      { color: '#15171b', symbolColor: '#e6e9ee', height: 56 },
-    );
+    await invoke(IPC.windowSyncTitleBar, trustedEvent, {
+      color: '#15171b',
+      symbolColor: '#e6e9ee',
+      height: 56,
+    });
     expect(electronStub.setTitleBarOverlay).toHaveBeenCalledWith({
       color: '#15171b',
       symbolColor: '#e6e9ee',

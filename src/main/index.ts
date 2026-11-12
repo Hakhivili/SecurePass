@@ -39,6 +39,7 @@ if (!gotSingleInstanceLock) {
   applyGlobalSecurityPolicies();
 
   context.vault.onLocked(() => {
+    // 剪贴板清理在 createAppContext 里注册（所有锁库路径共用）；这里只负责通知界面。
     for (const window of BrowserWindow.getAllWindows()) {
       window.webContents.send(IPC.eventLocked);
     }

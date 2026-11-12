@@ -60,8 +60,38 @@ describe('log.service', () => {
     expect(text).toContain('item-1');
   });
 
+  it('redacts secrets that leak through error messages and stack traces', async () => {
+    const error = new Error(
+      'unlock failed for password=hunter2 with masterPassword: correct horse',
+    );
+    error.stack = [
+      'Error: unlock failed with masterPassword=topsecret and token=abc123',
+      '    at VaultService.unlock (vault.service.ts:1:1)',
+      `    at payload ${'QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVowMTIzNDU2Nzg5'.repeat(2)}`,
+    ].join('\n');
+
+    logError('解锁失败', error);
+
+    const text = await readLog();
+    expect(text).not.toContain('hunter2');
+    expect(text).not.toContain('correct horse');
+    expect(text).not.toContain('topsecret');
+    expect(text).not.toContain('abc123');
+    expect(text).not.toContain('QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVowMTIzNDU2Nzg5');
+    expect(text).toContain('[redacted]');
+    expect(text).toContain('vault.service.ts:1:1');
+  });
+
+  it('keeps unrelated error text intact', async () => {
+    logError('磁盘写入失败', new Error('ENOSPC: no space left on device'));
+
+    const text = await readLog();
+    expect(text).toContain('ENOSPC: no space left on device');
+  });
+
   it('rotates once the file grows past the size limit', async () => {
-    const chunk = 'x'.repeat(8 * 1024);
+    // 用带空格的中文填充，避免被「长 base64/口令」脱敏规则压成 [redacted]
+    const chunk = '填充内容 '.repeat(1024);
     for (let index = 0; index < 80; index += 1) {
       logInfo(`填充 ${index}`, chunk);
     }

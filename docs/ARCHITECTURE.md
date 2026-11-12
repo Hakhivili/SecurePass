@@ -101,8 +101,12 @@ AAD 固定为 `securepass:v1:data-key` 与 `securepass:v1:payload`，防止密�
   每 5 秒评估一次；纯界面操作（生成器、编辑器打字）同样会续期。
 - 解锁时校验负载结构：缺失/重复的 `id` 与非法时间戳会被补齐并立即写回，
   旧版本遗留在加密负载里的 `theme` / `language` 字段会被丢弃。
-- 恢复流程先验证主密码与文件完整性，再复制当前库为 `pre-restore` 加密副本，最后原子替换。
-- 密码库内容在解锁后常驻内存，锁定或退出时释放引用并清零可用 Buffer。
+- 恢复流程先检查文件大小（空文件与 >32 MB 直接拒绝），再验证主密码与文件完整性，然后复制当前库为
+  `pre-restore` 加密副本，最后原子替换；替换失败时旧库保持原样。
+- 密码库内容在解锁后常驻内存结束前一直可用，锁定或退出时释放引用并清零可用 Buffer。
+- 锁库与剪贴板联动：`attachLockHandlers`（`src/main/app-context.ts`）在创建上下文时注册
+  `vault.onLocked(() => clipboard.clearIfStillOwned())`，手动锁定、自动锁定、系统锁屏与休眠
+  共用这一条清理路径。
 
 ## 安全加固
 
@@ -113,11 +117,14 @@ AAD 固定为 `securepass:v1:data-key` 与 `securepass:v1:payload`，防止密�
   一律 `deny`，外部链接交给系统浏览器。
 - 权限请求与权限检查双重拒绝（`setPermissionRequestHandler` + `setPermissionCheckHandler`）；
   禁止 `<webview>` 挂载。
-- 所有 IPC 通道在处理前比对 `event.sender` 与主窗口 `webContents`，不匹配则返回
+- 所有 IPC 通道在处理前校验来源：`event.sender` 必须是主窗口的 `webContents`，且
+  `event.senderFrame` 必须是该 webContents 的主框架（子框架、无框架一律拒绝），不匹配则返回
   `UNTRUSTED_SENDER` 并记录日志。
 - 解密时先校验 IV / 认证标签长度：结构损坏报 `CORRUPTED_VAULT`，不再伪装成「主密码错误」。
-- 日志写入 `userData/logs/main.log`（超过 512 KB 轮转为 `main.log.1`），只记录事件与错误码，
-  序列化细节时对 `password` / `secret` / `token` / `dataKey` / `kek` / `dek` 字段统一脱敏。
+- 从文件读到的 Argon2id 参数先做范围校验（迭代 1–10、内存 1 MiB–256 MiB、并行度 1–8、
+  输出 16–64 字节、盐 8–64 字节），超范围以 `UNSUPPORTED_FORMAT` 在派生之前拒绝。
+- 日志写入 `userData/logs/main.log`（超过 512 KB 轮转为 `main.log.1`），只记录事件与错误码；
+  结构化字段与异常 message/stack 共用同一套脱敏（键名匹配 + 抹掉长度 ≥40 的 base64 串）。
 
 ## 渲染层数据流
 

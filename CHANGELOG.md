@@ -15,7 +15,7 @@ All notable changes to this project are documented in this file.
 - Keyboard shortcuts (`Ctrl/Cmd + N/F/L`) and screen-reader labels for icon-only actions.
 - Error boundary for the renderer plus `render-process-gone` recovery in the main process.
 - IPC sender validation: every channel rejects callers that are not the main window
-  (`UNTRUSTED_SENDER`).
+  (`UNTRUSTED_SENDER`), and only the main frame of that window is accepted.
 - Content Security Policy is also served as a response header for the dev server, navigation is
   restricted to the dev origin, and permission checks are denied outright.
 - File logging in `userData/logs/main.log` with 512 KB rotation and redaction of secret fields.
@@ -31,6 +31,11 @@ All notable changes to this project are documented in this file.
   paths), plus `docs/RELEASING.zh-CN.md`, a pull-request template and `tools/set-repo.mjs`.
 - `tools/e2e-smoke.mjs`: end-to-end smoke run against the packaged executable over the DevTools
   protocol (create vault, add record, duplicate warning, delete/undo, lock and unlock).
+- Key-derivation parameters read from a vault file are validated against supported ranges before
+  Argon2id runs, so a crafted file cannot request gigabytes of memory (`UNSUPPORTED_FORMAT`).
+- Backup restore refuses empty files and files above 32 MB before reading them into memory.
+- Locking now also clears the clipboard content that the app itself copied, for manual locking,
+  auto locking and system lock/suspend alike.
 
 ### Fixed
 
@@ -48,6 +53,8 @@ All notable changes to this project are documented in this file.
 - `{placeholder}` values in translated strings were rendered literally in some views.
 - A truncated IV or authentication tag is reported as `CORRUPTED_VAULT` instead of a wrong master
   password.
+- Error messages and stack traces written to the log file now go through the same redaction as
+  structured fields, so secrets carried inside an exception cannot reach the disk.
 
 ### Changed
 

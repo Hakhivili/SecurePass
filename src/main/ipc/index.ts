@@ -27,7 +27,7 @@ export function registerIpcHandlers(
     handler: (...args: unknown[]) => Promise<TResult> | TResult,
   ): void => {
     ipcMain.handle(channel, async (event, ...args: unknown[]) => {
-      if (!isTrustedSender(getMainWindow(), event.sender)) {
+      if (!isTrustedSender(getMainWindow(), event.sender, event.senderFrame)) {
         logError(`[ipc] ${channel} rejected: untrusted sender`);
         return {
           ok: false,
@@ -100,7 +100,7 @@ export function registerIpcHandlers(
     context.preferences.update(assertObject(patch, '界面偏好') as Partial<UiPreferences>),
   );
   ipcMain.handle(IPC.windowSyncTitleBar, (event, options) => {
-    if (!isTrustedSender(getMainWindow(), event.sender)) {
+    if (!isTrustedSender(getMainWindow(), event.sender, event.senderFrame)) {
       logError(`[ipc] ${IPC.windowSyncTitleBar} rejected: untrusted sender`);
       return;
     }
@@ -132,14 +132,20 @@ export function registerIpcHandlers(
 }
 
 /**
- * IPC 只接受来自应用自身主窗口的调用：即便有其它 webContents（被注入的 iframe、
+ * IPC 只接受来自应用自身主窗口**主框架**的调用：即便有其它 webContents（被注入的 iframe、
  * 未来新增的窗口）拿到了 preload 桥，也无法调用这些通道。
+ *
+ * `frame` 是调用发生的框架。Electron 的 `event.senderFrame` 在旧版本或测试桩里可能缺失，
+ * 缺失即视为不可信——宁可拒绝，也不要放过一个来源不明的调用。
  */
 export function isTrustedSender(
   window: BrowserWindow | null,
   sender: Electron.WebContents,
+  frame?: Electron.WebFrameMain | null,
 ): boolean {
-  return Boolean(window && !window.isDestroyed() && window.webContents === sender);
+  if (!window || window.isDestroyed() || window.webContents !== sender) return false;
+  if (!frame) return false;
+  return frame === sender.mainFrame;
 }
 
 export function appInfo(context: AppContext): AppInfo {

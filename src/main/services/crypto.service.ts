@@ -22,6 +22,22 @@ const GCM_IV_BYTES = 12;
 const DATA_KEY_BYTES = 32;
 const GCM_TAG_BYTES = 16;
 
+/**
+ * 密钥派生参数的接受范围。
+ *
+ * 这些数字来自本机随库文件读取的 JSON，属于**不可信输入**：恶意或被改坏的备份可以把
+ * memorySizeKiB 写成 4 GiB，让 Argon2id 直接卡死或耗尽内存。因此在派生之前先做范围校验，
+ * 超出范围的库文件按「格式不受支持」拒绝，而不是硬算。
+ */
+const KDF_LIMITS = {
+  iterations: { min: 1, max: 10 },
+  memorySizeKiB: { min: 1024, max: 262_144 },
+  parallelism: { min: 1, max: 8 },
+  hashLength: { min: 16, max: 64 },
+} as const;
+const KDF_SALT_BYTES = { min: 8, max: 64 } as const;
+const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/;
+
 export interface OpenedVault {
   vaultFile: VaultFile;
   payload: VaultPayload;
@@ -43,6 +59,7 @@ export class CryptoService {
   }
 
   async deriveKey(masterPassword: string, params: Argon2idParams): Promise<Buffer> {
+    validateKdfParams(params);
     try {
       const result = await argon2id({
         password: masterPassword,
@@ -262,6 +279,38 @@ export function parseVaultPayload(raw: string): VaultPayload {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+/**
+ * 校验从库文件读到的 Argon2id 参数是否在接受范围内。
+ *
+ * 库文件可能来自备份、U 盘或别人发来的副本，因此参数不能默认可信。
+ */
+export function validateKdfParams(params: Argon2idParams): void {
+  const invalid = (): never => {
+    throw new AppError(ErrorCode.UnsupportedFormat, '密码库的密钥派生参数超出支持范围');
+  };
+
+  if (params.algorithm !== 'argon2id') invalid();
+  if (!isWithin(params.iterations, KDF_LIMITS.iterations)) invalid();
+  if (!isWithin(params.memorySizeKiB, KDF_LIMITS.memorySizeKiB)) invalid();
+  if (!isWithin(params.parallelism, KDF_LIMITS.parallelism)) invalid();
+  if (!isWithin(params.hashLength, KDF_LIMITS.hashLength)) invalid();
+
+  if (typeof params.salt !== 'string' || !BASE64_PATTERN.test(params.salt)) invalid();
+  const saltBytes = Buffer.from(params.salt, 'base64');
+  if (saltBytes.length < KDF_SALT_BYTES.min || saltBytes.length > KDF_SALT_BYTES.max) {
+    invalid();
+  }
+}
+
+function isWithin(value: number, range: { min: number; max: number }): boolean {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= range.min &&
+    value <= range.max
+  );
 }
 
 function isKdfParams(value: unknown): value is Argon2idParams {

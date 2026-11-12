@@ -15,8 +15,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    // 组件测试要等 antd 的动画/Portal 落在 jsdom 里，并行跑时 5s 默认值不够用
-    testTimeout: 15_000,
+    // 组件测试要等 antd 的动画/Portal 落在 jsdom 里；并行跑满 38 个文件时单例可能需要 10s 以上
+    testTimeout: 30_000,
     setupFiles: ['tests/setup.ts'],
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     environmentMatchGlobs: [
