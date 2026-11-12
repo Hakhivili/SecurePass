@@ -89,11 +89,23 @@ async function evaluate(expression) {
 }
 
 await evaluate(`
+// antd 关闭 Modal 后仍会把 DOM 留在 body 里（隐藏），因此**必须**只选可见的那个，
+// 并且取最后一个（新打开的总在后面）。否则表单会填进上一个已隐藏的确认框。
+const pick = (scope) => {
+  const nodes = [...document.querySelectorAll(scope)].filter(
+    (node) => node.getClientRects().length > 0,
+  );
+  return nodes[nodes.length - 1] ?? null;
+};
 window.__e2e = {
   text: () => document.body.innerText.replace(/\\s+/g, ' ').trim(),
   rows: () => document.querySelectorAll('.ant-table-tbody .ant-table-row').length,
+  modalCount: () =>
+    [...document.querySelectorAll('.ant-modal-content')].filter(
+      (node) => node.getClientRects().length > 0,
+    ).length,
   click: (needle, scope) => {
-    const root = scope ? document.querySelector(scope) : document;
+    const root = scope ? pick(scope) : document;
     if (!root) return 'no-scope';
     const hit = [...root.querySelectorAll('button, [role=button]')].find((node) =>
       (node.innerText || '').replace(/\\s+/g, '').includes(needle.replace(/\\s+/g, '')),
@@ -103,14 +115,14 @@ window.__e2e = {
     return 'clicked';
   },
   clickPrimary: (scope) => {
-    const root = document.querySelector(scope);
+    const root = pick(scope);
     const button = root?.querySelector('.ant-btn-primary');
     if (!button) return 'no-primary';
     button.click();
     return 'clicked';
   },
   clickSecondary: (scope) => {
-    const root = document.querySelector(scope);
+    const root = pick(scope);
     if (!root) return 'no-scope';
     const button = [...root.querySelectorAll('button')].find(
       (node) => !node.className.includes('ant-btn-primary'),
@@ -120,7 +132,7 @@ window.__e2e = {
     return 'clicked';
   },
   fill: (scope, index, value) => {
-    const root = document.querySelector(scope);
+    const root = pick(scope);
     if (!root) return 'no-scope';
     const input = [...root.querySelectorAll('input:not([type=checkbox])')][index];
     if (!input) return 'no-input';
@@ -130,7 +142,7 @@ window.__e2e = {
     return 'filled';
   },
   submitAccess: () => {
-    const form = document.querySelector('.vault-access');
+    const form = pick('.vault-access');
     const button = form?.querySelector('button[type="submit"]');
     if (!button) return 'no-submit';
     button.click();
@@ -143,6 +155,20 @@ window.__e2e = {
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
     return document.body.innerText.includes(needle);
+  },
+  closeTopModal: () => {
+    const root = pick('.ant-modal-content');
+    const close = root?.querySelector('.ant-modal-close');
+    if (!close) return 'no-close';
+    close.click();
+    return 'clicked';
+  },
+  confirmText: () => {
+    const nodes = [...document.querySelectorAll('.ant-modal-confirm')].filter(
+      (node) => node.getClientRects().length > 0,
+    );
+    const top = nodes[nodes.length - 1];
+    return top ? (top.innerText || '').replace(/\\s+/g, ' ') : '';
   },
 };
 'ok'`);
@@ -207,9 +233,7 @@ await evaluate(
 );
 await evaluate('window.__e2e.clickPrimary(".ant-modal-content")');
 await sleep(1200);
-const duplicateText = await evaluate(
-  'document.querySelector(".ant-modal-confirm")?.innerText.replace(/\\s+/g, " ") ?? ""',
-);
+const duplicateText = await evaluate('window.__e2e.confirmText()');
 check(
   '重复录入触发提醒',
   duplicateText.includes('重复') || duplicateText.includes('相似记录'),
@@ -221,20 +245,21 @@ check(
   '选择「返回修改」后记录数不变',
   (await evaluate('window.__e2e.rows()')) === rowsBefore + 1,
 );
-await evaluate('document.querySelector(".ant-modal-content .ant-modal-close")?.click()');
+await evaluate('window.__e2e.closeTopModal()');
 await sleep(500);
-if (await evaluate('Boolean(document.querySelector(".ant-modal-confirm"))')) {
+if (await evaluate('Boolean(window.__e2e.confirmText())')) {
   await evaluate('window.__e2e.clickPrimary(".ant-modal-confirm-btns")');
   await sleep(400);
 }
 check(
   '关闭未保存的编辑器时不会残留弹窗',
-  (await evaluate('document.querySelectorAll(".ant-modal-content").length')) === 0,
+  (await evaluate('window.__e2e.modalCount()')) === 0,
 );
 
 console.log('- 删除与撤销');
 await evaluate(`(() => {
   const row = document.querySelector('.ant-table-tbody .ant-table-row');
+  if (!row) return 'no-row';
   const buttons = [...row.querySelectorAll('button')];
   buttons[buttons.length - 1].click();
   return 'clicked';

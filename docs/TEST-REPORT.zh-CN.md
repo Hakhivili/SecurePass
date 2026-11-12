@@ -182,6 +182,16 @@ node tools/e2e-smoke.mjs --port 9223 --password "correct horse battery staple"
 `kdf` / `wrappedDataKey` / `payload` / `createdAt` / `updatedAt`，标题、账号、密码与主密码的明文与
 base64 形态均**不存在**；`logs/main.log` 只记录 `[ipc] vault:unlock failed: INVALID_MASTER_PASSWORD`，不含任何秘密。
 
+### 5.1 2026-11-12 复跑（安全审查第一批之后）
+
+- 12/12 全过，落盘检查同上（`vault.securepass` 1098 B，`logs/main.log` 未出现试错主密码）。
+- 脚本侧修正：antd 关闭 Modal 后 DOM 仍留在 `body`（隐藏），旧脚本用 `querySelector` 取到已隐藏的弹窗导致
+  表单填错位置；现 `window.__e2e` 只选取**可见**元素（`pick()` 取最后一个可见节点），并新增
+  `modalCount()` / `closeTopModal()` / `confirmText()`，断言全部改为基于可见性。
+- 剪贴板联动人工核对（同一实例、`Get-Clipboard` 读取）：
+  1. 生成器「复制」后剪贴板为生成的密码 → 立刻点「锁定密码库」→ 剪贴板**已清空**（1.2 s 内，早于 30 秒定时器）；
+  2. 复制后再由用户复制别的文本 → 锁库后该文本**保留**，未被误清。
+
 ---
 
 ## 6. 未覆盖范围（已知盲区）
@@ -203,7 +213,7 @@ base64 形态均**不存在**；`logs/main.log` 只记录 `[ipc] vault:unlock fa
 
 ---
 
-## 6. 本阶段修复的缺陷与新增能力
+## 7. 本阶段修复的缺陷与新增能力
 
 | 类型 | 内容                                                                  | 位置                                                      |
 | ---- | --------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -217,7 +227,7 @@ base64 形态均**不存在**；`logs/main.log` 只记录 `[ipc] vault:unlock fa
 
 ---
 
-## 7. 结论
+## 8. 结论
 
 - 任务书 §8 的 12 项验收标准**全部有可执行证据支撑**；
 - 首版唯一的功能缺项（重复录入提醒）已补齐；

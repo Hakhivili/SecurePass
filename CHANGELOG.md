@@ -30,7 +30,8 @@ All notable changes to this project are documented in this file.
 - `docs/DEPLOYMENT-NOTES.zh-CN.md` rewritten as a generic development/build guide (no machine-specific
   paths), plus `docs/RELEASING.zh-CN.md`, a pull-request template and `tools/set-repo.mjs`.
 - `tools/e2e-smoke.mjs`: end-to-end smoke run against the packaged executable over the DevTools
-  protocol (create vault, add record, duplicate warning, delete/undo, lock and unlock).
+  protocol (create vault, add record, duplicate warning, delete/undo, lock and unlock). It only acts
+  on visible antd layers, so a closed-but-retained modal can no longer swallow the input.
 - Key-derivation parameters read from a vault file are validated against supported ranges before
   Argon2id runs, so a crafted file cannot request gigabytes of memory (`UNSUPPORTED_FORMAT`).
 - Backup restore refuses empty files and files above 32 MB before reading them into memory.
