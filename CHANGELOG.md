@@ -72,6 +72,9 @@ All notable changes to this project are documented in this file.
 - Unused exports (`satisfiesConfig`, `MAX_SEARCH_RESULTS`) were removed.
 - `react-router-dom` upgraded to 7.18.5, which clears two moderate audit advisories in the 6.x line.
 - Deprecated antd `destroyOnClose` replaced with `destroyOnHidden`.
+- New application icon: dark rounded tile with a blue keyhole frame, generated from
+  `build/icon-source.png` by `tools/generate-icon.py`; every `.ico` size is drawn separately so small
+  icons stay crisp.
 
 ## [0.1.0] - 2026-10-05
 

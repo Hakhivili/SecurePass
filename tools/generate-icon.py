@@ -1,6 +1,9 @@
-"""生成 SecurePass 应用图标（build/icon.png 与 build/icon.ico）。
+"""生成 SecurePass 应用图标（build/icon.png、build/icon.ico、build/icon-1024.png）。
 
-设计：圆角方形渐变底（靛蓝）+ 白色盾牌 + 钥匙孔镂空。
+设计：深色圆角底（#15171b，与深色主题同色）+ 蓝色圆角描边框（#6b8afd）+ 钥匙孔。
+几何参数取自 build/icon-source.png（512×512 参考稿）：外框 (96,108)-(415,403)、
+圆角 56、描边 35，钥匙孔圆 r=40 @(255.5,235) 与下宽梯形合并。
+
 用法：python tools/generate-icon.py
 """
 
@@ -10,61 +13,51 @@ import os
 
 from PIL import Image, ImageDraw
 
-SIZE = 1024
-ACCENT_TOP = (122, 140, 246)
-ACCENT_BOTTOM = (62, 78, 194)
-RADIUS = 210
+BASE = 512
+CANVAS_RADIUS = 110
+BACKGROUND = (21, 23, 27, 255)
+ACCENT = (107, 138, 253, 255)
+
+FRAME_BOX = (96, 108, 415, 403)
+FRAME_RADIUS = 56
+FRAME_WIDTH = 35
+
+KEYHOLE_CENTER = (255.5, 235.0)
+KEYHOLE_RADIUS = 40.0
+KEYHOLE_STEM = [(233.0, 262.0), (278.0, 262.0), (287.0, 314.0), (224.0, 314.0)]
+
+ICO_SIZES = [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
 
 
-def vertical_gradient(size: int, top: tuple[int, int, int], bottom: tuple[int, int, int]) -> Image.Image:
-    image = Image.new("RGB", (1, size))
-    draw = ImageDraw.Draw(image)
-    for y in range(size):
-        ratio = y / max(1, size - 1)
-        color = tuple(round(top[i] + (bottom[i] - top[i]) * ratio) for i in range(3))
-        draw.point((0, y), fill=color)
-    return image.resize((size, size), Image.BILINEAR)
+def build_icon(size: int = BASE, supersample: int = 4) -> Image.Image:
+    """按目标尺寸绘制；先放大 supersample 倍再缩小，保证小尺寸的边缘也干净。"""
+    scale = size / BASE
+    big = size * supersample
 
+    def s(value: float) -> float:
+        return value * scale * supersample
 
-def shield_points(size: int) -> list[tuple[float, float]]:
-    scale = size / 1024
-    points = [
-        (256, 246),
-        (512, 150),
-        (768, 246),
-        (768, 520),
-        (512, 846),
-        (256, 520),
-    ]
-    return [(x * scale, y * scale) for x, y in points]
-
-
-def build_icon(size: int = SIZE) -> Image.Image:
-    canvas = vertical_gradient(size, ACCENT_TOP, ACCENT_BOTTOM).convert("RGBA")
-
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        (0, 0, size - 1, size - 1), radius=round(RADIUS * size / 1024), fill=255
-    )
-    icon = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    icon.paste(canvas, (0, 0), mask)
-
+    icon = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     draw = ImageDraw.Draw(icon)
-    draw.polygon(shield_points(size), fill=(255, 255, 255, 255))
 
-    # 钥匙孔：圆 + 下收的柄
-    cx, cy = 512 * size / 1024, 428 * size / 1024
-    r = 74 * size / 1024
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=ACCENT_BOTTOM + (255,))
-    stem = [
-        (476, 470),
-        (548, 470),
-        (572, 636),
-        (452, 636),
-    ]
-    draw.polygon([(x * size / 1024, y * size / 1024) for x, y in stem], fill=ACCENT_BOTTOM + (255,))
+    draw.rounded_rectangle(
+        (0, 0, big - 1, big - 1), radius=round(CANVAS_RADIUS * scale * supersample), fill=BACKGROUND
+    )
 
-    return icon
+    left, top, right, bottom = FRAME_BOX
+    draw.rounded_rectangle(
+        (s(left), s(top), s(right), s(bottom)),
+        radius=round(FRAME_RADIUS * scale * supersample),
+        outline=ACCENT,
+        width=max(1, round(FRAME_WIDTH * scale * supersample)),
+    )
+
+    cx, cy = KEYHOLE_CENTER
+    r = KEYHOLE_RADIUS
+    draw.ellipse((s(cx - r), s(cy - r), s(cx + r), s(cy + r)), fill=ACCENT)
+    draw.polygon([(s(x), s(y)) for x, y in KEYHOLE_STEM], fill=ACCENT)
+
+    return icon.resize((size, size), Image.LANCZOS)
 
 
 def main() -> None:
@@ -72,13 +65,16 @@ def main() -> None:
     out_dir = os.path.join(root, "build")
     os.makedirs(out_dir, exist_ok=True)
 
-    icon = build_icon()
-    icon.resize((512, 512), Image.LANCZOS).save(os.path.join(out_dir, "icon.png"))
-    icon.save(
+    # Windows 资源管理器/任务栏优先使用 ico 里的各档尺寸，这里每档单独绘制，避免缩小糊掉
+    ico_images = [build_icon(size) for size, _ in ICO_SIZES]
+    ico_images[-1].save(
         os.path.join(out_dir, "icon.ico"),
-        sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+        sizes=ICO_SIZES,
+        append_images=ico_images[:-1],
     )
-    icon.save(os.path.join(out_dir, "icon-1024.png"))
+
+    build_icon(512).save(os.path.join(out_dir, "icon.png"))
+    build_icon(1024, supersample=2).save(os.path.join(out_dir, "icon-1024.png"))
     print("wrote build/icon.png, build/icon.ico, build/icon-1024.png")
 
 
