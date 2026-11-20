@@ -7,6 +7,7 @@ const electronStub = vi.hoisted(() => ({
   handlers: new Map<string, (event: unknown, ...args: unknown[]) => unknown>(),
   setTitleBarOverlay: vi.fn(),
   openPath: vi.fn(),
+  openExternal: vi.fn(),
 }));
 
 vi.mock('electron', () => ({
@@ -22,7 +23,10 @@ vi.mock('electron', () => ({
     fromWebContents: () => ({ setTitleBarOverlay: electronStub.setTitleBarOverlay }),
   },
   app: { getName: () => 'SecurePass', getVersion: () => '0.1.0' },
-  shell: { openPath: electronStub.openPath },
+  shell: {
+    openPath: electronStub.openPath,
+    openExternal: electronStub.openExternal,
+  },
 }));
 
 const { isTrustedSender, registerIpcHandlers } = await import('@main/ipc');
@@ -199,5 +203,32 @@ describe('registerIpcHandlers', () => {
       symbolColor: '#e6e9ee',
       height: 56,
     });
+  });
+
+  it('opens only github.com links through the system browser', async () => {
+    const { context } = createContext();
+    registerIpcHandlers(context, () => mainWindow as never);
+
+    const target = 'https://github.com/example/securepass/releases/tag/v0.2.0';
+    await expect(invoke(IPC.appOpenExternal, trustedEvent, target)).resolves.toEqual({
+      ok: true,
+      data: undefined,
+    });
+    expect(electronStub.openExternal).toHaveBeenCalledWith(target);
+
+    for (const blocked of [
+      'file:///C:/Windows/System32/cmd.exe',
+      'https://github.com.evil.example/securepass',
+      'http://github.com/example/securepass',
+      'not a url',
+    ]) {
+      const result = (await invoke(IPC.appOpenExternal, trustedEvent, blocked)) as {
+        ok: boolean;
+        error: { code: string };
+      };
+      expect(result.ok).toBe(false);
+      expect(result.error.code).toBe(ErrorCode.InvalidInput);
+    }
+    expect(electronStub.openExternal).toHaveBeenCalledTimes(1);
   });
 });

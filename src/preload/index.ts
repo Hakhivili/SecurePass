@@ -51,6 +51,8 @@ const api: SecurePassApi = {
   app: {
     info: () => invoke(IPC.appInfo),
     openDataDir: () => invoke(IPC.appOpenDataDir),
+    checkUpdate: () => invoke(IPC.appCheckUpdate),
+    openExternal: (url) => invoke(IPC.appOpenExternal, url),
   },
   events: {
     onLocked: (callback) => {

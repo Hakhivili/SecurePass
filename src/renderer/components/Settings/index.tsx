@@ -15,6 +15,7 @@ import type {
   AppTheme,
   GeneratorPosition,
   UiPreferences,
+  UpdateCheckResult,
 } from '@shared/types';
 import { getApi, getErrorMessage } from '../../services/ipc';
 import { useSettingsStore } from '../../store/settings.store';
@@ -42,6 +43,8 @@ export default function Settings(): JSX.Element {
   const updateUi = useSettingsStore((state) => state.updateUi);
   const [restorePassword, setRestorePassword] = useState('');
   const [info, setInfo] = useState<AppInfo | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<UpdateCheckResult | null>(null);
+  const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [backupBusy, setBackupBusy] = useState(false);
   const lock = useAuthStore((state) => state.lock);
@@ -68,6 +71,34 @@ export default function Settings(): JSX.Element {
   const openDataDir = async () => {
     try {
       await getApi().app.openDataDir();
+    } catch (error) {
+      message.error(getErrorMessage(error, t));
+    }
+  };
+
+  /** 手动检查更新：只有点击才会发起一次 GitHub 公开接口请求。 */
+  const checkUpdate = async () => {
+    setChecking(true);
+    try {
+      const result = await getApi().app.checkUpdate();
+      setUpdateInfo(result);
+      if (result.hasUpdate) {
+        message.success(t('settings.updateAvailable', { version: result.latestVersion }));
+      } else {
+        message.info(t('settings.upToDate'));
+      }
+    } catch (error) {
+      setUpdateInfo(null);
+      message.error(getErrorMessage(error, t));
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const openRelease = async () => {
+    if (!updateInfo) return;
+    try {
+      await getApi().app.openExternal(updateInfo.releaseUrl);
     } catch (error) {
       message.error(getErrorMessage(error, t));
     }
@@ -380,6 +411,29 @@ export default function Settings(): JSX.Element {
                 {t('settings.openDataDir')}
               </Button>
             </div>
+            <div className="settings-about-row">
+              <span className="settings-about-label">{t('settings.updates')}</span>
+              <span className="settings-about-value settings-about-actions">
+                <Button
+                  size="small"
+                  loading={checking}
+                  onClick={() => void checkUpdate()}
+                >
+                  {checking ? t('settings.checkingUpdate') : t('settings.checkUpdate')}
+                </Button>
+                {updateInfo?.hasUpdate ? (
+                  <Button
+                    size="small"
+                    type="link"
+                    icon={<ExportOutlined />}
+                    onClick={() => void openRelease()}
+                  >
+                    {t('settings.openRelease', { version: updateInfo.latestVersion })}
+                  </Button>
+                ) : null}
+              </span>
+            </div>
+            <p className="auth-help">{t('settings.updateHint')}</p>
             <p className="auth-help">{t('settings.aboutHelp')}</p>
           </div>
         </Card>

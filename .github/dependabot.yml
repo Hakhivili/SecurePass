@@ -1,0 +1,43 @@
+version: 2
+updates:
+  # 运行时与开发依赖统一走一个 npm 条目（Dependabot 要求 ecosystem + directory 唯一）
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      # React 与 antd 一起升级，避免互相不兼容的中间状态
+      ui:
+        patterns:
+          - react
+          - react-dom
+          - react-router-dom
+          - antd
+          - '@ant-design/*'
+      # 构建与测试工具链一起升级，减少门禁抖动
+      tooling:
+        patterns:
+          - electron
+          - electron-builder
+          - vite
+          - vitest
+          - '@vitest/*'
+          - typescript
+          - eslint
+          - '@typescript-eslint/*'
+          - prettier
+    ignore:
+      # Electron 大版本按 MAINTENANCE 政策每年手动跟进一次，不自动跳大版本
+      - dependency-name: electron
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore(ci)

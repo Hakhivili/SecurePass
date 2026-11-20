@@ -14,8 +14,8 @@
 
 | 检查项                 | 命令                    | 结果                                                               |
 | ---------------------- | ----------------------- | ------------------------------------------------------------------ |
-| 单元 / 集成 / 组件测试 | `npm test`              | ✅ **38 个文件、203 个用例全部通过**（约 36 s，含 jsdom 组件渲染） |
-| 覆盖率                 | `npm run test:coverage` | ✅ 语句 85.65%、分支 87.24%、函数 83.05%（阈值 78/85/78/78）       |
+| 单元 / 集成 / 组件测试 | `npm test`              | ✅ **39 个文件、219 个用例全部通过**（约 40 s，含 jsdom 组件渲染） |
+| 覆盖率                 | `npm run test:coverage` | ✅ 语句 86.09%、分支 86.69%、函数 83.16%（阈值 78/85/78/78）       |
 | 类型检查               | `npm run typecheck`     | ✅ 0 错误（`strict` + `noUnusedLocals`）                           |
 | 代码规范               | `npm run lint`          | ✅ 0 错误、0 警告                                                  |
 | 格式检查               | `npm run format:check`  | ✅ 全仓库符合 Prettier 配置                                        |
@@ -49,8 +49,9 @@
 | `tests/unit/backup.service.test.ts`                          | 4      | 备份文件大小限制（空文件/超 32 MB/目录/不可读）、正常导出与恢复                                 |
 | `tests/unit/lock-clipboard.test.ts`                          | 4      | 手动锁库清理剪贴板、用户后复制不误清、自动锁定同样清理、未解锁不清                              |
 | `tests/unit/restore-interruption.test.ts`                    | 2      | 恢复写入失败时旧库逐字节不变且无 `.tmp` 残留、恢复成功保留旧库副本                              |
-| `tests/unit/ipc-handlers.test.ts`                            | 8      | IPC 来源校验（含子框架）、错误码透传、标题栏通道守卫                                            |
+| `tests/unit/ipc-handlers.test.ts`                            | 9      | IPC 来源校验（含子框架）、错误码透传、标题栏通道守卫、`app.openExternal` 只放行 github.com |
 | `tests/unit/log.service.test.ts`                             | 6      | 日志格式、脱敏（含异常堆栈）、轮转                                                              |
+| `tests/unit/update.service.test.ts`                          | 13     | 版本比较、只发一次匿名 GET、404/500/网络异常/超时、说明截断、占位仓库不发请求、缺少版本号时拒绝 |
 | `tests/unit/renderer/ipc-errors.test.ts`                     | 5      | 错误码识别、本地化回退、桥接缺失                                                                |
 | `tests/unit/renderer/ui-preferences.test.ts`                 | 6      | 偏好规范化、localStorage 缓存容错                                                               |
 | `tests/unit/renderer/hotkeys.test.tsx`                       | 5      | 快捷键触发、输入框让位、卸载解绑                                                                |
@@ -62,7 +63,7 @@
 | `tests/unit/renderer/components/vault-editor.test.tsx`       | 5      | 字段预填、提交成功清空、失败保留、未修改不打扰、修改后关闭需确认                                |
 | `tests/unit/renderer/components/vault-item.test.tsx`         | 5      | 详情字段/标签/时间戳、密码遮罩、复制账号与密码、复制失败提示、空字段占位                        |
 | `tests/unit/renderer/components/vault-access-panel.test.tsx` | 5      | 创建长度/一致性校验、创建前确认、取消不创建、解锁错误码文案、成功回调                           |
-| `tests/unit/renderer/components/settings.test.tsx`           | 7      | 锁定禁用与提示、关于区块/打开目录、主题与强调色、自动锁定修改、改主密码校验、导出、恢复二次确认 |
+| `tests/unit/renderer/components/settings.test.tsx`           | 9      | 锁定禁用与提示、关于区块/打开目录、手动检查更新（成功/失败）、主题与强调色、自动锁定修改、改主密码校验、导出、恢复二次确认 |
 | `tests/unit/renderer/components/common.test.tsx`             | 7      | 强度计语义、错误边界与兜底按钮、标题栏导航、工作台布局、按需解锁对话框                          |
 | `tests/unit/renderer/components/duplicate-guard.test.tsx`    | 6      | 无重复放行、确认保留/返回修改、未加载先拉取、excludeId、剪贴板工具                              |
 

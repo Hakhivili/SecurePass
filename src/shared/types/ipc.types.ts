@@ -30,6 +30,8 @@ export const IPC = {
   clipboardCopySecret: 'clipboard:copy-secret',
   appInfo: 'app:info',
   appOpenDataDir: 'app:open-data-dir',
+  appCheckUpdate: 'app:check-update',
+  appOpenExternal: 'app:open-external',
   eventLocked: 'event:locked',
 } as const;
 
@@ -84,6 +86,16 @@ export interface AppInfo {
   platform: string;
 }
 
+/** 手动检查更新的结果：只包含公开的版本信息，不含任何用户数据。 */
+export interface UpdateCheckResult {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  releaseUrl: string;
+  publishedAt: string | null;
+  notes: string | null;
+}
+
 export interface SecurePassApi {
   vault: {
     exists(): Promise<boolean>;
@@ -128,6 +140,10 @@ export interface SecurePassApi {
     info(): Promise<AppInfo>;
     /** 在系统文件管理器中打开数据目录。 */
     openDataDir(): Promise<void>;
+    /** 手动检查更新：仅由用户点击触发，只请求 GitHub 公开版本接口。 */
+    checkUpdate(): Promise<UpdateCheckResult>;
+    /** 用系统浏览器打开链接：只接受 https://github.com 下的地址。 */
+    openExternal(url: string): Promise<void>;
   };
   events: {
     onLocked(callback: () => void): () => void;

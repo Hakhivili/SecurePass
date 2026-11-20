@@ -152,6 +152,15 @@ export const PASSWORD_MAX_LENGTH = 20;
 export const VAULT_PASSWORD_MIN_LENGTH = 15;
 export const VAULT_PASSWORD_MAX_LENGTH = 1024;
 
+/**
+ * 手动检查更新所用的 GitHub 仓库（owner/repo）。
+ * 由 `node tools/set-repo.mjs <owner>/<repo>` 写入；仍是占位符时检查更新会直接报错，
+ * 保证应用不会向未知地址发请求。
+ */
+export const REPOSITORY_SLUG = '__REPO_SLUG__';
+/** 检查更新的请求超时：超过即放弃，界面提示稍后重试。 */
+export const UPDATE_CHECK_TIMEOUT_MS = 8_000;
+
 export const MIN_AUTO_LOCK_MINUTES = 1;
 export const MAX_AUTO_LOCK_MINUTES = 120;
 export const MIN_CLIPBOARD_SECONDS = 5;

@@ -221,6 +221,7 @@ const zhCN = {
   'error.CRYPTO_FAILURE': '加密操作失败',
   'error.STORAGE_FAILURE': '写入磁盘失败，原文件未被修改',
   'error.UNTRUSTED_SENDER': '调用来源不受信任，已拒绝',
+  'error.UPDATE_CHECK_FAILED': '检查更新失败',
   'error.INTERNAL_ERROR': '发生未知错误',
   'error.UNKNOWN': '操作失败，请重试',
 
@@ -261,6 +262,13 @@ const zhCN = {
   'settings.openDataDir': '打开目录',
   'settings.aboutHelp':
     '所有记录都保存在上面的目录里（密文文件）。反馈问题时请附上版本号与运行环境。',
+  'settings.updates': '更新',
+  'settings.checkUpdate': '检查更新',
+  'settings.checkingUpdate': '正在检查…',
+  'settings.upToDate': '已是最新版本',
+  'settings.updateAvailable': '发现新版本 {version}',
+  'settings.openRelease': '打开发布页（{version}）',
+  'settings.updateHint': '只在你点击时访问 GitHub 公开版本接口，不上传任何信息。',
 
   'strength.label': '密码强度',
 } as const;
@@ -478,6 +486,7 @@ const en: Record<keyof typeof zhCN, string> = {
   'error.CRYPTO_FAILURE': 'Cryptographic operation failed',
   'error.STORAGE_FAILURE': 'Writing to disk failed; the original file was not modified',
   'error.UNTRUSTED_SENDER': 'The caller was not trusted, the request was rejected',
+  'error.UPDATE_CHECK_FAILED': 'Could not check for updates',
   'error.INTERNAL_ERROR': 'An unknown error occurred',
   'error.UNKNOWN': 'Operation failed, please try again',
 
@@ -514,6 +523,14 @@ const en: Record<keyof typeof zhCN, string> = {
   'settings.openDataDir': 'Open folder',
   'settings.aboutHelp':
     'All records live in the folder above as an encrypted file. Include the version and runtime when reporting a problem.',
+  'settings.updates': 'Updates',
+  'settings.checkUpdate': 'Check for updates',
+  'settings.checkingUpdate': 'Checking…',
+  'settings.upToDate': 'You are on the latest version',
+  'settings.updateAvailable': 'Version {version} is available',
+  'settings.openRelease': 'Open release page ({version})',
+  'settings.updateHint':
+    'Contacts the public GitHub release API only when you click, and uploads nothing.',
 
   'strength.label': 'Password strength',
 };

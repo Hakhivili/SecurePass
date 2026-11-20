@@ -744,6 +744,13 @@ body {
   word-break: break-all;
 }
 
+.settings-about-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* 键盘可达性：鼠标点击不显示轮廓，键盘 Tab 才显示 */
 :where(a, button, input, textarea, select, [tabindex]):focus-visible {
   outline: 2px solid var(--sp-accent);

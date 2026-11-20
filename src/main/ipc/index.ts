@@ -11,10 +11,11 @@ import type {
   VaultStatus,
   IpcResult,
 } from '@shared/types';
-import { ErrorCode, isAppError } from '@shared/errors';
+import { AppError, ErrorCode, isAppError } from '@shared/errors';
 import { IPC } from '@shared/types';
 import type { AppContext } from '../app-context';
 import { logError } from '../services/log.service';
+import { checkForUpdate } from '../services/update.service';
 
 type MainWindowProvider = () => BrowserWindow | null;
 
@@ -128,6 +129,20 @@ export function registerIpcHandlers(
     if (errorMessage) {
       throw new Error(`无法打开数据目录：${errorMessage}`);
     }
+  });
+  handle(IPC.appCheckUpdate, () => checkForUpdate({ currentVersion: app.getVersion() }));
+  handle(IPC.appOpenExternal, async (url) => {
+    const target = assertString(url, '链接');
+    let parsed: URL;
+    try {
+      parsed = new URL(target);
+    } catch {
+      throw new AppError(ErrorCode.InvalidInput, '链接格式无效');
+    }
+    if (parsed.protocol !== 'https:' || parsed.hostname !== 'github.com') {
+      throw new AppError(ErrorCode.InvalidInput, '只允许打开 GitHub 链接');
+    }
+    await shell.openExternal(parsed.toString());
   });
 }
 

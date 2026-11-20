@@ -61,6 +61,48 @@ describe('Settings 设置页', () => {
     await waitFor(() => expect(api.app.openDataDir).toHaveBeenCalledTimes(1));
   });
 
+  it('手动检查更新：点击后才请求，并给出发布页入口', async () => {
+    api.app.checkUpdate.mockResolvedValue({
+      currentVersion: '0.1.0',
+      latestVersion: '0.2.0',
+      hasUpdate: true,
+      releaseUrl: 'https://github.com/example/securepass/releases/tag/v0.2.0',
+      publishedAt: '2026-12-01T10:00:00Z',
+      notes: null,
+    });
+
+    renderWithProviders(<Settings />);
+    expect(api.app.checkUpdate).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(t('settings.checkUpdate')) }),
+    );
+
+    await waitFor(() => expect(api.app.checkUpdate).toHaveBeenCalledTimes(1));
+    expect(
+      await screen.findByText(t('settings.updateAvailable', { version: '0.2.0' })),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /0\.2\.0/ }));
+    await waitFor(() =>
+      expect(api.app.openExternal).toHaveBeenCalledWith(
+        'https://github.com/example/securepass/releases/tag/v0.2.0',
+      ),
+    );
+  });
+
+  it('检查更新失败时展示错误文案', async () => {
+    api.app.checkUpdate.mockRejectedValue(new Error('无法连接 GitHub'));
+
+    renderWithProviders(<Settings />);
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(t('settings.checkUpdate')) }),
+    );
+
+    await waitFor(() => expect(api.app.checkUpdate).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('无法连接 GitHub')).toBeInTheDocument();
+  });
+
   it('切换主题与强调色写入界面偏好', async () => {
     renderWithProviders(<Settings />);
     await waitFor(() => expect(api.uiPreferences.get).toHaveBeenCalled());

@@ -9,6 +9,7 @@
  * 作用：
  *   - README.md / README_CN.md 中的 __REPO_URL__ 占位符替换为 https://github.com/<owner>/<repo>
  *   - package.json 写入 repository / bugs / homepage
+ *   - src/shared/constants.ts 的 REPOSITORY_SLUG 写成 <owner>/<repo>（手动检查更新要用）
  *   - 重复执行会把已有的 GitHub 地址替换成新地址（幂等）
  */
 import { readFile, writeFile } from 'node:fs/promises';
@@ -50,4 +51,18 @@ for (const key of Object.keys(pkg)) {
 }
 await writeFile(pkgPath, `${JSON.stringify(ordered, null, 2)}\n`, 'utf8');
 console.log(`package.json: repository/bugs/homepage -> ${url}`);
+
+const constantsPath = path.join(root, 'src', 'shared', 'constants.ts');
+const constantsBefore = await readFile(constantsPath, 'utf8');
+const constantsAfter = constantsBefore.replace(
+  /export const REPOSITORY_SLUG = '[^']*';/,
+  `export const REPOSITORY_SLUG = '${slug}';`,
+);
+await writeFile(constantsPath, constantsAfter, 'utf8');
+console.log(
+  `src/shared/constants.ts: REPOSITORY_SLUG -> ${slug}（${
+    constantsBefore === constantsAfter ? '无变化' : '已更新'
+  }）`,
+);
+
 console.log('\n下一步：git remote add origin ' + url + '.git && git push -u origin main');

@@ -1,8 +1,8 @@
 # SecurePass
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
-[![Coverage](https://img.shields.io/badge/coverage-84%25-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+[![Tests](https://img.shields.io/badge/tests-219%20passing-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
+[![Coverage](https://img.shields.io/badge/coverage-86%25-brightgreen.svg)](docs/TEST-REPORT.zh-CN.md)
 
 SecurePass is an offline, cross-platform desktop password generator and encrypted local vault.
 It is built with Electron, React, TypeScript and Vite.
@@ -108,6 +108,9 @@ tools/         Icon and third-party notice generators
 | [docs/DEPLOYMENT-NOTES.zh-CN.md](docs/DEPLOYMENT-NOTES.zh-CN.md) | 开发环境、常用命令、打包与排障                                 |
 | [docs/RELEASING.zh-CN.md](docs/RELEASING.zh-CN.md)               | 版本号、变更日志与发布流程                                     |
 | [docs/TEST-REPORT.zh-CN.md](docs/TEST-REPORT.zh-CN.md)           | 验收项、测试与覆盖率情况                                       |
+| [docs/ROADMAP.zh-CN.md](docs/ROADMAP.zh-CN.md)                   | 版本路线：v0.2 → v1.0 与明确不做的事                           |
+| [docs/PRIVACY.zh-CN.md](docs/PRIVACY.zh-CN.md)                   | 隐私说明：唯一联网行为与日志脱敏                               |
+| [docs/MAINTENANCE.zh-CN.md](docs/MAINTENANCE.zh-CN.md)           | 永久开源承诺、维护状态与安全支持窗口                           |
 | [SECURITY.md](SECURITY.md)                                       | Threat model, crypto parameters, how to report a vulnerability |
 | [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)                 | Licenses of bundled dependencies                               |
 

@@ -99,10 +99,31 @@ interface UiPreferences {
 
 ## app
 
-| 方法            | 说明                                                                            |
-| --------------- | ------------------------------------------------------------------------------- |
-| `info()`        | 返回 `{ name, version, electron, chrome, node, dataDir, platform }`（关于面板） |
-| `openDataDir()` | 在系统文件管理器中打开数据目录                                                  |
+| 方法              | 说明                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| `info()`          | 返回 `{ name, version, electron, chrome, node, dataDir, platform }`（关于面板）                   |
+| `openDataDir()`   | 在系统文件管理器中打开数据目录                                                                    |
+| `checkUpdate()`   | 手动检查更新：`GET https://api.github.com/repos/<slug>/releases/latest`，返回 `UpdateCheckResult` |
+| `openExternal(u)` | 用系统浏览器打开链接；**只接受 `https://github.com/...`**，其它协议或主机返回 `INVALID_INPUT`     |
+
+`UpdateCheckResult`：
+
+```ts
+interface UpdateCheckResult {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean; // 语义化版本比较：latest > current
+  releaseUrl: string; // GitHub Release 页面
+  publishedAt: string | null;
+  notes: string | null; // 发布说明，最多 4000 字符
+}
+```
+
+约束：
+
+- 只有用户点击「检查更新」时才会发起请求，应用启动、锁定、解锁过程中都不联网；
+- 请求为匿名 GET（无凭据、无请求体），超时 8 秒，失败不重试；
+- 仓库地址来自 `src/shared/constants.ts` 的 `REPOSITORY_SLUG`，由 `node tools/set-repo.mjs <owner>/<repo>` 写入；仍是占位符时直接返回 `UPDATE_CHECK_FAILED`，不会向未知地址发请求。
 
 ## clipboard
 
@@ -118,23 +139,24 @@ interface UiPreferences {
 
 ## 错误码
 
-| 错误码                               | 含义                     |
-| ------------------------------------ | ------------------------ |
-| `INVALID_INPUT`                      | 输入不符合规则           |
-| `VAULT_NOT_FOUND`                    | 未找到密码库文件         |
-| `VAULT_ALREADY_EXISTS`               | 密码库已存在             |
-| `VAULT_LOCKED`                       | 需要先解锁               |
-| `VAULT_ALREADY_UNLOCKED`             | 已处于解锁状态           |
-| `INVALID_MASTER_PASSWORD`            | 主密码错误或文件损坏     |
-| `WEAK_MASTER_PASSWORD`               | 主密码不满足长度要求     |
-| `CORRUPTED_VAULT`                    | 文件结构或密文完整性异常 |
-| `UNSUPPORTED_FORMAT`                 | 格式版本不受支持         |
-| `VAULT_BUSY`                         | 密码库被另一个进程占用   |
-| `ITEM_NOT_FOUND`                     | 记录不存在               |
-| `BACKUP_FAILED` / `RESTORE_FAILED`   | 备份或恢复失败           |
-| `CRYPTO_FAILURE` / `STORAGE_FAILURE` | 加密或存储失败           |
-| `UNTRUSTED_SENDER`                   | 调用不来自应用主窗口     |
-| `INTERNAL_ERROR`                     | 未预期的内部错误         |
+| 错误码                               | 含义                      |
+| ------------------------------------ | ------------------------- |
+| `INVALID_INPUT`                      | 输入不符合规则            |
+| `VAULT_NOT_FOUND`                    | 未找到密码库文件          |
+| `VAULT_ALREADY_EXISTS`               | 密码库已存在              |
+| `VAULT_LOCKED`                       | 需要先解锁                |
+| `VAULT_ALREADY_UNLOCKED`             | 已处于解锁状态            |
+| `INVALID_MASTER_PASSWORD`            | 主密码错误或文件损坏      |
+| `WEAK_MASTER_PASSWORD`               | 主密码不满足长度要求      |
+| `CORRUPTED_VAULT`                    | 文件结构或密文完整性异常  |
+| `UNSUPPORTED_FORMAT`                 | 格式版本不受支持          |
+| `VAULT_BUSY`                         | 密码库被另一个进程占用    |
+| `ITEM_NOT_FOUND`                     | 记录不存在                |
+| `BACKUP_FAILED` / `RESTORE_FAILED`   | 备份或恢复失败            |
+| `CRYPTO_FAILURE` / `STORAGE_FAILURE` | 加密或存储失败            |
+| `UNTRUSTED_SENDER`                   | 调用不来自应用主窗口      |
+| `UPDATE_CHECK_FAILED`                | 检查更新失败（网络/格式） |
+| `INTERNAL_ERROR`                     | 未预期的内部错误          |
 
 ## 调用来源校验
 

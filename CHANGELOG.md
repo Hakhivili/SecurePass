@@ -40,6 +40,15 @@ All notable changes to this project are documented in this file.
 - Backup restore refuses empty files and files above 32 MB before reading them into memory.
 - Locking now also clears the clipboard content that the app itself copied, for manual locking,
   auto locking and system lock/suspend alike.
+- Manual update check (`app.checkUpdate` / `app.openExternal`): the About panel can query the public
+  GitHub release API once, only when the user clicks, and open the release page in the system
+  browser. Links are restricted to `https://github.com`, the repository slug comes from
+  `REPOSITORY_SLUG`, and an unconfigured slug fails fast instead of contacting an unknown host.
+- `docs/PRIVACY.zh-CN.md` (the only network call is the manual update check, plus log redaction),
+  `docs/MAINTENANCE.zh-CN.md` (permanent MIT, DCO instead of CLA, 12-month security window) and
+  `docs/ROADMAP.zh-CN.md` (v0.2 → v1.0, and what this project will never do).
+- Dependabot configuration for npm and GitHub Actions, with Electron major updates excluded so the
+  yearly upgrade stays deliberate.
 
 ### Fixed
 

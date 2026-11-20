@@ -110,7 +110,12 @@ export interface ApiMock {
   uiPreferences: { get: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
   clipboard: { copySecret: ReturnType<typeof vi.fn> };
   titleBar: { sync: ReturnType<typeof vi.fn> };
-  app: { info: ReturnType<typeof vi.fn>; openDataDir: ReturnType<typeof vi.fn> };
+  app: {
+    info: ReturnType<typeof vi.fn>;
+    openDataDir: ReturnType<typeof vi.fn>;
+    checkUpdate: ReturnType<typeof vi.fn>;
+    openExternal: ReturnType<typeof vi.fn>;
+  };
   events: { onLocked: ReturnType<typeof vi.fn> };
 }
 
@@ -157,6 +162,15 @@ export function createApiMock(): ApiMock {
     app: {
       info: vi.fn(async () => appInfo()),
       openDataDir: vi.fn(async () => undefined),
+      checkUpdate: vi.fn(async () => ({
+        currentVersion: '0.1.0',
+        latestVersion: '0.1.0',
+        hasUpdate: false,
+        releaseUrl: 'https://github.com/example/securepass/releases/tag/v0.1.0',
+        publishedAt: '2026-11-11T00:00:00Z',
+        notes: null,
+      })),
+      openExternal: vi.fn(async () => undefined),
     },
     events: { onLocked: vi.fn(() => () => undefined) },
   };
