@@ -5,6 +5,14 @@
   "description": "Offline password generator and encrypted local vault",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hakhivili/SecurePass.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hakhivili/SecurePass/issues"
+  },
+  "homepage": "https://github.com/Hakhivili/SecurePass#readme",
   "author": "SecurePass Contributors",
   "main": "dist-electron/main/index.js",
   "engines": {

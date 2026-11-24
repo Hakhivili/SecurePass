@@ -9,7 +9,7 @@ It is built with Electron, React, TypeScript and Vite.
 
 ## Download
 
-Prebuilt installers are attached to every [release](__REPO_URL__/releases) (`v0.1.0` and later):
+Prebuilt installers are attached to every [release](https://github.com/Hakhivili/SecurePass/releases) (`v0.1.0` and later):
 
 | Platform | Artifact                                        |
 | -------- | ----------------------------------------------- |

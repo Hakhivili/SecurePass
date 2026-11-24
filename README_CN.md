@@ -9,7 +9,7 @@ TypeScript + Vite。
 
 ## 下载
 
-每个 [Release](__REPO_URL__/releases) 都附带各平台安装包（`v0.1.0` 起）：
+每个 [Release](https://github.com/Hakhivili/SecurePass/releases) 都附带各平台安装包（`v0.1.0` 起）：
 
 | 平台    | 产物                                            |
 | ------- | ----------------------------------------------- |
