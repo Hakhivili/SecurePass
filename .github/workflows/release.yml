@@ -96,7 +96,7 @@ jobs:
 
       - name: Strip unpacked directory
         shell: bash
-        run: rm -rf release/*-unpacked release/*.blockmap release/*.app
+        run: rm -rf release/*-unpacked release/*.blockmap release/*.app release/builder-*.yml
 
       - uses: actions/upload-artifact@v4
         with:
