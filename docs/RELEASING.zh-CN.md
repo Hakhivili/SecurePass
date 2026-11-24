@@ -33,11 +33,15 @@ git push origin main --follow-tags
 
 `.github/workflows/release.yml` 触发后会：
 
-1. 在 `ubuntu-latest` / `windows-latest` / `macos-latest` 上分别执行
-   `npm ci` → `npm pkg set version=<tag 去掉 v>` → `npm run package`；
-2. 删除 `*-unpacked` 目录、`.app` 与 `.blockmap`，把安装包上传为构建产物；
-3. 合并三平台产物，生成 `SHA256SUMS.txt`；
-4. 用 `gh release create` 创建 Release 并上传全部文件。
+1. 在 `windows-latest` 上执行 `npm ci` → `npm pkg set version=<tag 去掉 v>` → `npm run package`
+   （macOS / Linux 尚未真机验证，暂时只发 Windows 产物；恢复方法见工作流里的注释）；
+2. 删除 `*-unpacked` 目录与 `.blockmap`，把安装包上传为构建产物；
+3. 合并产物，生成 `SHA256SUMS.txt`；
+4. 用 `gh release create` 创建 Release 并上传全部文件：如果存在
+   `docs/release-notes/<tag>.md`（例如 `docs/release-notes/v0.1.0.md`），就用它作为发布说明，
+   否则由 GitHub 依据提交自动生成。
+
+> 发布说明里请写清：是否已签名、`SHA256SUMS.txt` 的校验方法、以及本版本不提供的平台。
 
 也可在 Actions 页面手动触发（`workflow_dispatch`），输入版本号。
 

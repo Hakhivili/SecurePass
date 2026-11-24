@@ -11,14 +11,14 @@ TypeScript + Vite。
 
 每个 [Release](https://github.com/Hakhivili/SecurePass/releases) 都附带各平台安装包（`v0.1.0` 起）：
 
-| 平台    | 产物                                            |
-| ------- | ----------------------------------------------- |
-| Windows | `SecurePass-<version>-win-x64.exe`（NSIS）      |
-| macOS   | `SecurePass-<version>-<arch>.dmg` / `.zip`      |
-| Linux   | `SecurePass-<version>-<arch>.AppImage` / `.deb` |
+| 平台    | 产物                                            | 状态                   |
+| ------- | ----------------------------------------------- | ---------------------- |
+| Windows | `SecurePass-<version>-win-x64.exe`（NSIS）      | `v0.1.0` 起提供        |
+| macOS   | `SecurePass-<version>-<arch>.dmg` / `.zip`      | 计划中，尚未在真机验证 |
+| Linux   | `SecurePass-<version>-<arch>.AppImage` / `.deb` | 计划中，尚未在真机验证 |
 
-构建产物未做代码签名，首次运行时 Windows SmartScreen / macOS Gatekeeper 会要求确认；
-每个 Release 附带 `SHA256SUMS.txt`，请对照校验下载文件。
+`v0.1.0` 只发布 Windows x64；macOS 与 Linux 会在真机验证后恢复。构建产物未做代码签名，首次运行时
+Windows SmartScreen / macOS Gatekeeper 会要求确认；每个 Release 附带 `SHA256SUMS.txt`，请对照校验下载文件。
 
 ## 已实现能力
 

@@ -11,14 +11,15 @@ It is built with Electron, React, TypeScript and Vite.
 
 Prebuilt installers are attached to every [release](https://github.com/Hakhivili/SecurePass/releases) (`v0.1.0` and later):
 
-| Platform | Artifact                                        |
-| -------- | ----------------------------------------------- |
-| Windows  | `SecurePass-<version>-win-x64.exe` (NSIS)       |
-| macOS    | `SecurePass-<version>-<arch>.dmg` / `.zip`      |
-| Linux    | `SecurePass-<version>-<arch>.AppImage` / `.deb` |
+| Platform | Artifact                                        | Status                     |
+| -------- | ----------------------------------------------- | -------------------------- |
+| Windows  | `SecurePass-<version>-win-x64.exe` (NSIS)       | Available since `v0.1.0`   |
+| macOS    | `SecurePass-<version>-<arch>.dmg` / `.zip`      | Planned, not validated yet |
+| Linux    | `SecurePass-<version>-<arch>.AppImage` / `.deb` | Planned, not validated yet |
 
-Builds are unsigned, so Windows SmartScreen / macOS Gatekeeper will ask for confirmation on first
-launch. Each release ships a `SHA256SUMS.txt`; please verify your download against it.
+`v0.1.0` ships Windows x64 only; macOS and Linux builds return once they have been validated on real
+machines. Builds are unsigned, so Windows SmartScreen / macOS Gatekeeper will ask for confirmation on
+first launch. Each release ships a `SHA256SUMS.txt`; please verify your download against it.
 
 ## Features
 
