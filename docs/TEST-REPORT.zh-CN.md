@@ -25,47 +25,47 @@
 
 测试文件与用例数：
 
-| 测试文件                                                     | 用例数 | 覆盖内容                                                                                        |
-| ------------------------------------------------------------ | ------ | ----------------------------------------------------------------------------------------------- |
-| `tests/unit/crypto.service.test.ts`                          | 12     | KDF、加解密往返、错误密码、篡改检测、IV/标签长度校验、KDF 参数范围与快速失败                    |
-| `tests/unit/vault.service.test.ts`                           | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置                                            |
-| `tests/unit/storage.service.test.ts`                         | 5      | 原子写入、单写者锁、心跳与陈旧锁回收                                                            |
-| `tests/unit/password.service.test.ts`                        | 10     | 生成规则、无偏抽样、排除规则、强度与提示码                                                      |
-| `tests/unit/plaintext-on-disk.test.ts`                       | 2      | 落盘明文扫描（验收 7）                                                                          |
-| `tests/unit/restore-fresh-environment.test.ts`               | 3      | 全新环境恢复、错误备份不覆盖（验收 9）                                                          |
-| `tests/unit/storage-interruption.test.ts`                    | 3      | 写入中断、备份失败、`.bak` 语义（验收 10）                                                      |
-| `tests/unit/clipboard.service.test.ts`                       | 6      | 剪贴板定时清理与误清保护（验收 11）                                                             |
-| `tests/unit/vault-performance.test.ts`                       | 4      | 1000 条记录的性能基准（验收 12）                                                                |
-| `tests/unit/renderer/search-performance.test.ts`             | 3      | 渲染层搜索性能基准（验收 12）                                                                   |
-| `tests/unit/renderer/duplicates.test.ts`                     | 8      | 重复录入判定与排序                                                                              |
-| `tests/unit/renderer/vault-filter.test.ts`                   | 2      | 搜索过滤语义                                                                                    |
-| `tests/unit/auto-lock.test.ts`                               | 5      | 系统空闲/窗口失焦驱动的自动锁定、解锁前空闲不影响新会话                                         |
-| `tests/unit/payload-integrity.test.ts`                       | 5      | 负载结构修补、遗留 settings 字段迁移                                                            |
-| `tests/unit/preferences.service.test.ts`                     | —      | 界面偏好规范化与写入                                                                            |
-| `tests/unit/window-state.service.test.ts`                    | —      | 窗口大小/位置记忆                                                                               |
-| `tests/unit/i18n-placeholders.test.ts`                       | 4      | 翻译占位符与双语键集合一致性                                                                    |
-| `tests/unit/renderer-target.test.ts`                         | —      | dev server 地址规范化与重试                                                                     |
-| `tests/unit/security.test.ts`                                | 6      | CSP、权限拒绝、导航白名单                                                                       |
-| `tests/unit/backup.service.test.ts`                          | 4      | 备份文件大小限制（空文件/超 32 MB/目录/不可读）、正常导出与恢复                                 |
-| `tests/unit/lock-clipboard.test.ts`                          | 4      | 手动锁库清理剪贴板、用户后复制不误清、自动锁定同样清理、未解锁不清                              |
-| `tests/unit/restore-interruption.test.ts`                    | 2      | 恢复写入失败时旧库逐字节不变且无 `.tmp` 残留、恢复成功保留旧库副本                              |
-| `tests/unit/ipc-handlers.test.ts`                            | 9      | IPC 来源校验（含子框架）、错误码透传、标题栏通道守卫、`app.openExternal` 只放行 github.com |
-| `tests/unit/log.service.test.ts`                             | 6      | 日志格式、脱敏（含异常堆栈）、轮转                                                              |
-| `tests/unit/update.service.test.ts`                          | 13     | 版本比较、只发一次匿名 GET、404/500/网络异常/超时、说明截断、占位仓库不发请求、缺少版本号时拒绝 |
-| `tests/unit/renderer/ipc-errors.test.ts`                     | 5      | 错误码识别、本地化回退、桥接缺失                                                                |
-| `tests/unit/renderer/ui-preferences.test.ts`                 | 6      | 偏好规范化、localStorage 缓存容错                                                               |
-| `tests/unit/renderer/hotkeys.test.tsx`                       | 5      | 快捷键触发、输入框让位、卸载解绑                                                                |
-| `tests/unit/renderer/theme.test.ts`                          | 2      | 主题解析与 `<html>` 属性写入                                                                    |
-| `tests/unit/renderer/vault-gate.store.test.ts`               | 4      | 按需解锁门控的 Promise 决议                                                                     |
-| `tests/unit/renderer/format-validation.test.ts`              | 3      | 时间格式化、主密码长度校验（按码点计数）                                                        |
-| `tests/unit/renderer/components/password-generator.test.tsx` | 7      | 自动生成、强度条语义、复制、字符类型重算、生成失败、保存经门控/写库                             |
-| `tests/unit/renderer/components/vault-panel.test.tsx`        | 8      | 锁定态解锁、列表与倒计时、搜索、分类筛选、删除确认+撤销、错误重试、Ctrl+N、手动锁定             |
-| `tests/unit/renderer/components/vault-editor.test.tsx`       | 5      | 字段预填、提交成功清空、失败保留、未修改不打扰、修改后关闭需确认                                |
-| `tests/unit/renderer/components/vault-item.test.tsx`         | 5      | 详情字段/标签/时间戳、密码遮罩、复制账号与密码、复制失败提示、空字段占位                        |
-| `tests/unit/renderer/components/vault-access-panel.test.tsx` | 5      | 创建长度/一致性校验、创建前确认、取消不创建、解锁错误码文案、成功回调                           |
+| 测试文件                                                     | 用例数 | 覆盖内容                                                                                                                   |
+| ------------------------------------------------------------ | ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `tests/unit/crypto.service.test.ts`                          | 12     | KDF、加解密往返、错误密码、篡改检测、IV/标签长度校验、KDF 参数范围与快速失败                                               |
+| `tests/unit/vault.service.test.ts`                           | 8      | 建库/锁定/解锁、原样保存、CRUD、改主密码、恢复、设置                                                                       |
+| `tests/unit/storage.service.test.ts`                         | 5      | 原子写入、单写者锁、心跳与陈旧锁回收                                                                                       |
+| `tests/unit/password.service.test.ts`                        | 10     | 生成规则、无偏抽样、排除规则、强度与提示码                                                                                 |
+| `tests/unit/plaintext-on-disk.test.ts`                       | 2      | 落盘明文扫描（验收 7）                                                                                                     |
+| `tests/unit/restore-fresh-environment.test.ts`               | 3      | 全新环境恢复、错误备份不覆盖（验收 9）                                                                                     |
+| `tests/unit/storage-interruption.test.ts`                    | 3      | 写入中断、备份失败、`.bak` 语义（验收 10）                                                                                 |
+| `tests/unit/clipboard.service.test.ts`                       | 6      | 剪贴板定时清理与误清保护（验收 11）                                                                                        |
+| `tests/unit/vault-performance.test.ts`                       | 4      | 1000 条记录的性能基准（验收 12）                                                                                           |
+| `tests/unit/renderer/search-performance.test.ts`             | 3      | 渲染层搜索性能基准（验收 12）                                                                                              |
+| `tests/unit/renderer/duplicates.test.ts`                     | 8      | 重复录入判定与排序                                                                                                         |
+| `tests/unit/renderer/vault-filter.test.ts`                   | 2      | 搜索过滤语义                                                                                                               |
+| `tests/unit/auto-lock.test.ts`                               | 5      | 系统空闲/窗口失焦驱动的自动锁定、解锁前空闲不影响新会话                                                                    |
+| `tests/unit/payload-integrity.test.ts`                       | 5      | 负载结构修补、遗留 settings 字段迁移                                                                                       |
+| `tests/unit/preferences.service.test.ts`                     | —      | 界面偏好规范化与写入                                                                                                       |
+| `tests/unit/window-state.service.test.ts`                    | —      | 窗口大小/位置记忆                                                                                                          |
+| `tests/unit/i18n-placeholders.test.ts`                       | 4      | 翻译占位符与双语键集合一致性                                                                                               |
+| `tests/unit/renderer-target.test.ts`                         | —      | dev server 地址规范化与重试                                                                                                |
+| `tests/unit/security.test.ts`                                | 6      | CSP、权限拒绝、导航白名单                                                                                                  |
+| `tests/unit/backup.service.test.ts`                          | 4      | 备份文件大小限制（空文件/超 32 MB/目录/不可读）、正常导出与恢复                                                            |
+| `tests/unit/lock-clipboard.test.ts`                          | 4      | 手动锁库清理剪贴板、用户后复制不误清、自动锁定同样清理、未解锁不清                                                         |
+| `tests/unit/restore-interruption.test.ts`                    | 2      | 恢复写入失败时旧库逐字节不变且无 `.tmp` 残留、恢复成功保留旧库副本                                                         |
+| `tests/unit/ipc-handlers.test.ts`                            | 9      | IPC 来源校验（含子框架）、错误码透传、标题栏通道守卫、`app.openExternal` 只放行 github.com                                 |
+| `tests/unit/log.service.test.ts`                             | 6      | 日志格式、脱敏（含异常堆栈）、轮转                                                                                         |
+| `tests/unit/update.service.test.ts`                          | 13     | 版本比较、只发一次匿名 GET、404/500/网络异常/超时、说明截断、占位仓库不发请求、缺少版本号时拒绝                            |
+| `tests/unit/renderer/ipc-errors.test.ts`                     | 5      | 错误码识别、本地化回退、桥接缺失                                                                                           |
+| `tests/unit/renderer/ui-preferences.test.ts`                 | 6      | 偏好规范化、localStorage 缓存容错                                                                                          |
+| `tests/unit/renderer/hotkeys.test.tsx`                       | 5      | 快捷键触发、输入框让位、卸载解绑                                                                                           |
+| `tests/unit/renderer/theme.test.ts`                          | 2      | 主题解析与 `<html>` 属性写入                                                                                               |
+| `tests/unit/renderer/vault-gate.store.test.ts`               | 4      | 按需解锁门控的 Promise 决议                                                                                                |
+| `tests/unit/renderer/format-validation.test.ts`              | 3      | 时间格式化、主密码长度校验（按码点计数）                                                                                   |
+| `tests/unit/renderer/components/password-generator.test.tsx` | 7      | 自动生成、强度条语义、复制、字符类型重算、生成失败、保存经门控/写库                                                        |
+| `tests/unit/renderer/components/vault-panel.test.tsx`        | 8      | 锁定态解锁、列表与倒计时、搜索、分类筛选、删除确认+撤销、错误重试、Ctrl+N、手动锁定                                        |
+| `tests/unit/renderer/components/vault-editor.test.tsx`       | 5      | 字段预填、提交成功清空、失败保留、未修改不打扰、修改后关闭需确认                                                           |
+| `tests/unit/renderer/components/vault-item.test.tsx`         | 5      | 详情字段/标签/时间戳、密码遮罩、复制账号与密码、复制失败提示、空字段占位                                                   |
+| `tests/unit/renderer/components/vault-access-panel.test.tsx` | 5      | 创建长度/一致性校验、创建前确认、取消不创建、解锁错误码文案、成功回调                                                      |
 | `tests/unit/renderer/components/settings.test.tsx`           | 9      | 锁定禁用与提示、关于区块/打开目录、手动检查更新（成功/失败）、主题与强调色、自动锁定修改、改主密码校验、导出、恢复二次确认 |
-| `tests/unit/renderer/components/common.test.tsx`             | 7      | 强度计语义、错误边界与兜底按钮、标题栏导航、工作台布局、按需解锁对话框                          |
-| `tests/unit/renderer/components/duplicate-guard.test.tsx`    | 6      | 无重复放行、确认保留/返回修改、未加载先拉取、excludeId、剪贴板工具                              |
+| `tests/unit/renderer/components/common.test.tsx`             | 7      | 强度计语义、错误边界与兜底按钮、标题栏导航、工作台布局、按需解锁对话框                                                     |
+| `tests/unit/renderer/components/duplicate-guard.test.tsx`    | 6      | 无重复放行、确认保留/返回修改、未加载先拉取、excludeId、剪贴板工具                                                         |
 
 ---
 

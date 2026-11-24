@@ -46,7 +46,8 @@ All notable changes to this project are documented in this file.
   `REPOSITORY_SLUG`, and an unconfigured slug fails fast instead of contacting an unknown host.
 - `docs/PRIVACY.zh-CN.md` (the only network call is the manual update check, plus log redaction),
   `docs/MAINTENANCE.zh-CN.md` (permanent MIT, DCO instead of CLA, 12-month security window) and
-  `docs/ROADMAP.zh-CN.md` (v0.2 → v1.0, and what this project will never do).
+  `docs/ROADMAP.zh-CN.md` (three milestones: M1 shared-ready personal manager, M2 full day-to-day
+  coverage, M3 commercial-grade, and what this project will never do).
 - Dependabot configuration for npm and GitHub Actions, with Electron major updates excluded so the
   yearly upgrade stays deliberate.
 
@@ -79,6 +80,8 @@ All notable changes to this project are documented in this file.
   Electron's defaults); the workaround config `electron-builder.portable.yml` was removed.
 - Releases are published to GitHub Releases with `SHA256SUMS.txt` instead of loose artifacts.
 - Unused exports (`satisfiesConfig`, `MAX_SEARCH_RESULTS`) were removed.
+- The roadmap is now organized around three milestones (M1/M2/M3); the gap table in the
+  requirements baseline refers to them instead of bare version numbers.
 - `react-router-dom` upgraded to 7.18.5, which clears two moderate audit advisories in the 6.x line.
 - Deprecated antd `destroyOnClose` replaced with `destroyOnHidden`.
 - New application icon: dark rounded tile with a blue keyhole frame, generated from

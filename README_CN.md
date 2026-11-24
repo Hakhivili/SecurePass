@@ -93,19 +93,19 @@ tools/         应用图标与第三方许可清单的生成脚本
 
 ## 文档
 
-| 文档                                                             | 内容                                     |
-| ---------------------------------------------------------------- | ---------------------------------------- |
-| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md)             | 用户手册：安装、首次使用、备份、常见问题 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | 进程模型、鉴权生命周期、扩展点           |
-| [docs/API.md](docs/API.md)                                       | IPC 接口清单                             |
-| [docs/DEPLOYMENT-NOTES.zh-CN.md](docs/DEPLOYMENT-NOTES.zh-CN.md) | 开发环境、常用命令、打包与排障           |
-| [docs/RELEASING.zh-CN.md](docs/RELEASING.zh-CN.md)               | 版本号、变更日志与发布流程               |
-| [docs/TEST-REPORT.zh-CN.md](docs/TEST-REPORT.zh-CN.md)           | 验收项、测试与覆盖率情况                 |
-| [docs/ROADMAP.zh-CN.md](docs/ROADMAP.zh-CN.md)                   | 版本路线：v0.2 → v1.0 与明确不做的事     |
-| [docs/PRIVACY.zh-CN.md](docs/PRIVACY.zh-CN.md)                   | 隐私说明：唯一联网行为与日志脱敏         |
-| [docs/MAINTENANCE.zh-CN.md](docs/MAINTENANCE.zh-CN.md)           | 永久开源承诺、维护状态与安全支持窗口     |
-| [SECURITY.md](SECURITY.md)                                       | 威胁模型、加密参数、漏洞上报方式         |
-| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)                 | 随包发布的第三方组件许可                 |
+| 文档                                                             | 内容                                                                  |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [docs/USER-GUIDE.zh-CN.md](docs/USER-GUIDE.zh-CN.md)             | 用户手册：安装、首次使用、备份、常见问题                              |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                     | 进程模型、鉴权生命周期、扩展点                                        |
+| [docs/API.md](docs/API.md)                                       | IPC 接口清单                                                          |
+| [docs/DEPLOYMENT-NOTES.zh-CN.md](docs/DEPLOYMENT-NOTES.zh-CN.md) | 开发环境、常用命令、打包与排障                                        |
+| [docs/RELEASING.zh-CN.md](docs/RELEASING.zh-CN.md)               | 版本号、变更日志与发布流程                                            |
+| [docs/TEST-REPORT.zh-CN.md](docs/TEST-REPORT.zh-CN.md)           | 验收项、测试与覆盖率情况                                              |
+| [docs/ROADMAP.zh-CN.md](docs/ROADMAP.zh-CN.md)                   | 三个里程碑（M1 自用可开源 → M2 日常全覆盖 → M3 商业级）与明确不做的事 |
+| [docs/PRIVACY.zh-CN.md](docs/PRIVACY.zh-CN.md)                   | 隐私说明：唯一联网行为与日志脱敏                                      |
+| [docs/MAINTENANCE.zh-CN.md](docs/MAINTENANCE.zh-CN.md)           | 永久开源承诺、维护状态与安全支持窗口                                  |
+| [SECURITY.md](SECURITY.md)                                       | 威胁模型、加密参数、漏洞上报方式                                      |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)                 | 随包发布的第三方组件许可                                              |
 
 ## 密码库位置
 
