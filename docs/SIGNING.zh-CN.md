@@ -217,3 +217,67 @@ codesign --verify --deep --strict --verbose=2 "SecurePass.app"
 | 签名成功但 SmartScreen 仍提示                                      | OV 证书需要下载信誉累积；想让提示立即消失需 EV 或 Azure Trusted Signing                      |
 | `signtool` 报 0x8007000B / 找不到令牌                              | 安装证书厂商的驱动/客户端，确认令牌已插入且证书在「个人」存储区                              |
 | macOS 打包报 `notarize` 失败                                       | 检查 `APPLE_*` 三个变量、`.p12` 是否含 Developer ID Application、以及 Apple 账号是否已签协议 |
+
+## 8. 附录：SignPath Foundation 申请怎么填
+
+> 只在「免费开源签名」这条路上需要这一节。申请地址：<https://signpath.org/apply>（若入口有变化，
+> 从 <https://signpath.io/foundation> 的 Apply 按钮进入即可）。表格是英文的，下面给出可直接粘贴的内容。
+
+### 8.1 申请前先准备好三个链接
+
+| 用途            | 取值                                                                    |
+| --------------- | ----------------------------------------------------------------------- |
+| 项目主页        | `https://github.com/Hakhivili/SecurePass`                               |
+| 已发布版本      | `https://github.com/Hakhivili/SecurePass/releases/tag/v0.1.0`           |
+| 证明构建来自 CI | `https://github.com/Hakhivili/SecurePass/actions/workflows/release.yml` |
+
+审核方最关心的是「产物由公开 CI 生成、许可证是 OSI 认可、没有商业版本」，这三项我们都已经具备。
+
+### 8.2 逐项填写建议
+
+| 表格字段（含义）         | 建议填写                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Project name             | `SecurePass`                                                                                           |
+| Repository / Project URL | `https://github.com/Hakhivili/SecurePass`                                                              |
+| License                  | `MIT`（OSI-approved）                                                                                  |
+| Project description      | 用 8.3 的英文段落                                                                                      |
+| Primary language / stack | `TypeScript`（Electron 33 + React 18 + Vite）                                                          |
+| Build system / CI        | `GitHub Actions`（workflow `release.yml`，`npm ci` → `npm run package` → 上传产物）                    |
+| Artifacts to be signed   | `SecurePass.exe`（应用主程序）与 `SecurePass-<version>-win-x64.exe`（NSIS 安装包）                     |
+| Signing policy requested | `release-signing`（仅对打过 tag 的正式版本签名）                                                       |
+| Maintainers / committers | 1 名（列出 GitHub 用户名 `Hakhivili`）                                                                 |
+| Commercial offering?     | `No`——无付费版、无商业支持、无托管服务                                                                 |
+| Funding / donations      | 可填 `None`；若日后有个人捐赠渠道，说明「与项目无关，不影响功能」                                      |
+| CLA / contributing       | `No CLA; contributions use the DCO sign-off`                                                           |
+| Contact name / e-mail    | 你的真实姓名与邮箱（用于审核沟通，不会公开）                                                           |
+| Additional notes         | `The Windows build is unsigned today and ships SHA256SUMS.txt; signing is the last step before 0.2.0.` |
+
+### 8.3 可直接粘贴的项目描述（英文）
+
+```text
+SecurePass is an offline, open-source password manager for Windows, macOS and Linux, built with
+Electron, React, TypeScript and Vite. It stores everything in a single encrypted vault file
+(Argon2id key derivation + AES-256-GCM with AAD binding), keeps no account, collects no telemetry
+and performs exactly one network request: a manual "check for updates" call to the public GitHub
+release API, triggered only when the user clicks it.
+
+Releases are produced exclusively by the public GitHub Actions workflow in this repository
+(npm ci -> npm run package -> artifacts -> GitHub Release with SHA256SUMS.txt). Windows artifacts
+are currently unsigned, which is why we are applying for the SignPath Foundation programme. The
+project is MIT licensed, has no commercial edition, no paid support and no hosted service, and
+accepts contributions under the DCO.
+```
+
+### 8.4 提交之后
+
+1. 审核通常需要数个工作日，期间可能追问构建流程或产物清单，照实回答即可；
+2. 批准后在 SignPath 后台创建 project 与 signing policy（名称建议就用 `release-signing`），
+   并给 `SecurePass.exe` 与安装包建立 artifact configuration；
+3. 拿到下面三项后写进 `docs/SIGNING.zh-CN.md` 的实现记录，并把 API Token 存进
+   GitHub 仓库的 Secrets（名称 `SIGNPATH_API_TOKEN`）：
+
+   - `organization-id`
+   - `project-slug`
+   - `signing-policy-slug`
+
+4. 不要在任何 issue、聊天或提交信息里贴出 token；token 只在 Actions 里以 secret 形式使用。
